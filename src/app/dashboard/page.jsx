@@ -10,11 +10,22 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { LogOut, Plus, Edit2, ExternalLink, Copy, Check } from 'lucide-react';
+import { LogOut, Plus, Edit2, ExternalLink, Copy, Check, Trash2 } from 'lucide-react';
 import MenuItemForm from '@/components/dashboard/menu-item-form';
 import CategoryManager from '@/components/dashboard/category-manager';
 import { toastSuccess, toastError } from '@/lib/toast';
 import QrModal from '@/components/public/qr-modal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -47,8 +58,19 @@ export default function DashboardPage() {
   const itemCount = Array.isArray(items) ? items.length : 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [deletingItemId, setDeletingItemId] = useState(null);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   const handleToggleAvailability = async (itemId, currentStatus) => {
+    // Optimistic update - update UI immediately
+    const optimisticData = items.map(item => 
+      item._id === itemId ? { ...item, isAvailable: !currentStatus } : item
+    );
+    
+    // Update UI immediately
+    mutate(optimisticData, false);
+
+    try {
     const response = await fetch(`/api/menu-items/${itemId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -56,10 +78,50 @@ export default function DashboardPage() {
     });
 
     if (response.ok) {
+        // Revalidate to get latest data
+        mutate();
+        toastSuccess(!currentStatus ? 'Item is now available' : 'Item is now unavailable');
+      } else {
+        // Revert on error
+        mutate();
+        toastError('Failed to update availability');
+      }
+    } catch (error) {
+      // Revert on error
       mutate();
-      toastSuccess(!currentStatus ? 'Item is now available' : 'Item is now unavailable');
-    } else {
       toastError('Failed to update availability');
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    setDeletingItemId(itemId);
+  };
+
+  const confirmDeleteItem = async () => {
+    if (!deletingItemId) return;
+
+    // Optimistic update
+    const optimisticData = items.filter(item => item._id !== deletingItemId);
+    mutate(optimisticData, false);
+
+    try {
+      const response = await fetch(`/api/menu-items/${deletingItemId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        mutate();
+        toastSuccess('Menu item deleted');
+        setDeletingItemId(null);
+      } else {
+        mutate();
+        toastError('Failed to delete menu item');
+        setDeletingItemId(null);
+      }
+    } catch (error) {
+      mutate();
+      toastError('Failed to delete menu item');
+      setDeletingItemId(null);
     }
   };
 
@@ -140,7 +202,7 @@ export default function DashboardPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/menu/${publicMenuId}`, 'menu')}
-                        className="h-7 w-7 p-0"
+                        className="h-7 w-7 p-0 cursor-pointer"
                       >
                         {copiedUrl === 'menu' ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
                       </Button>
@@ -148,7 +210,7 @@ export default function DashboardPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => window.open(`/menu/${publicMenuId}`, '_blank')}
-                        className="h-7 w-7 p-0"
+                        className="h-7 w-7 p-0 cursor-pointer"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                       </Button>
@@ -166,7 +228,7 @@ export default function DashboardPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => copyToClipboard(`${typeof window !== 'undefined' ? window.location.origin : ''}/tv/${publicMenuId}`, 'tv')}
-                        className="h-7 w-7 p-0"
+                        className="h-7 w-7 p-0 cursor-pointer"
                       >
                         {copiedUrl === 'tv' ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
                       </Button>
@@ -174,7 +236,7 @@ export default function DashboardPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => window.open(`/tv/${publicMenuId}`, '_blank')}
-                        className="h-7 w-7 p-0"
+                        className="h-7 w-7 p-0 cursor-pointer"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                       </Button>
@@ -191,7 +253,7 @@ export default function DashboardPage() {
                   </p>
                   <Button
                     onClick={() => toastError('Upgrade flow will be available in Milestone 3')}
-                    className="sm:ml-4"
+                    className="sm:ml-4 cursor-pointer"
                   >
                     Upgrade to Pro
                   </Button>
@@ -199,14 +261,31 @@ export default function DashboardPage() {
               </Card>
             )}
           </div>
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+          <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to log out? You'll need to sign in again to access your dashboard.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleLogout} className="cursor-pointer">
+                  Logout
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         {/* Category Management Section */}
@@ -221,7 +300,7 @@ export default function DashboardPage() {
             <DialogTrigger asChild>
               <Button
                 onClick={() => setEditingItem(null)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
                 disabled={plan === 'free' && itemCount >= 3}
                 title={plan === 'free' && itemCount >= 3 ? 'Free plan limit reached' : ''}
               >
@@ -243,7 +322,7 @@ export default function DashboardPage() {
             {items.map((item) => (
               <Card key={item._id} className="p-6 hover:shadow-lg transition-shadow border border-gray-200">
                 <div className="space-y-4">
-                  <div>
+                <div>
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -265,12 +344,12 @@ export default function DashboardPage() {
                       <span className="text-xs font-medium bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full">
                         {item.category}
                       </span>
-                    </div>
                   </div>
+                </div>
 
                   <div className="flex gap-2 pt-2">
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-sm font-medium text-gray-700">Toggle Availability</span>
+                      <span className="text-sm font-medium text-gray-700 cursor-pointer" onClick={() => handleToggleAvailability(item._id, item.isAvailable)}>Toggle Availability</span>
                       <Switch 
                         checked={item.isAvailable} 
                         onCheckedChange={() => handleToggleAvailability(item._id, item.isAvailable)} 
@@ -283,11 +362,40 @@ export default function DashboardPage() {
                         setEditingItem(item);
                         setIsDialogOpen(true);
                       }}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 cursor-pointer"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                       Edit
                     </Button>
+                    <AlertDialog open={deletingItemId === item._id} onOpenChange={(open) => !open && setDeletingItemId(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteItem(item._id)}
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Menu Item</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{item.name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={confirmDeleteItem}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </Card>
@@ -298,25 +406,25 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <p className="text-lg font-medium text-gray-600">No menu items yet</p>
               <p className="text-sm text-gray-500">Get started by creating your first menu item</p>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
                   <Button
-                    className="flex items-center gap-2 mx-auto"
+                    className="flex items-center gap-2 mx-auto cursor-pointer"
                     disabled={plan === 'free' && itemCount >= 3}
                     title={plan === 'free' && itemCount >= 3 ? 'Free plan limit reached' : ''}
                   >
                     <Plus className="h-4 w-4" />
                     {plan === 'free' && itemCount >= 3 ? 'Limit Reached' : 'Create Your First Item'}
                   </Button>
-                </DialogTrigger>
+              </DialogTrigger>
                 <DialogContent className="max-w-2xl">
-                  <DialogHeader>
+                <DialogHeader>
                     <DialogTitle className="text-2xl">Add Menu Item</DialogTitle>
-                  </DialogHeader>
-                  <MenuItemForm item={null} onSaved={handleItemSaved} />
-                </DialogContent>
-              </Dialog>
-            </div>
+                </DialogHeader>
+                <MenuItemForm item={null} onSaved={handleItemSaved} />
+              </DialogContent>
+            </Dialog>
+          </div>
           </Card>
         )}
       </div>

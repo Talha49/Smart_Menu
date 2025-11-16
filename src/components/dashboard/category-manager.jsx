@@ -15,6 +15,17 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Trash2, Tag } from 'lucide-react';
 import { toastSuccess, toastError, toastInfo } from '@/lib/toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -24,6 +35,7 @@ export default function CategoryManager({ onCategoryChange }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deletingCategory, setDeletingCategory] = useState(null);
 
   const { data: categoriesData, mutate } = useSWR(
     restaurantId ? '/api/categories' : null,
@@ -70,32 +82,36 @@ export default function CategoryManager({ onCategoryChange }) {
     setLoading(false);
   };
 
-  const handleDeleteCategory = async (categoryName) => {
+  const handleDeleteCategory = (categoryName) => {
     if (categoryName === 'Uncategorized') {
       toastInfo('Cannot delete the default "Uncategorized" category');
       return;
     }
+    setDeletingCategory(categoryName);
+  };
 
-    if (!confirm(`Delete category "${categoryName}"? All items in this category will be moved to "Uncategorized".`)) {
-      return;
-    }
+  const confirmDeleteCategory = async () => {
+    if (!deletingCategory) return;
 
     try {
-      const response = await fetch(`/api/categories?name=${encodeURIComponent(categoryName)}`, {
+      const response = await fetch(`/api/categories?name=${encodeURIComponent(deletingCategory)}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
         mutate(); // Refresh categories
-        toastSuccess(`Deleted "${categoryName}"`);
+        toastSuccess(`Deleted "${deletingCategory}"`);
         if (onCategoryChange) onCategoryChange();
+        setDeletingCategory(null);
       } else {
         const data = await response.json();
         toastError(data.message || 'Failed to delete category');
+        setDeletingCategory(null);
       }
     } catch (error) {
       console.error('Error deleting category:', error);
       toastError('An error occurred');
+      setDeletingCategory(null);
     }
   };
 
@@ -114,7 +130,7 @@ export default function CategoryManager({ onCategoryChange }) {
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
+              <Button className="flex items-center gap-2 cursor-pointer">
                 <Plus className="h-4 w-4" />
                 Add Category
               </Button>
@@ -139,7 +155,7 @@ export default function CategoryManager({ onCategoryChange }) {
                     className="h-11"
                   />
                 </div>
-                <Button type="submit" className="w-full h-11" disabled={loading}>
+                <Button type="submit" className="w-full h-11 cursor-pointer" disabled={loading}>
                   {loading ? 'Creating...' : 'Create Category'}
                 </Button>
               </form>
@@ -163,14 +179,35 @@ export default function CategoryManager({ onCategoryChange }) {
               >
                 <span className="font-medium text-gray-900">{category}</span>
                 {category !== 'Uncategorized' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteCategory(category)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <AlertDialog open={deletingCategory === category} onOpenChange={(open) => !open && setDeletingCategory(null)}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteCategory(category)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{category}"? All items in this category will be moved to "Uncategorized". This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={confirmDeleteCategory}
+                          className="bg-red-600 hover:bg-red-700 cursor-pointer"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             ))

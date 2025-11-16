@@ -22,22 +22,33 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    const result = await signIn('credentials', {
-      email: email.toLowerCase().trim(),
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn('credentials', {
+        email: email.toLowerCase().trim(),
+        password,
+        redirect: false,
+      });
 
-    if (!result.ok) {
-      console.error('Login error:', result.error);
-      setError(result.error || 'Invalid email or password');
-      toastError(result.error || 'Invalid email or password');
+      if (!result.ok) {
+        // NextAuth returns generic error, but we catch specific errors from auth.js
+        const errorMessage = result.error === 'CredentialsSignin' 
+          ? 'Invalid email or password' 
+          : result.error || 'Invalid email or password';
+        setError(errorMessage);
+        toastError(errorMessage);
+        setLoading(false);
+        return;
+      }
+
+      toastSuccess('Signed in');
+      router.push('/dashboard');
+    } catch (error) {
+      const errorMessage = error.message || 'Invalid email or password';
+      setError(errorMessage);
+      toastError(errorMessage);
       setLoading(false);
-      return;
     }
 
-    toastSuccess('Signed in');
-    router.push('/dashboard');
   };
 
   return (

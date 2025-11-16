@@ -34,14 +34,14 @@ export const authConfig = {
 
           if (!user) {
             console.error('User not found for email:', email);
-            return null;
+            throw new Error('Invalid email or password');
           }
 
           const passwordMatch = await bcrypt.compare(parsed.data.password, user.password);
 
           if (!passwordMatch) {
             console.error('Password mismatch for user:', email);
-            return null;
+            throw new Error('Invalid email or password');
           }
 
         return {
@@ -52,7 +52,8 @@ export const authConfig = {
         };
         } catch (error) {
           console.error('Auth error:', error);
-          return null;
+          // Return error message for NextAuth to handle
+          throw error;
         }
       },
     }),
