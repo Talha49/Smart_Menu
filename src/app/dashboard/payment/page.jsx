@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSyncSession } from '@/hooks/use-sync-session';
 import { useAuthStore } from '@/lib/store';
@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { toastSuccess, toastError } from '@/lib/toast';
 import { Check, CreditCard, Lock, ArrowLeft, Sparkles } from 'lucide-react';
 
-export default function PaymentPage() {
+function PaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { session, status } = useSyncSession();
@@ -297,6 +297,18 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <PaymentContent />
+    </Suspense>
   );
 }
 
