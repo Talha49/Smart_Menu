@@ -10,6 +10,7 @@ const menuItemSchema = z.object({
   price: z.number().positive(),
   description: z.string().optional().default(''),
   category: z.string().optional().default('Uncategorized'),
+  imageUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function GET(request) {

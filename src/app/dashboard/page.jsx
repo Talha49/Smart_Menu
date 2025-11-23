@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { LogOut, Plus, Edit2, ExternalLink, Copy, Check, Trash2 } from 'lucide-react';
+import { LogOut, Plus, Edit2, ExternalLink, Copy, Check, Trash2, Settings } from 'lucide-react';
 import MenuItemForm from '@/components/dashboard/menu-item-form';
 import CategoryManager from '@/components/dashboard/category-manager';
 import { toastSuccess, toastError } from '@/lib/toast';
@@ -60,6 +60,18 @@ export default function DashboardPage() {
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItemId, setDeletingItemId] = useState(null);
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+
+  // Check for upgrade success message
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('upgraded') === 'true') {
+      toastSuccess('Successfully upgraded to Pro plan! 🎉');
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard');
+      // Refresh session to get updated plan
+      mutate();
+    }
+  }, [mutate]);
 
   const handleToggleAvailability = async (itemId, currentStatus) => {
     // Optimistic update - update UI immediately
@@ -249,10 +261,10 @@ export default function DashboardPage() {
               <Card className="mt-4 p-4 bg-amber-50 border-amber-200">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <p className="text-sm text-amber-800">
-                    You’ve reached the Free plan limit of 15 items. Upgrade to Pro for unlimited items.
+                    You've reached the Free plan limit of 15 items. Upgrade to Pro for unlimited items.
                   </p>
                   <Button
-                    onClick={() => toastError('Upgrade flow will be available in Milestone 3')}
+                    onClick={() => router.push('/dashboard/payment')}
                     className="sm:ml-4 cursor-pointer"
                   >
                     Upgrade to Pro
@@ -260,17 +272,46 @@ export default function DashboardPage() {
                 </div>
               </Card>
             )}
+            {plan === 'free' && (
+              <Card className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Unlock Pro Features</h3>
+                    <p className="text-xs text-gray-600">
+                      Remove watermark, upload logo, customize branding, and get unlimited menu items.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => router.push('/dashboard/payment')}
+                    className="sm:ml-4 cursor-pointer bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              </Card>
+            )}
           </div>
-          <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
-            <AlertDialogTrigger asChild>
+          <div className="flex items-center gap-3">
+            {plan === 'pro' && (
               <Button
                 variant="outline"
+                onClick={() => router.push('/dashboard/settings')}
                 className="flex items-center gap-2 cursor-pointer"
               >
-                <LogOut className="h-4 w-4" />
-                Logout
+                <Settings className="h-4 w-4" />
+                Settings
               </Button>
-            </AlertDialogTrigger>
+            )}
+            <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
@@ -286,6 +327,7 @@ export default function DashboardPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </div>
         </div>
 
         {/* Category Management Section */}
@@ -308,8 +350,8 @@ export default function DashboardPage() {
                 {plan === 'free' && itemCount >= 3 ? 'Limit Reached' : 'Add Menu Item'}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
+            <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] sm:w-full">
+              <DialogHeader className="flex-shrink-0">
                 <DialogTitle className="text-2xl">{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</DialogTitle>
               </DialogHeader>
               <MenuItemForm item={editingItem} onSaved={handleItemSaved} />
@@ -322,6 +364,17 @@ export default function DashboardPage() {
             {items.map((item) => (
               <Card key={item._id} className="p-6 hover:shadow-lg transition-shadow border border-gray-200">
                 <div className="space-y-4">
+                  {/* Item Image */}
+                  {item.imageUrl && (
+                    <div className="w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
                 <div>
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
@@ -417,8 +470,8 @@ export default function DashboardPage() {
                     {plan === 'free' && itemCount >= 3 ? 'Limit Reached' : 'Create Your First Item'}
                   </Button>
               </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                <DialogHeader>
+                <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] sm:w-full">
+                <DialogHeader className="flex-shrink-0">
                     <DialogTitle className="text-2xl">Add Menu Item</DialogTitle>
                 </DialogHeader>
                 <MenuItemForm item={null} onSaved={handleItemSaved} />

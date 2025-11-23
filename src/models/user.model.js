@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },
@@ -23,7 +22,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Create explicit indexes for performance
-userSchema.index({ email: 1 }); // For login lookups
+userSchema.index({ email: 1 }, { unique: true }); // For login lookups (unique)
 userSchema.index({ restaurant: 1 }); // For user-restaurant queries
 
 export default mongoose.models.User || mongoose.model('User', userSchema);

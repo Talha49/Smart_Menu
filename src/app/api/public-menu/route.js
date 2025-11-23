@@ -51,6 +51,8 @@ export async function GET(request) {
         logoUrl: restaurant.logoUrl,
         brandColor: restaurant.brandColor,
         plan: restaurant.plan || 'free',
+        menuSettings: restaurant.menuSettings || {},
+        tvSettings: restaurant.tvSettings || {},
       },
       items: groupedByCategory,
     });

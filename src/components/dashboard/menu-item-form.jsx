@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toastSuccess, toastError } from '@/lib/toast';
+import MenuItemImageUpload from './MenuItemImageUpload';
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -23,6 +24,7 @@ export default function MenuItemForm({ item, onSaved }) {
     price: '',
     description: '',
     category: 'Uncategorized',
+    imageUrl: '',
   });
   const [loading, setLoading] = useState(false);
   
@@ -40,6 +42,7 @@ export default function MenuItemForm({ item, onSaved }) {
         price: item.price,
         description: item.description,
         category: item.category,
+        imageUrl: item.imageUrl || '',
       });
     }
   }, [item]);
@@ -94,7 +97,7 @@ export default function MenuItemForm({ item, onSaved }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5 overflow-y-auto">
       <div className="space-y-2">
         <label htmlFor="name" className="block text-sm font-semibold text-gray-700">Item Name</label>
         <Input 
@@ -137,6 +140,12 @@ export default function MenuItemForm({ item, onSaved }) {
           className="h-11"
         />
       </div>
+
+      <MenuItemImageUpload
+        imageUrl={formData.imageUrl}
+        onImageChange={(url) => setFormData((prev) => ({ ...prev, imageUrl: url }))}
+        onRemove={() => setFormData((prev) => ({ ...prev, imageUrl: '' }))}
+      />
 
       <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700">Category</label>

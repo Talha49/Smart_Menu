@@ -14,6 +14,10 @@ const menuItemSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    imageUrl: {
+      type: String,
+      default: '',
+    },
     category: {
       type: String,
       default: 'Uncategorized',

@@ -263,7 +263,437 @@
 
 ---
 
-### 🎯 **MILESTONE 3: Pro Tier Features** (Priority: HIGH)
+### ✅ **MILESTONE 3: Pro Tier Features** - **COMPLETED** 🎉
+
+#### Task 3.1: Mock Payment System Setup ✅
+- ✅ Created mock payment API routes
+- ✅ Created mock checkout page with Stripe-like UI
+- ✅ Payment success handler updates Restaurant.plan to "pro"
+- ✅ Zustand store integration for plan updates
+- ✅ NextAuth session refresh on payment success
+
+#### Task 3.2: Settings Page (Branding) ✅
+- ✅ Created `/dashboard/settings` page with tabs
+- ✅ Logo upload using Vercel Blob
+- ✅ Brand color picker with live preview
+- ✅ API routes for logo and brand color updates
+- ✅ Pro plan validation
+
+#### Task 3.3: Menu Customization System ✅
+- ✅ Updated Restaurant model with `menuSettings` JSON object
+- ✅ Created MenuSettingsContext for state management
+- ✅ ColorControls component (6 color pickers)
+- ✅ TypographyControls component (font family, sizes, weights)
+- ✅ LayoutControls component (card style, grid, spacing, toggles)
+- ✅ MenuPreview component with live preview
+- ✅ TVPreview component with TV-specific preview
+- ✅ API route to save menuSettings
+
+#### Task 3.4: Menu Renderer ✅
+- ✅ Updated public-menu API to include menuSettings
+- ✅ Applied all settings to `/menu/[restaurantId]` page
+- ✅ Applied all settings to `/tv/[restaurantId]` page
+- ✅ Created menu-styles utility functions
+- ✅ Watermark logic (hidden for Pro users)
+
+#### Task 3.5: Testing & Polish ✅
+- ✅ Lazy loading for heavy components
+- ✅ Memoization for performance optimization
+- ✅ Code splitting for better bundle sizes
+- ✅ Memoized style calculations in public pages
+
+---
+
+### 🚀 **UPDATED MILESTONE 3: Advanced Customization & Professional Design** (Priority: CRITICAL)
+
+**Goal:** Transform the settings page and menu customization into a professional, enterprise-level SaaS experience with full design control, real menu item previews, and template system.
+
+---
+
+#### **Task 3.6: Settings Page Redesign** (Priority: HIGH)
+
+**Current Issues:**
+- ❌ Congested layout, controls overlapping
+- ❌ Menu and TV tabs not properly formatted
+- ❌ Not utilizing full screen space
+- ❌ Poor visual hierarchy
+
+**New Design Requirements:**
+- ✅ Full-screen left/right split view (professional layout)
+- ✅ Left panel: Controls (scrollable, organized sections)
+- ✅ Right panel: Live preview (sticky, full-height)
+- ✅ Clean, spacious design with proper spacing
+- ✅ Professional UI with modern aesthetics
+- ✅ Responsive design (mobile-friendly)
+
+**Implementation:**
+- [ ] Redesign settings page layout (full-screen split view)
+- [ ] Create organized control sections (grouped by feature)
+- [ ] Implement sticky preview panel
+- [ ] Add proper spacing and visual hierarchy
+- [ ] Use professional color scheme and typography
+- [ ] Add smooth transitions and animations
+- [ ] Test responsive behavior
+
+**Libraries to Consider:**
+- `react-resizable-panels` (already installed) - For resizable panels
+- `framer-motion` - For smooth animations (if needed)
+- shadcn/ui components - For professional UI elements
+
+---
+
+#### **Task 3.7: Real Menu Item Preview System** (Priority: HIGH)
+
+**Current Issues:**
+- ❌ Preview uses static mock data
+- ❌ No way to see actual menu items in preview
+- ❌ Preview doesn't reflect real menu structure
+
+**New Requirements:**
+- ✅ Fetch real menu items from database
+- ✅ Display actual menu items in preview
+- ✅ Show items grouped by categories (sections)
+- ✅ Dynamic preview that updates with real data
+- ✅ Support for multiple sections (Japanese, Chinese, Korean, etc.)
+- ✅ Real-time preview updates when menu items change
+
+**Implementation:**
+- [ ] Create API route to fetch menu items for preview
+- [ ] Update MenuPreview to fetch and display real items
+- [ ] Update TVPreview to fetch and display real items
+- [ ] Group items by categories dynamically
+- [ ] Add section/category headers in preview
+- [ ] Implement real-time updates (SWR polling)
+- [ ] Handle empty states (no items, no categories)
+- [ ] Test with various menu structures
+
+**Database Updates:**
+- [ ] Ensure MenuItem model supports all needed fields
+- [ ] Add `imageUrl` field to MenuItem model (for item images)
+- [ ] Add `section` field to MenuItem model (for multi-section menus)
+
+---
+
+#### **Task 3.8: Advanced Customization Options** (Priority: HIGH)
+
+**New Customization Features:**
+- ✅ **Headings:** Customize heading styles, sizes, colors, weights
+- ✅ **Bold/Italic:** Text formatting options
+- ✅ **Bullet Points:** Custom bullet styles and colors
+- ✅ **Colors:** Full color palette control (background, text, accent, cards, borders, prices)
+- ✅ **Images:** Upload and manage item images
+- ✅ **Price Display:** Customize price formatting, position, style
+- ✅ **Fonts:** Working font family selection (Google Fonts integration)
+- ✅ **Sections:** Multi-section menu support (Japanese, Chinese, Korean, etc.)
+- ✅ **Item Cards:** Customize card styles, borders, shadows, spacing
+
+**Implementation:**
+- [ ] Create HeadingControls component (size, weight, color, style)
+- [ ] Create TextFormatControls component (bold, italic, underline)
+- [ ] Create BulletPointControls component (style, color, size)
+- [ ] Enhance ColorControls (already exists, add more options)
+- [ ] Create ImageUploadControls component (per-item images)
+- [ ] Create PriceDisplayControls component (format, position, style)
+- [ ] Integrate Google Fonts API (for working font selection)
+- [ ] Create SectionManagement component (add/edit/delete sections)
+- [ ] Create CardStyleControls component (borders, shadows, spacing)
+- [ ] Update MenuSettings schema to include all new options
+- [ ] Update preview components to apply all customizations
+
+**Libraries to Consider:**
+- `@react-google-fonts` or `next/font/google` - For Google Fonts
+- `react-dropzone` - For image uploads
+- `react-image-crop` - For image cropping
+- `sharp` (server-side) - For image processing
+- `remove.bg` API or `@tensorflow/tfjs` - For background removal (optional)
+
+---
+
+#### **Task 3.9: Menu Item Image Management** (Priority: MEDIUM)
+
+**Requirements:**
+- ✅ Upload images for individual menu items
+- ✅ Automatic background removal (PNG with transparent background)
+- ✅ Image cropping and resizing
+- ✅ Image optimization for web
+- ✅ Preview images in menu items
+- ✅ Display images in public menu pages
+
+**Implementation:**
+- [ ] Add `imageUrl` field to MenuItem model
+- [ ] Create image upload component (drag & drop)
+- [ ] Integrate background removal service (remove.bg API or client-side solution)
+- [ ] Add image cropping functionality
+- [ ] Create image optimization pipeline (resize, compress)
+- [ ] Update menu item form to include image upload
+- [ ] Display images in menu item cards (dashboard)
+- [ ] Display images in public menu pages
+- [ ] Display images in preview
+- [ ] Handle image deletion
+
+**Libraries to Consider:**
+- `remove.bg` API - For background removal (free tier: 50 images/month)
+- `react-dropzone` - For drag & drop uploads
+- `react-image-crop` - For image cropping
+- `sharp` (server-side) - For image processing
+- `@vercel/blob` (already installed) - For image storage
+
+---
+
+#### **Task 3.10: Template System** (Priority: MEDIUM)
+
+**Requirements:**
+- ✅ Dynamic template creation system
+- ✅ Save custom templates
+- ✅ Load and apply templates
+- ✅ Template preview
+- ✅ Multiple template options
+- ✅ Template sharing (future)
+
+**Implementation:**
+- [ ] Create Template model in database
+- [ ] Design template data structure (JSON schema)
+- [ ] Create template builder component
+- [ ] Create template selector component
+- [ ] Create template save/load functionality
+- [ ] Create template preview system
+- [ ] Add default templates (3-5 professional templates)
+- [ ] Allow users to create custom templates
+- [ ] Template management UI (save, delete, rename)
+- [ ] Apply template to menu settings
+
+**Database Schema:**
+```javascript
+Template Model:
+- name: String (required)
+- description: String
+- thumbnail: String (URL)
+- settings: Object (menuSettings JSON)
+- isDefault: Boolean (default: false)
+- restaurant: ObjectId (ref: 'Restaurant') // null for default templates
+- createdAt: Date
+- updatedAt: Date
+```
+
+---
+
+#### **Task 3.11: Mobile-Optimized Design** (Priority: HIGH)
+
+**Requirements:**
+- ✅ QR menu must work perfectly on mobile devices
+- ✅ Responsive design for all screen sizes
+- ✅ Touch-friendly interactions
+- ✅ Fast loading on mobile networks
+- ✅ Optimized images for mobile
+- ✅ Proper viewport settings
+
+**Implementation:**
+- [ ] Audit mobile menu page performance
+- [ ] Optimize images for mobile (lazy loading, WebP format)
+- [ ] Test on various mobile devices
+- [ ] Ensure touch targets are adequate size
+- [ ] Optimize font loading for mobile
+- [ ] Add mobile-specific optimizations
+- [ ] Test QR code scanning flow
+- [ ] Ensure fast initial load time
+
+---
+
+#### **Task 3.12: User Experience Enhancements** (Priority: MEDIUM)
+
+**Owner/Manager Dashboard:**
+- ✅ Intuitive settings page navigation
+- ✅ Clear visual feedback for changes
+- ✅ Easy-to-use controls
+- ✅ Helpful tooltips and descriptions
+- ✅ Undo/redo functionality (future)
+- ✅ Save drafts functionality
+
+**Customer Menu Experience:**
+- ✅ Fast loading times
+- ✅ Beautiful, readable menu design
+- ✅ Easy navigation between sections
+- ✅ Search functionality (future)
+- ✅ Filter by dietary restrictions (future)
+
+**Implementation:**
+- [ ] Add tooltips to all customization controls
+- [ ] Add helpful descriptions for each setting
+- [ ] Implement visual feedback (loading states, success messages)
+- [ ] Add keyboard shortcuts for power users
+- [ ] Create user guide/tutorial (future)
+- [ ] Add help documentation
+
+---
+
+#### **Task 3.13: Professional UI Libraries Integration** (Priority: LOW)
+
+**Status:** ⏸️ **ON HOLD** - Replaced by Settings Page Redesign
+
+---
+
+### 🎨 **TASK 3.14: Settings Page Complete Redesign** (Priority: CRITICAL)
+
+**Current Issues:**
+- ❌ Color picker modals opening behind buttons (z-index issues)
+- ❌ Dropdowns appearing behind components
+- ❌ Modals opening at wrong positions (top/middle instead of centered)
+- ❌ "Add Section" functionality not working
+- ❌ Layout too congested and cluttered
+- ❌ All features visible at once (overwhelming)
+- ❌ Not user-friendly
+
+**New Design Strategy:**
+- ✅ **Sidebar Navigation System** - Clean, collapsible sidebar instead of tabs
+- ✅ **Progressive Disclosure** - Only show active section's controls
+- ✅ **Real Device Previews** - Separate Mobile and TV previews (not combined)
+- ✅ **Fixed Z-Index Issues** - Portal-based modals with proper z-index hierarchy
+- ✅ **Spacious Layout** - Generous padding, no clutter
+- ✅ **AceternityUI Components** - Professional animations and components
+
+**Implementation Plan:**
+1. Create SettingsSidebar component (fixed left navigation)
+2. Restructure main page with sidebar layout
+3. Fix all z-index issues (color picker, dropdowns, modals)
+4. Create separate sections: Branding, Menu Design, TV Design
+5. Implement real MobilePreview and TVPreview components
+6. Fix "Add Section" functionality
+7. Add smooth animations and transitions
+
+**Files to Create/Modify:**
+- `src/app/dashboard/settings/page.jsx` - Complete restructure
+- `src/components/settings/SettingsSidebar.jsx` - New sidebar component
+- `src/components/settings/SettingsContent.jsx` - Main content wrapper
+- `src/components/settings/ColorPickerModal.jsx` - Fixed z-index color picker
+- `src/components/settings/MobilePreview.jsx` - Real mobile preview
+- `src/components/settings/TVPreview.jsx` - Real TV preview
+- Fix all existing control components (z-index fixes)
+
+**Status:** 📋 **PLANNED** - Ready for implementation
+
+---
+
+#### **Task 3.13: Professional UI Libraries Integration** (Priority: LOW)
+
+**Considerations:**
+- ✅ Use ui.aceternity free components if beneficial
+- ✅ Add professional animations
+- ✅ Enhance visual appeal
+- ✅ Maintain performance
+
+**Implementation:**
+- [ ] Research ui.aceternity components
+- [ ] Identify useful free components
+- [ ] Integrate selected components
+- [ ] Test performance impact
+- [ ] Ensure accessibility
+
+---
+
+### **📚 Required Libraries & Dependencies**
+
+**New Libraries to Install:**
+```json
+{
+  "react-dropzone": "^14.2.3",           // Image uploads
+  "react-image-crop": "^10.1.8",         // Image cropping
+  "sharp": "^0.33.0",                    // Image processing (server-side)
+  "@tensorflow/tfjs": "^4.15.0",         // Background removal (optional, client-side)
+  "next-font": "built-in",                // Google Fonts (Next.js built-in)
+  "framer-motion": "^11.0.0"             // Animations (optional)
+}
+```
+
+**External Services:**
+- **remove.bg API** - Background removal (free tier: 50 images/month)
+  - Alternative: Client-side solution with TensorFlow.js
+  - Alternative: Server-side solution with Python rembg
+
+**Already Installed (Can Use):**
+- `react-resizable-panels` - For resizable panels
+- `@vercel/blob` - For image storage
+- `react-color` - For color pickers
+- `shadcn/ui` - For UI components
+- `lucide-react` - For icons
+
+---
+
+### **🗄️ Database Schema Updates**
+
+**MenuItem Model Updates:**
+```javascript
+{
+  // Existing fields...
+  imageUrl: String,           // URL to item image (Vercel Blob)
+  section: String,             // Menu section (Japanese, Chinese, etc.)
+  shortDescription: String,    // Brief description for preview
+  // ... existing fields
+}
+```
+
+**Template Model (New):**
+```javascript
+{
+  name: String (required),
+  description: String,
+  thumbnail: String,
+  settings: Object (menuSettings JSON),
+  isDefault: Boolean (default: false),
+  restaurant: ObjectId (ref: 'Restaurant'), // null for default templates
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+**Restaurant Model Updates:**
+```javascript
+{
+  // Existing fields...
+  menuSettings: Object,        // Already exists
+  activeTemplate: ObjectId (ref: 'Template'), // Current template
+  // ... existing fields
+}
+```
+
+---
+
+### **📋 Implementation Phases**
+
+**Phase 1: Foundation (Week 1)**
+1. Settings page redesign (full-screen layout)
+2. Real menu item preview system
+3. Database schema updates
+
+**Phase 2: Core Customization (Week 2)**
+1. Advanced customization controls
+2. Google Fonts integration
+3. Section management
+4. Image upload system
+
+**Phase 3: Advanced Features (Week 3)**
+1. Background removal integration
+2. Template system
+3. Mobile optimizations
+4. UX enhancements
+
+**Phase 4: Polish & Testing (Week 4)**
+1. Performance optimization
+2. Cross-device testing
+3. User experience refinement
+4. Documentation
+
+---
+
+### **🎯 Success Criteria**
+
+- ✅ Settings page is professional, spacious, and easy to use
+- ✅ Preview shows real menu items dynamically
+- ✅ All customization options work correctly
+- ✅ Images can be uploaded with background removal
+- ✅ Template system allows saving/loading designs
+- ✅ Mobile experience is excellent
+- ✅ Performance is optimized
+- ✅ User experience is intuitive and professional
 
 #### Task 3.1: Stripe Integration Setup
 - [ ] Install Stripe SDK
