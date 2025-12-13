@@ -51,6 +51,12 @@ export async function PUT(req, { params }) {
   }
 }
 
+import { del } from '@vercel/blob';
+
+// ... (existing imports)
+
+// ... (GET and PUT handlers remain same)
+
 export async function DELETE(req, { params }) {
   try {
     const session = await auth();
@@ -62,9 +68,23 @@ export async function DELETE(req, { params }) {
     const restaurant = await Restaurant.findOne({ owner: session.user.id });
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
-    const deletedItem = await MenuItem.findOneAndDelete({ _id: id, restaurant: restaurant._id });
+    // Find the item first to get the image URL
+    const itemToDelete = await MenuItem.findOne({ _id: id, restaurant: restaurant._id });
+    
+    if (!itemToDelete) return NextResponse.json({ message: "Item not found or unauthorized" }, { status: 404 });
 
-    if (!deletedItem) return NextResponse.json({ message: "Item not found or unauthorized" }, { status: 404 });
+    // Attempt to delete image from Blob storage if it exists
+    if (itemToDelete.imageUrl) {
+        try {
+            // del needs the full URL
+            await del(itemToDelete.imageUrl);
+        } catch (blobError) {
+            console.error("Failed to delete blob image:", blobError);
+            // We verify continued deletion of the item even if image delete fails, to avoid zombie records.
+        }
+    }
+
+    await MenuItem.deleteOne({ _id: id });
 
     return NextResponse.json({ message: "Item deleted successfully" });
   } catch (error) {
