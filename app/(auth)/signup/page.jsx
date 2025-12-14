@@ -15,6 +15,37 @@ import { AuthService } from "@/services/authService";
 export default function SignupPage() {
     const router = useRouter();
 
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+    });
+    const [strength, setStrength] = useState(0);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+
+        if (name === 'password') {
+            // Simple strength calc
+            let s = 0;
+            if (value.length > 6) s += 25;
+            if (value.length > 10) s += 25;
+            if (/[A-Z]/.test(value)) s += 25;
+            if (/[0-9!@#$%^&*]/.test(value)) s += 25;
+            setStrength(Math.min(s, 100));
+        }
+    };
+
+    const getStrengthColor = (s) => {
+        if (s <= 25) return "bg-red-500";
+        if (s <= 50) return "bg-orange-500";
+        if (s <= 75) return "bg-yellow-500";
+        return "bg-green-500";
+    };
+
 
     const handleSubmit = async (e) => {
         try {
