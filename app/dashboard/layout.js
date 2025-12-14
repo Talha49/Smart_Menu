@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 import { cn } from "@/lib/utils";
+import { ImageUploadProvider } from "@/context/ImageUploadContext";
 
 export default function DashboardLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function DashboardLayout({ children }) {
   }, [fetchRestaurant]);
 
   return (
+    <ImageUploadProvider>
     <div className="flex h-screen overflow-hidden bg-muted/20">
       {/* Desktop Sidebar */}
       <Sidebar className="hidden md:flex w-64 flex-shrink-0" />
@@ -46,5 +48,6 @@ export default function DashboardLayout({ children }) {
         </main>
       </div>
     </div>
+    </ImageUploadProvider>
   );
 }

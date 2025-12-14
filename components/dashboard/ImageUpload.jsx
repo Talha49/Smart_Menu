@@ -3,14 +3,18 @@
 import { useState, useRef } from "react";
 import { upload } from "@vercel/blob/client";
 import { Button } from "@/components/ui/Button";
-import { ImagePlus, X, Loader2, UploadCloud } from "lucide-react";
-import Image from "next/image";
+import { X, Loader2, UploadCloud } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import { useImageUpload } from "@/context/ImageUploadContext";
+import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 
 export function ImageUpload({ value, onChange, disabled }) {
+    const { requestCrop, compressImage } = useImageUpload();
+    const { restaurant } = useRestaurantStore();
     const [isLoading, setIsLoading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
+    const [aiUsed, setAiUsed] = useState(false);
     const inputRef = useRef(null);
 
     const handleFile = async (file) => {
@@ -23,21 +27,33 @@ export function ImageUpload({ value, onChange, disabled }) {
             return;
         }
 
-        // Validate size (max 4.5MB to be safe for serverless/edge limits if applicable, though Blob handles large)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error("Image must be smaller than 5MB");
-            return;
-        }
-
-        setIsLoading(true);
         try {
-            const newBlob = await upload(file.name, file, {
+            // 1. Crop (User interaction)
+            // This opens the modal via context and waits for user to click "Done"
+            const croppedBlob = await requestCrop(file);
+            if (!croppedBlob) return; // User cancelled
+
+            setIsLoading(true);
+            const toastId = toast.loading("Optimizing image...");
+
+            // 2. Compress
+            const compressedFile = await compressImage(croppedBlob);
+
+            // 3. Upload to Vercel Blob (Folder: restaurantId/filename)
+            // Use restaurantId slug for folder, fallback to 'uploads' if missing
+            const folder = restaurant?.restaurantId || 'uploads';
+            // Clean filename
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
+            const filename = `${folder}/${Date.now()}-${cleanName}`;
+
+            const newBlob = await upload(filename, compressedFile, {
                 access: 'public',
                 handleUploadUrl: '/api/upload',
             });
 
             onChange(newBlob.url);
-            toast.success("Image uploaded");
+            setAiUsed(false); // Reset AI usage on new upload
+            toast.success("Image uploaded", { id: toastId });
         } catch (error) {
             console.error(error);
             toast.error("Upload failed");
@@ -74,8 +90,21 @@ export function ImageUpload({ value, onChange, disabled }) {
         }
     };
 
-    const handleRemove = () => {
+    const handleRemove = async () => {
+        if (value) {
+            try {
+                await fetch('/api/upload/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: value }),
+                });
+            } catch (e) {
+                console.error("Failed to delete blob:", e);
+                // Continue to clear UI even if delete fails
+            }
+        }
         onChange("");
+        setAiUsed(false);
     };
 
     return (
@@ -127,63 +156,69 @@ export function ImageUpload({ value, onChange, disabled }) {
                         </div>
 
                         {/* Magic Remove BG Button */}
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-max opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <Button
-                                onClick={async (e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
+                        {!aiUsed && (
+                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-max opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <Button
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
 
-                                    if (isLoading) return;
-                                    setIsLoading(true);
-                                    const toastId = toast.loading("Removing background via AI...");
+                                        if (isLoading) return;
+                                        setIsLoading(true);
+                                        const toastId = toast.loading("Removing background via AI...");
 
-                                    try {
-                                        // 1. Fetch current image as blob
-                                        const response = await fetch(value);
-                                        const blob = await response.blob();
+                                        try {
+                                            // 1. Fetch current image as blob
+                                            const response = await fetch(value);
+                                            const blob = await response.blob();
 
-                                        // 2. Send to Python API
-                                        const formData = new FormData();
-                                        formData.append('file', blob, 'image.png');
+                                            // 2. Send to Python API
+                                            const formData = new FormData();
+                                            formData.append('file', blob, 'image.png');
 
-                                        const apiRes = await fetch('/api/remove-background', {
-                                            method: 'POST',
-                                            body: formData
-                                        });
+                                            const apiRes = await fetch('/api/remove-background', {
+                                                method: 'POST',
+                                                body: formData
+                                            });
 
-                                        if (!apiRes.ok) throw new Error("AI Processing Failed");
+                                            if (!apiRes.ok) throw new Error("AI Processing Failed");
 
-                                        const newBlob = await apiRes.blob();
+                                            const newBlob = await apiRes.blob();
 
-                                        // 3. Upload processed image back to storage
-                                        // We upload as a new file
-                                        toast.loading("Uploading processed image...", { id: toastId });
+                                            // 3. Upload processed image back to storage
+                                            // Use same folder structure
+                                            const folder = restaurant?.restaurantId || 'uploads';
+                                            const filename = `${folder}/no-bg-${Date.now()}.png`;
 
-                                        const uploadedBlob = await upload(`no-bg-${Date.now()}.png`, newBlob, {
-                                            access: 'public',
-                                            handleUploadUrl: '/api/upload',
-                                        });
+                                            toast.loading("Uploading processed image...", { id: toastId });
 
-                                        onChange(uploadedBlob.url);
-                                        toast.success("Background Removed!", { id: toastId });
+                                            const uploadedBlob = await upload(filename, newBlob, {
+                                                access: 'public',
+                                                handleUploadUrl: '/api/upload',
+                                            });
 
-                                    } catch (error) {
-                                        console.error(error);
-                                        toast.error("Failed to remove background", { id: toastId });
-                                    } finally {
-                                        setIsLoading(false);
-                                    }
-                                }}
-                                disabled={disabled || isLoading}
-                                variant="secondary"
-                                size="sm"
-                                className="h-8 text-xs bg-white/90 hover:bg-white text-black shadow-lg backdrop-blur-sm gap-2"
-                                type="button"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M9 3v4" /><path d="M7 3v4" /><path d="M11 3v4" /></svg>
-                                AI Remove BG
-                            </Button>
-                        </div>
+                                            onChange(uploadedBlob.url);
+                                            setAiUsed(true); // Mark AI as used
+                                            toast.success("Background Removed!", { id: toastId });
+
+                                        } catch (error) {
+                                            console.error(error);
+                                            toast.error("Failed to remove background", { id: toastId });
+                                        } finally {
+                                            setIsLoading(false);
+                                        }
+                                    }}
+                                    disabled={disabled || isLoading}
+                                    variant="secondary"
+                                    size="sm"
+                                    className="h-8 text-xs bg-white/90 hover:bg-white text-black shadow-lg backdrop-blur-sm gap-2"
+                                    type="button"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M9 3v4" /><path d="M7 3v4" /><path d="M11 3v4" /></svg>
+                                    AI Remove BG
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4" onClick={() => inputRef.current?.click()}>
