@@ -1,158 +1,93 @@
 "use client";
 
-import { useState } from "react";
-import useSWR from "swr";
+import { useEffect, useState, Suspense, lazy } from "react";
+import { useMenuStore } from "@/hooks/use-menu-store";
+import { useCategoryStore } from "@/hooks/use-category-store";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { MenuItemCard } from "@/components/dashboard/MenuItemCard";
-import { MenuItemModal } from "@/components/dashboard/MenuItemModal";
-import { Plus, Search, Filter, Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Plus } from "lucide-react";
+import { MenuItemsTab } from "./MenuItemsTab";
+import { CategoriesTab } from "./CategoriesTab";
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
+// Lazy load the modal for better initial load performance
+const MenuItemModal = lazy(() => import("@/components/dashboard/MenuItemModal").then(module => ({ default: module.MenuItemModal })));
 
-export default function MenuPage() {
-    const [search, setSearch] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("all");
+export default function UnifiedMenuPage() {
+    const { fetchItems } = useMenuStore();
+    const { fetchCategories } = useCategoryStore();
+
+    // Local State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+    const [activeTab, setActiveTab] = useState("items");
 
-    // Construct URL query
-    const queryParams = new URLSearchParams();
-    if (selectedCategory !== "all") queryParams.append("category", selectedCategory);
-    if (search) queryParams.append("search", search);
+    // Initial Fetch
+    useEffect(() => {
+        fetchItems();
+        fetchCategories();
+    }, []);
 
-    const { data, error, isLoading, mutate } = useSWR(`/api/menu?${queryParams.toString()}`, fetcher);
-
-    const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to delete this item?")) return;
-
-        try {
-            const res = await fetch(`/api/menu/${id}`, { method: "DELETE" });
-            if (!res.ok) throw new Error("Failed to delete");
-
-            toast.success("Item deleted");
-            mutate(); // Refresh list
-        } catch (error) {
-            toast.error("Could not delete item");
-        }
-    };
-
-    const handleToggle = async (id, isAvailable) => {
-        const res = await fetch(`/api/menu/${id}/availability`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isAvailable })
-        });
-        if (!res.ok) throw new Error("Failed");
-        mutate(); // Revalidate to sync state eventually
-    };
-
-    const handleCreate = () => {
+    // Handlers
+    const handleCreateItem = () => {
         setEditingItem(null);
         setIsModalOpen(true);
     };
 
-    const handleEdit = (item) => {
+    const handleEditItem = (item) => {
         setEditingItem(item);
         setIsModalOpen(true);
     };
 
-    const handleModalClose = () => {
-        setIsModalOpen(false);
-        setEditingItem(null);
+    const handleRefresh = () => {
+        fetchItems();
     };
 
-    // Unique categories from data or default list
-    // For simplicity, we'll keep static for now or extract from items
-    const categories = ["Starters", "Mains", "Desserts", "Drinks"];
-
     return (
-        <div className="space-y-6">
-            <MenuItemModal
-                isOpen={isModalOpen}
-                onClose={handleModalClose}
-                initialData={editingItem}
-                onRefresh={mutate}
-            />
-
-            {/* Header & Actions */}
+        <div className="space-y-8 animate-fade-in">
+            {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-display font-bold tracking-tight">Menu Items</h1>
-                    <p className="text-muted-foreground">Manage your food and drink offerings.</p>
+                    <h1 className="text-4xl font-display font-bold tracking-tight text-foreground">Menu Management</h1>
+                    <p className="text-muted-foreground mt-1">Organize your menu, categories, and availability.</p>
                 </div>
-                <Button onClick={handleCreate} className="w-full sm:w-auto gap-2 shadow-lg shadow-primary/20">
-                    <Plus className="h-4 w-4" /> Add Item
-                </Button>
+                {activeTab === "items" && (
+                    <Button onClick={handleCreateItem} size="lg" className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
+                        <Plus className="h-5 w-5 mr-2" /> Add New Item
+                    </Button>
+                )}
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-card/50 p-4 rounded-xl border backdrop-blur-sm">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search items..."
-                        className="pl-9 bg-background"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full sm:w-[400px] grid-cols-2">
+                    <TabsTrigger value="items">Menu Items</TabsTrigger>
+                    <TabsTrigger value="categories">Categories</TabsTrigger>
+                </TabsList>
+
+                {/* --- MENU ITEMS TAB --- */}
+                <TabsContent value="items">
+                    <MenuItemsTab
+                        onCreateItem={handleCreateItem}
+                        onEditItem={handleEditItem}
                     />
-                </div>
-                <div className="sm:w-48">
-                    <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <select
-                            className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 appearance-none cursor-pointer"
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                        >
-                            <option value="all">All Categories</option>
-                            {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-            </div>
+                </TabsContent>
 
-            {/* Grid Content */}
-            {isLoading ? (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="h-80 rounded-xl bg-muted/20 animate-pulse" />
-                    ))}
-                </div>
-            ) : error ? (
-                <div className="p-12 text-center text-destructive bg-destructive/10 rounded-xl">
-                    Failed to load menu items.
-                </div>
-            ) : data?.items?.length === 0 ? (
-                <div className="p-12 text-center border-2 border-dashed rounded-xl space-y-4 bg-muted/5">
-                    <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        <Plus className="h-6 w-6" />
-                    </div>
-                    <h3 className="font-semibold text-lg">No items found</h3>
-                    <p className="text-muted-foreground max-w-sm mx-auto">
-                        {search ? "Try adjusting your search or filters." : "Get started by creating your first menu item."}
-                    </p>
-                    {!search && (
-                        <Button variant="outline" onClick={handleCreate}>Create Item</Button>
-                    )}
-                </div>
-            ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-in-up">
-                    {data.items.map((item) => (
-                        <MenuItemCard
-                            key={item._id}
-                            item={item}
-                            onDelete={handleDelete}
-                            onToggleAvailability={handleToggle}
-                            onEdit={handleEdit}
-                        />
-                    ))}
-                </div>
-            )}
+                {/* --- CATEGORIES TAB --- */}
+                <TabsContent value="categories">
+                    <CategoriesTab />
+                </TabsContent>
+            </Tabs>
+
+            {/* Lazy Loaded Modal */}
+            <Suspense fallback={null}>
+                {isModalOpen && (
+                    <MenuItemModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        initialData={editingItem}
+                        onRefresh={handleRefresh}
+                    />
+                )}
+            </Suspense>
         </div>
     );
 }

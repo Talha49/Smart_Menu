@@ -17,8 +17,7 @@ import { Button } from "@/components/ui/Button";
 
 const sidebarLinks = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Menu Items", href: "/dashboard/menu", icon: UtensilsCrossed },
-    { name: "Categories", href: "/dashboard/categories", icon: Menu },
+    { name: "Menu Management", href: "/dashboard/menu", icon: UtensilsCrossed },
     { name: "Branding", href: "/dashboard/branding", icon: Settings },
 ];
 

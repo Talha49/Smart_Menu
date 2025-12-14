@@ -8,6 +8,27 @@ import { ImageUpload } from "@/components/dashboard/ImageUpload";
 import { useFormStatus } from "react-dom"; // N/A using client form state
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useCategoryStore } from "@/hooks/use-category-store";
+
+function CategorySelect({ value, onChange }) {
+    const { categories } = useCategoryStore();
+
+    return (
+        <select
+            className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+        >
+            <option value="" disabled>Select a category</option>
+            {/* Allow keeping existing value even if not in current list (edge case) */}
+            {!categories.some(c => c.name === value) && value && <option value={value}>{value}</option>}
+
+            {categories.map(cat => (
+                <option key={cat._id} value={cat.name}>{cat.name}</option>
+            ))}
+        </select>
+    );
+}
 
 export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
     const [loading, setLoading] = useState(false);
@@ -32,7 +53,7 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
                 name: "",
                 price: "",
                 description: "",
-                category: "Mains",
+                category: "",
                 imageUrl: "",
                 isAvailable: true
             });
@@ -124,17 +145,10 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
 
                 <div className="space-y-2">
                     <label className="text-sm font-medium ml-1">Category</label>
-                    <select
-                        name="category"
-                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    <CategorySelect
                         value={formData.category}
-                        onChange={handleChange}
-                    >
-                        <option value="Starters">Starters</option>
-                        <option value="Mains">Mains</option>
-                        <option value="Desserts">Desserts</option>
-                        <option value="Drinks">Drinks</option>
-                    </select>
+                        onChange={(val) => setFormData({ ...formData, category: val })}
+                    />
                 </div>
 
                 <div className="space-y-2">

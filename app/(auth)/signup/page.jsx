@@ -10,68 +10,20 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import toast from "react-hot-toast";
 import { Lock, Mail, User, ArrowRight, CheckCircle2 } from "lucide-react";
 
+import { AuthService } from "@/services/authService";
+
 export default function SignupPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-    });
 
-    const handleChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }));
-    };
-
-    const calculatePasswordStrength = (password) => {
-        let strength = 0;
-        if (password.length > 5) strength += 20;
-        if (password.length > 8) strength += 20;
-        if (/[A-Z]/.test(password)) strength += 20;
-        if (/[0-9]/.test(password)) strength += 20;
-        if (/[^A-Za-z0-9]/.test(password)) strength += 20;
-        return strength;
-    };
-
-    const strength = calculatePasswordStrength(formData.password);
-
-    const getStrengthColor = (s) => {
-        if (s <= 40) return "bg-red-500";
-        if (s <= 80) return "bg-yellow-500";
-        return "bg-green-500";
-    };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (formData.password !== formData.confirmPassword) {
-            toast.error("Passwords do not match");
-            return;
-        }
-
-        setLoading(true);
-
         try {
             // 1. Register User
-            const res = await fetch("/api/auth/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password,
-                }),
+            await AuthService.signup({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Registration failed");
-            }
 
             // 2. Auto Login
             const loginResult = await signIn("credentials", {
@@ -92,7 +44,7 @@ export default function SignupPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">

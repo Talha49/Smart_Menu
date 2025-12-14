@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -14,6 +14,11 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }) {
     // Local state for optimistic UI updates on availability
     const [isAvailable, setIsAvailable] = useState(item.isAvailable);
     const [isToggling, setIsToggling] = useState(false);
+
+    // Sync local state when parent item updates (e.g. after re-fetch)
+    useEffect(() => {
+        setIsAvailable(item.isAvailable);
+    }, [item.isAvailable]);
 
     const handleToggle = async (checked) => {
         setIsAvailable(checked); // Optimistic update

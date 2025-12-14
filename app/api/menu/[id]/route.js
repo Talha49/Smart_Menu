@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import MenuItem from "@/models/MenuItem";
 import Restaurant from "@/models/Restaurant";
 import { MenuItemSchema } from "@/lib/validations";
+import { del } from '@vercel/blob';
 
 export async function GET(req, { params }) {
   try {
@@ -51,11 +52,7 @@ export async function PUT(req, { params }) {
   }
 }
 
-import { del } from '@vercel/blob';
 
-// ... (existing imports)
-
-// ... (GET and PUT handlers remain same)
 
 export async function DELETE(req, { params }) {
   try {

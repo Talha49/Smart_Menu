@@ -10,7 +10,7 @@ const Input = React.forwardRef(
         const inputType = type === "password" && showPassword ? "text" : type;
 
         return (
-            <div className="relative w-full">
+            <div className="relative w-full ">
                 <div className="relative">
                     {startIcon && (
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
@@ -21,7 +21,8 @@ const Input = React.forwardRef(
                     <input
                         type={inputType}
                         className={cn(
-                            "flex h-12 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-transparent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 peer",
+                            "flex h-12 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 peer",
+                            label ? "placeholder:text-transparent" : "placeholder:text-muted-foreground",
                             startIcon && "pl-10",
                             endIcon && "pr-10",
                             type === "password" && "pr-10",
