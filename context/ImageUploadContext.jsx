@@ -6,12 +6,52 @@ import imageCompression from "browser-image-compression";
 
 const ImageUploadContext = createContext(null);
 
+// HELPER FUNCTIONS (Outside Component)
+const createImage = (url) =>
+    new Promise((resolve, reject) => {
+        const image = new Image();
+        image.addEventListener('load', () => resolve(image));
+        image.addEventListener('error', (error) => reject(error));
+        image.setAttribute('crossOrigin', 'anonymous');
+        image.src = url;
+    });
+
+const getCroppedImg = async (imageSrc, pixelCrop) => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) return null;
+
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+    );
+
+    return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+            resolve(blob);
+        }, 'image/jpeg', 1); // high quality intermediate
+    });
+};
+
 export function ImageUploadProvider({ children }) {
     const [cropperState, setCropperState] = useState({
         isOpen: false,
         imageSrc: null,
         resolve: null, // Promise resolve function
-        aspect: 1
+        aspect: 1,
+        imageFile: null // Store original
     });
 
     const closeCropper = () => {
@@ -34,10 +74,6 @@ export function ImageUploadProvider({ children }) {
             };
         });
     }, []);
-
-    // ... createImage ...
-
-    // ... getCroppedImg ...
 
     const handleCropComplete = async (croppedAreaPixels, imageSrc) => {
         try {

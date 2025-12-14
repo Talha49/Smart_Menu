@@ -10,10 +10,12 @@ import {
     Settings,
     LogOut,
     ExternalLink,
-    X
+    X,
+    Tv
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
+import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 
 const sidebarLinks = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -23,6 +25,9 @@ const sidebarLinks = [
 
 export function Sidebar({ className, onClose, isMobile }) {
     const pathname = usePathname();
+    const { restaurant } = useRestaurantStore();
+    const liveMenuUrl = restaurant?.restaurantId ? `/menu/${restaurant.restaurantId}` : "/";
+    const tvMenuUrl = restaurant?.restaurantId ? `/tv/${restaurant.restaurantId}` : "/";
 
     return (
         <aside className={cn("flex h-full flex-col bg-card border-r", className)}>
@@ -67,9 +72,31 @@ export function Sidebar({ className, onClose, isMobile }) {
 
             {/* Footer */}
             <div className="border-t p-4 space-y-2">
-                <Link href="/" target="_blank" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                <Link
+                    href={liveMenuUrl}
+                    target="_blank"
+                    className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        restaurant?.restaurantId
+                            ? "text-primary hover:bg-primary/10 bg-primary/5"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                >
                     <ExternalLink className="h-4 w-4" />
                     View Live Menu
+                </Link>
+                <Link
+                    href={tvMenuUrl}
+                    target="_blank"
+                    className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-2",
+                        restaurant?.restaurantId
+                            ? "text-primary hover:bg-primary/10 bg-primary/5"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                >
+                    <Tv className="h-4 w-4" />
+                    Launch TV Mode
                 </Link>
                 <button
                     onClick={() => signOut({ callbackUrl: "/login" })}
