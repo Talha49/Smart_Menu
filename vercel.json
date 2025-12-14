@@ -1,7 +1,6 @@
 {
   "functions": {
     "app/api/remove-background/route.py": {
-      "runtime": "python3.9",
       "maxDuration": 60
     }
   }
