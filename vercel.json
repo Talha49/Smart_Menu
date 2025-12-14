@@ -1,6 +1,6 @@
 {
   "functions": {
-    "app/api/remove-background/route.py": {
+    "api/remove-background.py": {
       "maxDuration": 60
     }
   }
