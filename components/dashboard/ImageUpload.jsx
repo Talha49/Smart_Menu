@@ -102,24 +102,88 @@ export function ImageUpload({ value, onChange, disabled }) {
 
                 {value ? (
                     <div className="relative h-full w-full p-2">
-                        <div className="relative h-full w-full overflow-hidden rounded-md">
+                        <div className="relative h-full w-full overflow-hidden rounded-md group">
                             {/* Standard img tag for instant preview without Next.js optimization config issues */}
                             <img
                                 src={value}
                                 alt="Upload preview"
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-cover transition-transform group-hover:scale-105"
                             />
+
+                            {/* Actions Overlay */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <Button
+                                    onClick={handleRemove}
+                                    disabled={disabled || isLoading}
+                                    variant="destructive"
+                                    size="icon"
+                                    className="h-9 w-9 shadow-sm"
+                                    type="button"
+                                    title="Remove Image"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
-                        <Button
-                            onClick={handleRemove}
-                            disabled={disabled}
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-3 right-3 h-7 w-7 shadow-sm"
-                            type="button"
-                        >
-                            <X className="h-4 w-4" />
-                        </Button>
+
+                        {/* Magic Remove BG Button */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-max opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    if (isLoading) return;
+                                    setIsLoading(true);
+                                    const toastId = toast.loading("Removing background via AI...");
+
+                                    try {
+                                        // 1. Fetch current image as blob
+                                        const response = await fetch(value);
+                                        const blob = await response.blob();
+
+                                        // 2. Send to Python API
+                                        const formData = new FormData();
+                                        formData.append('file', blob, 'image.png');
+
+                                        const apiRes = await fetch('/api/remove-background', {
+                                            method: 'POST',
+                                            body: formData
+                                        });
+
+                                        if (!apiRes.ok) throw new Error("AI Processing Failed");
+
+                                        const newBlob = await apiRes.blob();
+
+                                        // 3. Upload processed image back to storage
+                                        // We upload as a new file
+                                        toast.loading("Uploading processed image...", { id: toastId });
+
+                                        const uploadedBlob = await upload(`no-bg-${Date.now()}.png`, newBlob, {
+                                            access: 'public',
+                                            handleUploadUrl: '/api/upload',
+                                        });
+
+                                        onChange(uploadedBlob.url);
+                                        toast.success("Background Removed!", { id: toastId });
+
+                                    } catch (error) {
+                                        console.error(error);
+                                        toast.error("Failed to remove background", { id: toastId });
+                                    } finally {
+                                        setIsLoading(false);
+                                    }
+                                }}
+                                disabled={disabled || isLoading}
+                                variant="secondary"
+                                size="sm"
+                                className="h-8 text-xs bg-white/90 hover:bg-white text-black shadow-lg backdrop-blur-sm gap-2"
+                                type="button"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M9 3v4" /><path d="M7 3v4" /><path d="M11 3v4" /></svg>
+                                AI Remove BG
+                            </Button>
+                        </div>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4" onClick={() => inputRef.current?.click()}>
