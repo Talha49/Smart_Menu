@@ -101,8 +101,8 @@ export function ImageUpload({ value, onChange, disabled }) {
                 />
 
                 {value ? (
-                    <div className="relative h-full w-full p-2">
-                        <div className="relative h-full w-full overflow-hidden rounded-md group">
+                    <div className="relative h-full w-full p-2 group">
+                        <div className="relative h-full w-full overflow-hidden rounded-md">
                             {/* Standard img tag for instant preview without Next.js optimization config issues */}
                             <img
                                 src={value}
