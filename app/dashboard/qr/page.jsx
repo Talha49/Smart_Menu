@@ -14,6 +14,14 @@ export default function QRPage() {
     const [loading, setLoading] = useState(true);
     const canvasRef = useRef(null);
 
+    const [isLocalhost, setIsLocalhost] = useState(false);
+
+    useEffect(() => {
+        if (window.location.hostname === "localhost") {
+            setIsLocalhost(true);
+        }
+    }, []);
+
     const publicMenuUrl = restaurant?.restaurantId
         ? `${window.location.protocol}//${window.location.host}/menu/${restaurant.restaurantId}`
         : "";
@@ -106,9 +114,16 @@ export default function QRPage() {
                         )}
                     </div>
                     <div className="text-center space-y-1">
-                        <p className="font-mono text-xs text-muted-foreground bg-muted py-1 px-3 rounded-full">
+                        <p className="font-mono text-xs text-muted-foreground bg-muted py-1 px-3 rounded-full break-all">
                             {publicMenuUrl}
                         </p>
+                        {isLocalhost && (
+                            <p className="text-xs text-amber-600 font-medium mt-2 bg-amber-50 p-2 rounded border border-amber-200">
+                                ⚠️ Localhost Warning: This QR code points to your computer.
+                                It won't work on mobile unless you are on the same WiFi and use your local IP,
+                                or until you deploy to Vercel.
+                            </p>
+                        )}
                     </div>
                 </Card>
 

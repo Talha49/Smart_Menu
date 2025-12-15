@@ -57,7 +57,7 @@ export default function PublicMenuPage() {
     })).filter(group => group.items.length > 0);
 
     return (
-        <div className="min-h-screen bg-muted/5 pb-24">
+        <div className="min-h-screen bg-muted/5 pb-24" style={{ fontFamily: restaurant.fontFamily }}>
             {/* Header */}
             <header className="bg-background pt-6 pb-4 px-4 shadow-sm z-20 relative">
                 <div className="max-w-md mx-auto flex flex-col items-center text-center">
@@ -87,7 +87,7 @@ export default function PublicMenuPage() {
             </header>
 
             {/* Sticky Category Nav */}
-            <CategoryNav categories={filteredMenu} activeCategory={activeCategory} />
+            <CategoryNav categories={filteredMenu} activeCategory={activeCategory} brandColor={restaurant.brandColor} />
 
             {/* Menu List */}
             <main className="max-w-md mx-auto px-4 pt-6 space-y-8">
@@ -117,7 +117,7 @@ export default function PublicMenuPage() {
                                                     {item.description}
                                                 </p>
                                             </div>
-                                            <div className="mt-2 text-primary font-bold">
+                                            <div className="mt-2 font-bold" style={{ color: restaurant.brandColor }}>
                                                 ${item.price.toFixed(2)}
                                             </div>
                                         </div>

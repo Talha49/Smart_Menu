@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
+import { useMenuStore } from "@/hooks/use-menu-store";
+import { useCategoryStore } from "@/hooks/use-category-store";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ColorPicker } from "@/components/settings/ColorPicker";
+import { LivePreview } from "@/components/settings/LivePreview";
 import { ImageUpload } from "@/components/dashboard/ImageUpload";
 import { Input } from "@/components/ui/Input"; // We might use Select instead for fonts
 import { Loader2, Lock, Save, LayoutTemplate } from "lucide-react";
@@ -22,6 +25,9 @@ const FONT_OPTIONS = [
 
 export default function BrandingPage() {
     const { restaurant, setRestaurant } = useRestaurantStore();
+    const { items: menuItems, fetchItems } = useMenuStore();
+    const { categories, fetchCategories } = useCategoryStore();
+
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         brandColor: "#4f46e5",
@@ -38,6 +44,9 @@ export default function BrandingPage() {
                 fontFamily: restaurant.fontFamily || "Inter",
                 logoUrl: restaurant.logoUrl || "",
             });
+            // Fetch menu data for preview if not already loaded
+            fetchItems();
+            fetchCategories();
         }
     }, [restaurant]);
 
@@ -72,54 +81,7 @@ export default function BrandingPage() {
         }
     };
 
-    // Live Preview Component
-    const LivePreview = () => (
-        <div className="border rounded-3xl overflow-hidden shadow-2xl bg-white aspect-[9/18] mx-auto max-w-[300px] relative pointer-events-none select-none transform scale-95 origin-top">
-            {/* Fake Mobile Header */}
-            <div className="h-14 flex items-center px-4 justify-between border-b bg-white relative z-10">
-                {formData.logoUrl ? (
-                    <img src={formData.logoUrl} className="h-8 w-auto object-contain" />
-                ) : (
-                    <span className="font-bold text-lg" style={{ color: formData.brandColor, fontFamily: formData.fontFamily }}>
-                        {restaurant?.name || "Restaurant"}
-                    </span>
-                )}
-            </div>
 
-            {/* Fake Content */}
-            <div className="p-4 space-y-4">
-                {/* Fake Category Tabs */}
-                <div className="flex gap-2 overflow-hidden opacity-80">
-                    <div className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm" style={{ backgroundColor: formData.brandColor }}>
-                        Popular
-                    </div>
-                    <div className="px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                        Burgers
-                    </div>
-                </div>
-
-                {/* Fake Menu Item */}
-                <div className="flex gap-3">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0" />
-                    <div className="flex-1 space-y-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4" />
-                        <div className="h-3 bg-gray-100 rounded w-full" />
-                        <div className="h-3 bg-gray-100 rounded w-1/2" />
-                        <div className="font-bold text-sm" style={{ color: formData.brandColor }}>$12.99</div>
-                    </div>
-                </div>
-                <div className="flex gap-3">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0" />
-                    <div className="flex-1 space-y-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4" />
-                        <div className="font-bold text-sm" style={{ color: formData.brandColor }}>$8.50</div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
-        </div>
-    );
 
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -233,9 +195,16 @@ export default function BrandingPage() {
                                 </Link>
                             )}
                         </div>
-                        <LivePreview />
-                        <p className="text-xs text-center text-muted-foreground">
-                            This shows how your menu roughly appears on mobile.
+                        <div className="flex justify-center">
+                            <LivePreview
+                                restaurant={restaurant}
+                                branding={formData}
+                                menuItems={menuItems}
+                                categories={categories}
+                            />
+                        </div>
+                        <p className="text-xs text-center text-muted-foreground mt-4">
+                            Interactive Device Preview
                         </p>
                     </div>
                 </div>

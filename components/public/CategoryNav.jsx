@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export function CategoryNav({ categories, activeCategory }) {
+export function CategoryNav({ categories, activeCategory, brandColor }) {
     const [active, setActive] = useState(activeCategory);
     const navRef = useRef(null);
 
@@ -46,9 +46,10 @@ export function CategoryNav({ categories, activeCategory }) {
                         className={cn(
                             "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 snap-center border",
                             active === cat.name
-                                ? "bg-primary text-primary-foreground border-primary shadow-sm scale-105"
+                                ? "text-white border-transparent shadow-sm scale-105"
                                 : "bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground"
                         )}
+                        style={active === cat.name ? { backgroundColor: brandColor || "var(--primary)" } : {}}
                         role="tab"
                         aria-selected={active === cat.name}
                     >
