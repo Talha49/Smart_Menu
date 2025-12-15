@@ -11,7 +11,8 @@ import {
     LogOut,
     ExternalLink,
     X,
-    Tv
+    Tv,
+    QrCode
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
@@ -20,7 +21,8 @@ import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 const sidebarLinks = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Menu Management", href: "/dashboard/menu", icon: UtensilsCrossed },
-    { name: "Branding", href: "/dashboard/branding", icon: Settings },
+    { name: "QR Code", href: "/dashboard/qr", icon: QrCode },
+    { name: "Branding", href: "/dashboard/settings/branding", icon: Settings },
 ];
 
 export function Sidebar({ className, onClose, isMobile }) {
