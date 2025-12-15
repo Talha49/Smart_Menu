@@ -1,22 +1,34 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { Menu as MenuIcon, User } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-export function TopBar({ onMenuClick }) {
+const PAGE_TITLES = {
+    "/dashboard": "Overview",
+    "/dashboard/menu": "Menu Management",
+    "/dashboard/qr": "QR Code",
+    "/dashboard/settings/branding": "Branding & Appearance",
+};
+
+export function TopBar({ onMenuClick, isSidebarOpen }) {
     const { data: session } = useSession();
+    const pathname = usePathname();
+
+    const currentTitle = PAGE_TITLES[pathname] || "Dashboard";
 
     return (
         <header className="flex h-16 items-center gap-4 border-b bg-background/50 backdrop-blur-md px-6 sticky top-0 z-30">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
+            {/* Toggle Button - Visible on Mobile AND Desktop if we support collapsing */}
+            <Button variant="ghost" size="icon" onClick={onMenuClick} className="mr-2">
                 <MenuIcon className="h-5 w-5" />
                 <span className="sr-only">Toggle Menu</span>
             </Button>
 
             <div className="flex-1">
-                <h1 className="text-lg font-semibold font-display text-foreground">
-                    Dashboard
+                <h1 className="text-lg font-semibold font-display text-foreground animate-fade-in">
+                    {currentTitle}
                 </h1>
             </div>
 
