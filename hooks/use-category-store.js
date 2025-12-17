@@ -56,5 +56,23 @@ export const useCategoryStore = create((set, get) => ({
       toast.error(error.message);
       return false;
     }
+  },
+
+  reorderCategories: async (newCategories) => {
+    const previousCategories = get().categories;
+    
+    // 1. Optimistic Update
+    set({ categories: newCategories });
+
+    try {
+      // 2. Sync with Server
+      const ids = newCategories.map(c => c._id);
+      await CategoryService.reorderCategories(ids);
+      // toast.success("Order saved"); // Subtle, maybe not needed for every drag
+    } catch (error) {
+      // 3. Rollback on failure
+      set({ categories: previousCategories });
+      toast.error("Failed to save order. Rolling back...");
+    }
   }
 }));

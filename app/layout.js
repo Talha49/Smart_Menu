@@ -3,6 +3,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { GlobalLoader } from "@/components/ui/GlobalLoader";
+import { ImageUploadProvider } from "@/context/ImageUploadContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,9 +27,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} ${outfit.variable} antialiased bg-background text-foreground font-sans`}>
         <AuthProvider>
-          <GlobalLoader />
-          {children}
-          <ToastProvider />
+          <ImageUploadProvider>
+            <GlobalLoader />
+            {children}
+            <ToastProvider />
+          </ImageUploadProvider>
         </AuthProvider>
       </body>
     </html>

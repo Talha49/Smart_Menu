@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
         // but fetching categories helps us know the "official" list/order if needed.
         // For now, we'll group by the category string stored in MenuItem to save a query if possible, 
         // BUT fetching Category models allows us to get the EMOJI.
-        const categories = await Category.find({ restaurant: restaurant._id }).sort({ createdAt: 1 }).lean();
+        const categories = await Category.find({ restaurant: restaurant._id }).sort({ order: 1 }).lean();
 
         // 3. Fetch all AVAILABLE menu items
         const menuItems = await MenuItem.find({ 

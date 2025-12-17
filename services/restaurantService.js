@@ -28,9 +28,11 @@ export const RestaurantService = {
    * @returns {Promise<boolean>}
    */
   checkAvailability: async (slug) => {
-    // We can implement a specific availability endpoint later
-    // For now, simple creation check is enough, or we can use this architecture
-    // to expand easily.
-    return true; 
+    if (!slug || slug.length < 3) return { available: false, message: "Too short" };
+    
+    const res = await fetch(`/api/restaurant/check-slug?slug=${encodeURIComponent(slug)}`);
+    if (!res.ok) return { available: false, message: "Error checking" };
+    
+    return await res.json();
   }
 };

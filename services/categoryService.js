@@ -36,4 +36,15 @@ export const CategoryService = {
     if (!res.ok) throw new Error(json.message || "Failed to delete category");
     return true;
   },
+
+  async reorderCategories(categoryIds) {
+    const res = await fetch("/api/categories/reorder", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categoryIds }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Failed to reorder categories");
+    return true;
+  },
 };

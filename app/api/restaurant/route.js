@@ -25,7 +25,7 @@ export async function POST(req) {
       );
     }
 
-    const { name, restaurantId, type } = validatedFields.data;
+    const { name, restaurantId, type, brandColor, logoUrl } = validatedFields.data;
 
     await dbConnect();
 
@@ -43,8 +43,8 @@ export async function POST(req) {
       name,
       restaurantId,
       owner: session.user.id,
-      // Default styles
-      brandColor: "#4f46e5",
+      brandColor: brandColor || "#4f46e5",
+      logoUrl: logoUrl || "",
       fontFamily: "Inter",
     });
 

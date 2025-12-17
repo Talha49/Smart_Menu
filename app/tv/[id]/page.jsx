@@ -55,7 +55,7 @@ export default function TVPage() {
 
             {/* Main Carousel Area */}
             <main className="flex-1 relative">
-                <TVCarousel menu={menu} />
+                <TVCarousel menu={menu} brandColor={restaurant.brandColor} />
             </main>
         </div>
     );

@@ -6,11 +6,11 @@ import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { Badge } from "@/components/ui/Badge";
-import { Pencil, Trash2, ImageOff } from "lucide-react";
+import { Pencil, Trash2, ImageOff, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }) {
+export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability, provided, snapshot }) {
     // Local state for optimistic UI updates on availability
     const [isAvailable, setIsAvailable] = useState(item.isAvailable);
     const [isToggling, setIsToggling] = useState(false);
@@ -36,9 +36,24 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }) {
     };
 
     return (
-        <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-border/50">
+        <Card
+            ref={provided?.innerRef}
+            {...provided?.draggableProps}
+            className={cn(
+                "overflow-hidden group transition-all duration-300 border-border/50 bg-card/50",
+                snapshot?.isDragging ? "shadow-2xl ring-2 ring-primary/50 scale-[1.02] z-50" : "hover:shadow-lg"
+            )}
+        >
             {/* Image Area */}
             <div className="relative h-48 w-full bg-secondary/30 overflow-hidden">
+                {/* Drag Handle Overlay */}
+                <div
+                    {...provided?.dragHandleProps}
+                    className="absolute left-2 top-2 z-20 p-1.5 rounded-lg bg-background/80 backdrop-blur-md border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-background"
+                >
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                </div>
+
                 {item.imageUrl ? (
                     <Image
                         src={item.imageUrl}

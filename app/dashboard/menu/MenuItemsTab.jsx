@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { MenuItemCard } from "@/components/dashboard/MenuItemCard";
-import { Plus } from "lucide-react";
+import { Plus, GripVertical, Info } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { cn } from "@/lib/utils";
 
 export function MenuItemsTab({ onCreateItem, onEditItem }) {
     const {
@@ -27,6 +29,18 @@ export function MenuItemsTab({ onCreateItem, onEditItem }) {
             await deleteItem(id);
         }
     };
+
+    const onDragEnd = (result) => {
+        if (!result.destination) return;
+
+        const newItems = Array.from(items);
+        const [reorderedItem] = newItems.splice(result.source.index, 1);
+        newItems.splice(result.destination.index, 0, reorderedItem);
+
+        useMenuStore.getState().reorderItems(newItems);
+    };
+
+    const isReorderingEnabled = filters.category !== 'all' || items.length < 50; // Enable it always but warn if too many
 
     return (
         <div className="space-y-6">
@@ -74,16 +88,41 @@ export function MenuItemsTab({ onCreateItem, onEditItem }) {
                     <Button variant="outline" onClick={onCreateItem}>Add Item</Button>
                 </div>
             ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {items.map(item => (
-                        <MenuItemCard
-                            key={item._id}
-                            item={item}
-                            onDelete={handleDeleteItem}
-                            onToggleAvailability={(id, status) => toggleAvailability(id, status)} // Store handles signature
-                            onEdit={onEditItem}
-                        />
-                    ))}
+                <div className="space-y-4">
+                    {filters.category !== 'all' && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-lg text-xs font-medium text-primary animate-in fade-in slide-in-from-top-1 duration-500">
+                            <Info className="h-3.5 w-3.5" />
+                            Drag items to change their display order in {filters.category}
+                        </div>
+                    )}
+
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Droppable droppableId="menu-items" direction="horizontal">
+                            {(provided) => (
+                                <div
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                    className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                                >
+                                    {items.map((item, index) => (
+                                        <Draggable key={item._id} draggableId={item._id} index={index}>
+                                            {(provided, snapshot) => (
+                                                <MenuItemCard
+                                                    provided={provided}
+                                                    snapshot={snapshot}
+                                                    item={item}
+                                                    onDelete={handleDeleteItem}
+                                                    onToggleAvailability={(id, status) => toggleAvailability(id, status)}
+                                                    onEdit={onEditItem}
+                                                />
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
                 </div>
             )}
         </div>

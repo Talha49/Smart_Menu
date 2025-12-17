@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import Image from "next/image";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Sparkles } from "lucide-react";
 import { CategoryNav } from "@/components/public/CategoryNav";
 import { MenuItemDetail } from "@/components/public/MenuItemDetail";
 import { Input } from "@/components/ui/Input";
 import { useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 // Fetcher for SWR
 const fetcher = (url) => fetch(url).then((res) => res.json());
@@ -56,6 +57,10 @@ export default function PublicMenuPage() {
         )
     })).filter(group => group.items.length > 0);
 
+    // Identify top picks (first 3 items across entire menu)
+    let globalItemCount = 0;
+    const TOP_PICK_LIMIT = 3;
+
     return (
         <div className="min-h-screen bg-muted/5 pb-24" style={{ fontFamily: restaurant.fontFamily }}>
             {/* Header */}
@@ -103,38 +108,56 @@ export default function PublicMenuPage() {
                             </h2>
 
                             <div className="grid gap-4">
-                                {group.items.map((item) => (
-                                    <div
-                                        key={item._id}
-                                        className="bg-card rounded-2xl p-3 flex gap-4 shadow-sm border border-border/50 active:scale-[0.98] transition-transform cursor-pointer"
-                                    // onClick open modal
-                                    >
-                                        {/* Text Content */}
-                                        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                                            <div>
-                                                <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
-                                                <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
-                                                    {item.description}
-                                                </p>
-                                            </div>
-                                            <div className="mt-2 font-bold" style={{ color: restaurant.brandColor }}>
-                                                ${item.price.toFixed(2)}
-                                            </div>
-                                        </div>
+                                {group.items.map((item) => {
+                                    const isTopPick = globalItemCount < TOP_PICK_LIMIT;
+                                    globalItemCount++;
 
-                                        {/* Image thumbnail */}
-                                        {item.imageUrl && (
-                                            <div className="w-24 h-24 flex-shrink-0 bg-muted rounded-xl overflow-hidden relative">
-                                                <img
-                                                    src={item.imageUrl}
-                                                    alt={item.name}
-                                                    className="w-full h-full object-cover"
-                                                    loading="lazy"
-                                                />
+                                    return (
+                                        <div
+                                            key={item._id}
+                                            className={cn(
+                                                "bg-card rounded-2xl p-3 flex gap-4 shadow-sm border border-border/50 active:scale-[0.98] transition-transform cursor-pointer relative overflow-hidden",
+                                                isTopPick && "ring-1 ring-primary/20 bg-gradient-to-br from-card to-primary/5"
+                                            )}
+                                        // onClick open modal
+                                        >
+                                            {isTopPick && (
+                                                <div
+                                                    className="absolute top-0 right-0 px-3 py-1 rounded-bl-xl flex items-center gap-1 text-[10px] font-bold text-white shadow-sm"
+                                                    style={{ backgroundColor: restaurant.brandColor }}
+                                                >
+                                                    <Sparkles className="w-3 h-3 fill-current" />
+                                                    TOP PICK
+                                                </div>
+                                            )}
+
+                                            {/* Text Content */}
+                                            <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                                                <div>
+                                                    <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
+                                                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                                                        {item.description}
+                                                    </p>
+                                                </div>
+                                                <div className="mt-2 font-bold" style={{ color: restaurant.brandColor }}>
+                                                    ${item.price.toFixed(2)}
+                                                </div>
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+
+                                            {/* Image thumbnail */}
+                                            {item.imageUrl && (
+                                                <div className="w-24 h-24 flex-shrink-0 bg-muted rounded-xl overflow-hidden relative">
+                                                    <img
+                                                        src={item.imageUrl}
+                                                        alt={item.name}
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </section>
                     ))

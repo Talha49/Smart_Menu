@@ -45,4 +45,15 @@ export const MenuService = {
     if (!res.ok) throw new Error("Failed to update availability");
     return true;
   },
+
+  async reorderMenuItems(itemIds) {
+    const res = await fetch("/api/menu/reorder", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemIds }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Failed to reorder menu items");
+    return true;
+  },
 };

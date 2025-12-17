@@ -5,8 +5,10 @@ import { useCategoryStore } from "@/hooks/use-category-store";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { Plus, Loader2, Save, X, Pencil, Trash2, Tag, ChevronDown } from "lucide-react";
+import { Plus, Loader2, Save, X, Pencil, Trash2, Tag, ChevronDown, GripVertical } from "lucide-react";
 import { CATEGORY_ICONS } from "@/utils/arrays/arrays";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { cn } from "@/lib/utils";
 
 // Internal reusable Emoji Picker
 const EmojiPicker = ({ selectedEmoji, onSelect, onClose, isOpen, toggleOpen }) => {
@@ -114,6 +116,16 @@ export function CategoriesTab() {
         }
     };
 
+    const onDragEnd = (result) => {
+        if (!result.destination) return;
+
+        const items = Array.from(categories);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+
+        useCategoryStore.getState().reorderCategories(items);
+    };
+
     return (
         <div className="space-y-8 max-w-6xl mx-auto">
             {/* Creation Card */}
@@ -168,70 +180,100 @@ export function CategoriesTab() {
                     <p className="text-muted-foreground">Pick an emoji above to get started!</p>
                 </div>
             ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {categories.map(cat => (
-                        <Card key={cat._id} className="group relative overflow-visible transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/50 bg-card/50 hover:bg-card">
-                            <div className="p-6">
-                                {editingCatId === cat._id ? (
-                                    <div className="space-y-4 animate-in fade-in zoom-in-95 relative z-20">
-                                        <div className="flex gap-3 items-start">
-                                            <EmojiPicker
-                                                selectedEmoji={editingEmoji}
-                                                isOpen={showEditPresets}
-                                                toggleOpen={() => setShowEditPresets(!showEditPresets)}
-                                                onClose={() => setShowEditPresets(false)}
-                                                onSelect={(icon) => handleValidPresetSelect(icon, true)}
-                                            />
-                                            <Input
-                                                value={editingCatName}
-                                                onChange={(e) => setEditingCatName(e.target.value)}
-                                                autoFocus
-                                                className="flex-1 h-11 text-base bg-background"
-                                            />
-                                        </div>
-                                        <div className="flex justify-end gap-3 pt-2">
-                                            <Button size="sm" variant="ghost" onClick={() => { setEditingCatId(null); setShowEditPresets(false); }}>
-                                                Cancel
-                                            </Button>
-                                            <Button size="sm" onClick={() => handleUpdateCategory(cat._id)}>
-                                                Save Changes
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-5">
-                                            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-4xl shadow-sm border border-primary/10 group-hover:scale-110 transition-transform duration-300">
-                                                {cat.emoji || "🍽️"}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-xl leading-tight tracking-tight">{cat.name}</h3>
-                                                <p className="text-xs text-muted-foreground mt-1 font-medium opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
-                                                    Manage items
-                                                </p>
-                                            </div>
-                                        </div>
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="categories" direction="horizontal" type="category">
+                        {(provided) => (
+                            <div
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                            >
+                                {categories.map((cat, index) => (
+                                    <Draggable key={cat._id} draggableId={cat._id} index={index}>
+                                        {(provided, snapshot) => (
+                                            <Card
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                className={cn(
+                                                    "group relative overflow-visible transition-all duration-300 border-border/50 bg-card/50 hover:bg-card",
+                                                    snapshot.isDragging ? "shadow-2xl ring-2 ring-primary/50 scale-[1.02] z-[50]" : "hover:shadow-xl hover:-translate-y-1"
+                                                )}
+                                            >
+                                                <div className="p-6">
+                                                    {editingCatId === cat._id ? (
+                                                        <div className="space-y-4 animate-in fade-in zoom-in-95 relative z-20">
+                                                            <div className="flex gap-3 items-start">
+                                                                <EmojiPicker
+                                                                    selectedEmoji={editingEmoji}
+                                                                    isOpen={showEditPresets}
+                                                                    toggleOpen={() => setShowEditPresets(!showEditPresets)}
+                                                                    onClose={() => setShowEditPresets(false)}
+                                                                    onSelect={(icon) => handleValidPresetSelect(icon, true)}
+                                                                />
+                                                                <Input
+                                                                    value={editingCatName}
+                                                                    onChange={(e) => setEditingCatName(e.target.value)}
+                                                                    autoFocus
+                                                                    className="flex-1 h-11 text-base bg-background"
+                                                                />
+                                                            </div>
+                                                            <div className="flex justify-end gap-3 pt-2">
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingCatId(null); setShowEditPresets(false); }}>
+                                                                    Cancel
+                                                                </Button>
+                                                                <Button size="sm" onClick={() => handleUpdateCategory(cat._id)}>
+                                                                    Save Changes
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-5">
+                                                                {/* Drag Handle */}
+                                                                <div
+                                                                    {...provided.dragHandleProps}
+                                                                    className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground/30 hover:text-primary transition-colors cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
+                                                                >
+                                                                    <GripVertical className="h-5 w-5" />
+                                                                </div>
 
-                                        {/* Actions */}
-                                        <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/95 backdrop-blur-md rounded-xl p-1.5 absolute right-3 top-3 border shadow-lg z-10 translate-x-2 group-hover:translate-x-0">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg" onClick={() => {
-                                                setEditingCatId(cat._id);
-                                                setEditingCatName(cat.name);
-                                                setEditingEmoji(cat.emoji || "🍽️");
-                                                setShowEditPresets(false);
-                                            }}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive rounded-lg" onClick={() => handleDeleteCategory(cat._id, cat.name)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
+                                                                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-4xl shadow-sm border border-primary/10 group-hover:scale-110 transition-transform duration-300">
+                                                                    {cat.emoji || "🍽️"}
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="font-semibold text-xl leading-tight tracking-tight">{cat.name}</h3>
+                                                                    <p className="text-xs text-muted-foreground mt-1 font-medium opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
+                                                                        Manage items
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Actions */}
+                                                            <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/95 backdrop-blur-md rounded-xl p-1.5 absolute right-3 top-3 border shadow-lg z-10 translate-x-2 group-hover:translate-x-0">
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg" onClick={() => {
+                                                                    setEditingCatId(cat._id);
+                                                                    setEditingCatName(cat.name);
+                                                                    setEditingEmoji(cat.emoji || "🍽️");
+                                                                    setShowEditPresets(false);
+                                                                }}>
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive rounded-lg" onClick={() => handleDeleteCategory(cat._id, cat.name)}>
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Card>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
                             </div>
-                        </Card>
-                    ))}
-                </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
             )}
         </div>
     );

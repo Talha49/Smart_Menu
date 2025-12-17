@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion"; // We'll try to use this if available, otherwise fallback
+import { AnimatePresence, motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 
-export function TVCarousel({ menu }) {
+export function TVCarousel({ menu, brandColor }) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // Filter out empty categories
@@ -24,6 +25,21 @@ export function TVCarousel({ menu }) {
     if (validGroups.length === 0) return null;
 
     const currentGroup = validGroups[currentIndex];
+
+    // Identify top picks (global first 3 across all items in all valid groups)
+    const topPickIds = [];
+    let count = 0;
+    for (const group of validGroups) {
+        for (const item of group.items) {
+            if (count < 3) {
+                topPickIds.push(item._id);
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count >= 3) break;
+    }
 
     // Calculate progress bar width
     const progress = ((currentIndex + 1) / validGroups.length) * 100;
@@ -53,32 +69,49 @@ export function TVCarousel({ menu }) {
 
             {/* Grid Content - Key-based animation to trigger re-render effects */}
             <div key={currentIndex} className="flex-1 p-8 pt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-right-8 duration-700">
-                {currentGroup.items.map((item) => (
-                    <div
-                        key={item._id}
-                        className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl p-6 flex flex-col gap-4 shadow-lg"
-                    >
-                        {item.imageUrl && (
-                            <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-muted relative">
-                                <img
-                                    src={item.imageUrl}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        )}
+                {currentGroup.items.map((item) => {
+                    const isTopPick = topPickIds.includes(item._id);
 
-                        <div className="flex-1">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="text-3xl font-bold leading-tight">{item.name}</h3>
-                                <span className="text-3xl font-bold text-primary">${item.price.toFixed(2)}</span>
+                    return (
+                        <div
+                            key={item._id}
+                            className={cn(
+                                "bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl p-6 flex flex-col gap-4 shadow-lg relative overflow-hidden",
+                                isTopPick && "ring-2 ring-primary/40 bg-gradient-to-br from-card/80 to-primary/10"
+                            )}
+                        >
+                            {isTopPick && (
+                                <div
+                                    className="absolute top-0 right-0 px-6 py-2 rounded-bl-3xl flex items-center gap-2 text-sm font-bold text-white shadow-xl"
+                                    style={{ backgroundColor: brandColor || "var(--primary)" }}
+                                >
+                                    <Sparkles className="w-5 h-5 fill-current" />
+                                    TOP PICK
+                                </div>
+                            )}
+
+                            {item.imageUrl && (
+                                <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden bg-muted relative">
+                                    <img
+                                        src={item.imageUrl}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex-1">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="text-3xl font-bold leading-tight">{item.name}</h3>
+                                    <span className="text-3xl font-bold text-primary">${item.price.toFixed(2)}</span>
+                                </div>
+                                <p className="text-xl text-muted-foreground line-clamp-3 leading-relaxed">
+                                    {item.description}
+                                </p>
                             </div>
-                            <p className="text-xl text-muted-foreground line-clamp-3 leading-relaxed">
-                                {item.description}
-                            </p>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Bottom Progress Bar */}

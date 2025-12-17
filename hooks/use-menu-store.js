@@ -86,5 +86,23 @@ export const useMenuStore = create((set, get) => ({
         )
       }));
     }
+  },
+
+  reorderItems: async (newItems) => {
+    const previousItems = get().items;
+    
+    // 1. Optimistic Update
+    set({ items: newItems });
+
+    try {
+      // 2. Sync with Server
+      // We send all item IDs in their new relative order
+      const ids = newItems.map(i => i._id);
+      await MenuService.reorderMenuItems(ids);
+    } catch (error) {
+      // 3. Rollback
+      set({ items: previousItems });
+      toast.error("Failed to save menu order. Rolling back...");
+    }
   }
 }));

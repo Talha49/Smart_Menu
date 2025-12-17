@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import MenuItem from "@/models/MenuItem";
 import Restaurant from "@/models/Restaurant";
 import { MenuItemSchema } from "@/lib/validations";
+import mongoose from "mongoose";
 
 export async function GET(req) {
   try {
@@ -55,7 +56,8 @@ export async function GET(req) {
       query.name = { $regex: search, $options: "i" };
     }
 
-    const items = await MenuItem.find(query).sort({ category: 1, order: 1, createdAt: -1 });
+    // Prioritize manual order
+    const items = await MenuItem.find(query).sort({ order: 1, createdAt: -1 });
 
     return NextResponse.json({ items });
   } catch (error) {
@@ -95,10 +97,18 @@ export async function POST(req) {
         return NextResponse.json({ message: "Invalid input", errors: validation.error.flatten() }, { status: 400 });
     }
 
-    // 4. Create Item
+    // 4. Find max order within this category
+    const lastItem = await MenuItem.findOne({ 
+        restaurant: restaurant._id, 
+        category: validation.data.category 
+    }).sort({ order: -1 });
+    const nextOrder = lastItem ? (lastItem.order || 0) + 1 : 0;
+
+    // 5. Create Item
     const newItem = await MenuItem.create({
         ...validation.data,
         restaurant: restaurant._id,
+        order: nextOrder
     });
 
     return NextResponse.json({ item: newItem }, { status: 201 });
