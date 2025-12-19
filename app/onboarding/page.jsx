@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import toast from "react-hot-toast";
-import { Store, ArrowRight, ArrowLeft, Palette, Utensils, CheckCircle2, Sparkles, Image as ImageIcon, Loader2, AlertTriangle } from "lucide-react";
+import { Store, ArrowRight, ArrowLeft, Palette, Utensils, CheckCircle2, Sparkles, Image as ImageIcon, Loader2, AlertTriangle, Plus } from "lucide-react";
 import { useDebounce } from "use-debounce";
 import { RestaurantService } from "@/services/restaurantService";
 import { CategoryService } from "@/services/categoryService";
@@ -29,9 +29,17 @@ const BRAND_COLORS = [
 
 export default function OnboardingPage() {
     const router = useRouter();
-    const { data: session, update } = useSession();
+    const { data: session, status, update } = useSession();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [isAlreadyOnboarded, setIsAlreadyOnboarded] = useState(false);
+
+    useEffect(() => {
+        // Robust check: ensure it's a valid ID and user is fully loaded
+        if (status === "authenticated" && session?.user?.restaurantId) {
+            setIsAlreadyOnboarded(true);
+        }
+    }, [session, status]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -42,7 +50,8 @@ export default function OnboardingPage() {
             name: "",
             category: "Signatures",
             price: "",
-            description: ""
+            description: "",
+            imageUrl: ""
         }
     });
 
@@ -87,6 +96,35 @@ export default function OnboardingPage() {
     const nextStep = () => setStep(prev => prev + 1);
     const prevStep = () => setStep(prev => prev - 1);
 
+    if (isAlreadyOnboarded) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">
+                <Card className="glass max-w-md w-full border-none shadow-2xl p-8 text-center space-y-6">
+                    <div className="mx-auto h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center">
+                        <CheckCircle2 className="h-10 w-10 text-primary" />
+                    </div>
+                    <div>
+                        <h2 className="text-3xl font-display font-bold mb-2">You're all set!</h2>
+                        <p className="text-muted-foreground">
+                            You have already completed your onboarding. Your digital menu is live and ready to serve.
+                        </p>
+                    </div>
+                    <div className="pt-4 space-y-3">
+                        <Button className="w-full h-12 rounded-xl" onClick={() => router.push("/dashboard")}>
+                            Go to Dashboard
+                        </Button>
+                        <Button variant="ghost" className="w-full h-12 rounded-xl" onClick={() => router.push("/dashboard/settings/branding")}>
+                            Update Branding
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground pt-4 border-t">
+                        Need help? Contact our support team.
+                    </p>
+                </Card>
+            </div>
+        );
+    }
+
     const handleComplete = async () => {
         setLoading(true);
         try {
@@ -110,6 +148,7 @@ export default function OnboardingPage() {
                     price: Number(formData.signatureDish.price) || 0,
                     description: formData.signatureDish.description,
                     category: category.name,
+                    imageUrl: formData.signatureDish.imageUrl,
                     restaurant: restData.restaurant._id
                 });
             }
@@ -237,17 +276,24 @@ export default function OnboardingPage() {
 
                             {/* Item Mockup */}
                             <div className="px-4 space-y-3">
-                                <div className="p-3 border rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex gap-3">
-                                    <div className="w-16 h-16 rounded-xl bg-slate-200 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center">
-                                        <Utensils className="h-6 w-6 opacity-20" />
+                                <div className="p-3 border rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex gap-3 transition-all">
+                                    <div className="w-16 h-16 rounded-xl bg-slate-200 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                                        {formData.signatureDish.imageUrl ? (
+                                            <img src={formData.signatureDish.imageUrl} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Utensils className="h-6 w-6 opacity-20" />
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">
                                             <h3 className="text-sm font-bold truncate">{formData.signatureDish.name || "Main Dish"}</h3>
-                                            <span className="text-sm font-bold" style={{ color: formData.brandColor }}>$12.00</span>
+                                            <span className="text-sm font-bold" style={{ color: formData.brandColor }}>
+                                                ${parseFloat(formData.signatureDish.price || 0).toFixed(2)}
+                                            </span>
                                         </div>
-                                        <div className="w-2/3 h-2 bg-slate-200 dark:bg-slate-800 rounded-full mb-1" />
-                                        <div className="w-1/2 h-2 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                                        <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
+                                            {formData.signatureDish.description || "Your dish description will appear here..."}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -391,6 +437,27 @@ function StepBranding({ formData, setFormData, onNext, onBack }) {
                                 </span>
                             </button>
                         ))}
+
+                        {/* Custom Color Picker */}
+                        <div className="relative group">
+                            <input
+                                type="color"
+                                id="custom-color"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                value={formData.brandColor}
+                                onChange={(e) => setFormData(p => ({ ...p, brandColor: e.target.value }))}
+                            />
+                            <button
+                                className={`w-10 h-10 rounded-full border-2 border-dashed flex items-center justify-center transition-all ${!BRAND_COLORS.some(c => c.value === formData.brandColor) ? "ring-2 ring-offset-2 ring-primary scale-110 border-primary" : "border-muted-foreground/30 hover:scale-105"
+                                    }`}
+                                style={!BRAND_COLORS.some(c => c.value === formData.brandColor) ? { backgroundColor: formData.brandColor } : {}}
+                            >
+                                <Plus className={cn("h-4 w-4", !BRAND_COLORS.some(c => c.value === formData.brandColor) ? "text-white" : "text-muted-foreground")} />
+                            </button>
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                Custom Color
+                            </span>
+                        </div>
                     </div>
                 </div>
             </CardContent>
@@ -465,6 +532,20 @@ function StepFirstDish({ formData, setFormData, onNext, onBack }) {
                     }))}
                     className="h-12"
                 />
+
+                {/* Dish Image Upload */}
+                <div className="space-y-3">
+                    <label className="text-sm font-semibold flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4" /> Dish Image
+                    </label>
+                    <ImageUpload
+                        value={formData.signatureDish.imageUrl}
+                        onChange={(url) => setFormData(p => ({
+                            ...p,
+                            signatureDish: { ...p.signatureDish, imageUrl: url }
+                        }))}
+                    />
+                </div>
             </CardContent>
             <CardFooter className="mt-auto pb-10 flex gap-4">
                 <Button variant="ghost" onClick={onBack} className="h-14 w-20 rounded-2xl">

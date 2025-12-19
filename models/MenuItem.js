@@ -35,7 +35,7 @@ const MenuItemSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    order: {
+    sortOrder: {
       type: Number,
       default: 0,
     },
@@ -45,6 +45,6 @@ const MenuItemSchema = new mongoose.Schema(
 
 // Compound index for fetching a restaurant's menu items efficiently
 // Also optimized for sorting by order
-MenuItemSchema.index({ restaurant: 1, category: 1, order: 1 });
+MenuItemSchema.index({ restaurant: 1, category: 1, sortOrder: 1 });
 
 export default mongoose.models.MenuItem || mongoose.model("MenuItem", MenuItemSchema);

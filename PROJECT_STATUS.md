@@ -127,7 +127,7 @@
   imageUrl: String,
   isAvailable: Boolean (Default: true),
   restaurant: ObjectId (Ref: Restaurant), // Indexed
-  order: Number, // For sorting
+  sortOrder: Number, // For manual UI sorting
   createdAt: Date
 }
 ```

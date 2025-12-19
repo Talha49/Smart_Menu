@@ -32,7 +32,7 @@ export async function PUT(req) {
           _id: new mongoose.Types.ObjectId(id), 
           restaurant: restaurant._id 
         },
-        update: { $set: { order: index } },
+        update: { $set: { sortOrder: index } },
       },
     }));
 

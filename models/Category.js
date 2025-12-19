@@ -18,7 +18,7 @@ const CategorySchema = new mongoose.Schema(
       type: String,
       default: "🍽️", // Default emoji
     },
-    order: {
+    sortOrder: {
       type: Number,
       default: 0,
       index: true,

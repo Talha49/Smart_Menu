@@ -29,19 +29,14 @@ export async function POST(req) {
 
     await dbConnect();
 
-    // 2. Check availability
-    const existing = await Restaurant.findOne({ restaurantId });
-    if (existing) {
-      return NextResponse.json(
-        { message: "Restaurant ID is already taken" },
-        { status: 409 }
-      );
-    }
+    // 2. Generate Unique Final ID (slug + random suffix)
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+    const finalRestaurantId = `${restaurantId}_${randomSuffix}`.toLowerCase();
 
     // 3. Create Restaurant
     const restaurant = await Restaurant.create({
       name,
-      restaurantId,
+      restaurantId: finalRestaurantId,
       owner: session.user.id,
       brandColor: brandColor || "#4f46e5",
       logoUrl: logoUrl || "",

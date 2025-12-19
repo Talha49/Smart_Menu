@@ -98,6 +98,14 @@ export default function DashboardPage() {
                         </div>
                         <Link href="/dashboard/menu"><Button variant="ghost" size="sm">Go</Button></Link>
                     </div>
+                    <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
+                        <div className="h-8 w-8 rounded-full bg-purple-500/20 text-purple-600 flex items-center justify-center text-sm font-bold">3</div>
+                        <div className="flex-1">
+                            <h4 className="font-medium text-sm">Fine-tune your branding</h4>
+                            <p className="text-xs text-muted-foreground">Custom colors, logos and more</p>
+                        </div>
+                        <Link href="/dashboard/settings/branding"><Button variant="ghost" size="sm">Go</Button></Link>
+                    </div>
                 </CardContent>
             </Card>
         </div>

@@ -28,7 +28,7 @@ export async function PUT(req) {
     const ops = categoryIds.map((id, index) => ({
       updateOne: {
         filter: { _id: id, restaurant: restaurant._id },
-        update: { $set: { order: index } },
+        update: { $set: { sortOrder: index } },
       },
     }));
 

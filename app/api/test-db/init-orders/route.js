@@ -25,7 +25,7 @@ export async function GET() {
     const catOps = categories.map((cat, index) => ({
       updateOne: {
         filter: { _id: cat._id },
-        update: { $set: { order: index } },
+        update: { $set: { sortOrder: index } },
       },
     }));
 
@@ -50,7 +50,7 @@ export async function GET() {
         itemOps.push({
           updateOne: {
             filter: { _id: item._id },
-            update: { $set: { order: index } },
+            update: { $set: { sortOrder: index } },
           },
         });
       });

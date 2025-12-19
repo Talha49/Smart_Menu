@@ -12,13 +12,25 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: nextUrl }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.nextUrl.pathname.startsWith('/dashboard');
-      const isOnOnboarding = nextUrl.nextUrl.pathname.startsWith('/onboarding');
-      const isOnAuth = nextUrl.nextUrl.pathname.startsWith('/login') || nextUrl.nextUrl.pathname.startsWith('/signup');
+      const hasRestaurant = !!auth?.user?.restaurantId;
+      const { pathname } = nextUrl.nextUrl;
+      
+      const isOnDashboard = pathname.startsWith('/dashboard');
+      const isOnOnboarding = pathname.startsWith('/onboarding');
+      const isOnAuth = pathname.startsWith('/login') || pathname.startsWith('/signup');
 
+      // 1. Force Onboarding if logged in but no restaurant
+      if (isOnDashboard && isLoggedIn && !hasRestaurant) {
+        return Response.redirect(new URL('/onboarding', nextUrl.nextUrl));
+      }
+
+      // 2. Prevent Onboarding if already has restaurant (unless manually visiting settings)
+      // Actually, let's just let the page guard handle the content.
+      
+      // 3. Auth Protection
       if (isOnDashboard || isOnOnboarding) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return false; // Redirect to login
       } else if (isLoggedIn && isOnAuth) {
         return Response.redirect(new URL('/dashboard', nextUrl.nextUrl));
       }

@@ -13,8 +13,8 @@ export async function GET(req) {
     const restaurant = await Restaurant.findOne({ owner: session.user.id });
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
-    // Sort by 'order'
-    const categories = await Category.find({ restaurant: restaurant._id }).sort({ order: 1 });
+    // Sort by 'sortOrder'
+    const categories = await Category.find({ restaurant: restaurant._id }).sort({ sortOrder: 1 });
 
     return NextResponse.json({ categories });
   } catch (error) {
@@ -40,15 +40,15 @@ export async function POST(req) {
         return NextResponse.json({ message: "Category with this name already exists" }, { status: 400 });
     }
 
-    // Find max order
-    const lastCategory = await Category.findOne({ restaurant: restaurant._id }).sort({ order: -1 });
-    const nextOrder = lastCategory ? (lastCategory.order || 0) + 1 : 0;
+    // Find max sortOrder
+    const lastCategory = await Category.findOne({ restaurant: restaurant._id }).sort({ sortOrder: -1 });
+    const nextOrder = lastCategory ? (lastCategory.sortOrder || 0) + 1 : 0;
 
     const category = await Category.create({
         name,
         restaurant: restaurant._id,
         emoji: emoji || "🍽️",
-        order: nextOrder
+        sortOrder: nextOrder
     });
 
     return NextResponse.json({ category }, { status: 201 });

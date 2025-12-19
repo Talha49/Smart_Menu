@@ -56,8 +56,8 @@ export async function GET(req) {
       query.name = { $regex: search, $options: "i" };
     }
 
-    // Prioritize manual order
-    const items = await MenuItem.find(query).sort({ order: 1, createdAt: -1 });
+    // Prioritize manual sortOrder
+    const items = await MenuItem.find(query).sort({ sortOrder: 1, createdAt: -1 });
 
     return NextResponse.json({ items });
   } catch (error) {
@@ -97,18 +97,18 @@ export async function POST(req) {
         return NextResponse.json({ message: "Invalid input", errors: validation.error.flatten() }, { status: 400 });
     }
 
-    // 4. Find max order within this category
+    // 4. Find max sortOrder within this category
     const lastItem = await MenuItem.findOne({ 
         restaurant: restaurant._id, 
         category: validation.data.category 
-    }).sort({ order: -1 });
-    const nextOrder = lastItem ? (lastItem.order || 0) + 1 : 0;
+    }).sort({ sortOrder: -1 });
+    const nextOrder = lastItem ? (lastItem.sortOrder || 0) + 1 : 0;
 
     // 5. Create Item
     const newItem = await MenuItem.create({
         ...validation.data,
         restaurant: restaurant._id,
-        order: nextOrder
+        sortOrder: nextOrder
     });
 
     return NextResponse.json({ item: newItem }, { status: 201 });

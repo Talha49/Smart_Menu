@@ -54,14 +54,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       // --- NODE SPECIFIC LOGIC (Mongoose) ---
-      if (!token.restaurantId) {
+      const userId = token.id || token.sub;
+      if (!token.restaurantId && userId) {
         try {
           await dbConnect();
-          const restaurant = await Restaurant.findOne({ owner: token.id || token.sub }); 
-          // token.sub is default subject ID if token.id not set yet
+          const restaurant = await Restaurant.findOne({ owner: userId });
           if (restaurant) {
             token.restaurantId = restaurant.restaurantId;
             token.plan = restaurant.plan;
+          } else {
+            // Explicitly ensure it's not set if no restaurant found
+            delete token.restaurantId;
+            delete token.plan;
           }
         } catch (error) {
           console.error("Error fetching restaurant in JWT callback:", error);
