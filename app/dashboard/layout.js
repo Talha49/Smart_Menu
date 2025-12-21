@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
+import { useCategoryStore } from "@/hooks/use-category-store";
+import { useMenuStore } from "@/hooks/use-menu-store";
 import { cn } from "@/lib/utils";
 import { ImageUploadProvider } from "@/context/ImageUploadContext";
 
@@ -14,10 +16,14 @@ export default function DashboardLayout({ children }) {
   const [isDesktopOpen, setIsDesktopOpen] = useState(true);
 
   const fetchRestaurant = useRestaurantStore((state) => state.fetchRestaurant);
+  const fetchCategories = useCategoryStore((state) => state.fetchCategories);
+  const fetchItems = useMenuStore((state) => state.fetchItems);
 
   useEffect(() => {
     fetchRestaurant();
-  }, [fetchRestaurant]);
+    fetchCategories();
+    fetchItems();
+  }, [fetchRestaurant, fetchCategories, fetchItems]);
 
   const toggleSidebar = () => {
     if (window.innerWidth < 768) {

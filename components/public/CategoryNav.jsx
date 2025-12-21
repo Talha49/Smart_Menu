@@ -2,25 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export function CategoryNav({ categories, activeCategory, brandColor }) {
     const [active, setActive] = useState(activeCategory);
     const navRef = useRef(null);
 
-    // Sync active state if prop changes (e.g. from scroll spy)
     useEffect(() => {
         setActive(activeCategory);
     }, [activeCategory]);
 
     const scrollToCategory = (catName) => {
-        // 1. Set active immediately for UI feedback
         setActive(catName);
-
-        // 2. Scroll to section
         const element = document.getElementById(`category-${catName}`);
         if (element) {
-            // Offset for sticky header/nav height
-            const headerOffset = 140;
+            // Responsive offset based on screen width
+            const isMobile = window.innerWidth < 768;
+            const headerOffset = isMobile ? 140 : 180;
             const elementPosition = element.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -32,34 +30,35 @@ export function CategoryNav({ categories, activeCategory, brandColor }) {
     };
 
     return (
-        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b w-full overflow-hidden">
+        <div className="sticky top-[72px] md:top-[80px] z-40 bg-white/80 backdrop-blur-3xl border-b w-full overflow-hidden transition-all duration-500">
             <div
                 ref={navRef}
-                className="flex overflow-x-auto py-3 px-4 gap-2 scrollbar-hide snap-x"
+                className="flex overflow-x-auto py-4 px-6 gap-3 scrollbar-hide snap-x max-w-7xl mx-auto"
                 role="tablist"
             >
                 {categories.map((cat) => (
-                    <button
+                    <motion.button
                         key={cat._id}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => scrollToCategory(cat.name)}
-                        data-state={active === cat.name ? "active" : "inactive"}
                         className={cn(
-                            "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 snap-center border",
+                            "group flex items-center gap-2.5 px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300 snap-center border-2",
                             active === cat.name
-                                ? "text-white border-transparent shadow-sm scale-105"
-                                : "bg-secondary/50 text-muted-foreground border-transparent hover:bg-secondary hover:text-foreground"
+                                ? "text-white border-transparent shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)]"
+                                : "bg-zinc-50 text-zinc-400 border-zinc-100 hover:border-zinc-200 hover:text-zinc-900"
                         )}
-                        style={active === cat.name ? { backgroundColor: brandColor || "var(--primary)" } : {}}
-                        role="tab"
-                        aria-selected={active === cat.name}
+                        style={active === cat.name ? {
+                            backgroundColor: brandColor || "black",
+                            boxShadow: `0 10px 25px -5px ${brandColor ? brandColor + '40' : 'rgba(0,0,0,0.1)'}`
+                        } : {}}
                     >
-                        <span className="text-lg">{cat.emoji || "🍽️"}</span>
+                        <span className="text-xl group-hover:scale-125 transition-transform duration-500">{cat.emoji || "🍽️"}</span>
                         {cat.name}
-                    </button>
+                    </motion.button>
                 ))}
             </div>
-            {/* Gradient fade for overflow indication */}
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none md:hidden" />
+            {/* Elegant glass indicator */}
+            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
         </div>
     );
 }

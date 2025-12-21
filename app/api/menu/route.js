@@ -56,8 +56,8 @@ export async function GET(req) {
       query.name = { $regex: search, $options: "i" };
     }
 
-    // Prioritize manual sortOrder
-    const items = await MenuItem.find(query).sort({ sortOrder: 1, createdAt: -1 });
+    // Prioritize featured items, then manual sortOrder
+    const items = await MenuItem.find(query).sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 });
 
     return NextResponse.json({ items });
   } catch (error) {

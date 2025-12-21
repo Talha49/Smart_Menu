@@ -10,15 +10,28 @@ export const useMenuStore = create((set, get) => ({
     search: '',
     category: 'all',
   },
+  focusedItemId: null,
+
+  setFocusedItem: (id) => {
+    set({ focusedItemId: id });
+    if (id) {
+      setTimeout(() => set({ focusedItemId: null }), 3000); // Clear after 3s
+    }
+  },
 
   setFilter: (key, value) => set((state) => ({ 
     filters: { ...state.filters, [key]: value } 
   })),
 
-  fetchItems: async () => {
+  fetchItems: async (force = false) => {
+    const { filters, items } = get();
+    
+    // Only skip if we have items, no search/category filter active, and not forcing
+    const isFiltered = filters.search || filters.category !== 'all';
+    if (items.length > 0 && !isFiltered && !force) return;
+
     set({ isLoading: true, error: null });
     try {
-      const { filters } = get();
       const params = {};
       if (filters.search) params.search = filters.search;
       if (filters.category !== 'all') params.category = filters.category;
@@ -27,7 +40,6 @@ export const useMenuStore = create((set, get) => ({
       set({ items: data.items || [], isLoading: false });
     } catch (error) {
       set({ error: error.message, isLoading: false });
-      // Don't toast on initial fetch fail, just show error state in UI
     }
   },
 
@@ -35,7 +47,7 @@ export const useMenuStore = create((set, get) => ({
     try {
       await MenuService.createMenuItem(data);
       toast.success("Item created");
-      get().fetchItems(); // Refresh
+      get().fetchItems(true); // Force refresh to show new item
       return true;
     } catch (error) {
       toast.error(error.message);
@@ -47,7 +59,7 @@ export const useMenuStore = create((set, get) => ({
     try {
       await MenuService.updateMenuItem(id, data);
       toast.success("Item updated");
-      get().fetchItems();
+      get().fetchItems(true); // Force refresh
       return true;
     } catch (error) {
       toast.error(error.message);
@@ -63,26 +75,47 @@ export const useMenuStore = create((set, get) => ({
       set((state) => ({ items: state.items.filter((i) => i._id !== id) }));
     } catch (error) {
       toast.error(error.message);
-      get().fetchItems(); // Revert on fail
+      get().fetchItems(true); // Revert on fail
     }
   },
 
-  toggleAvailability: async (id, currentStatus) => {
+  toggleAvailability: async (id, targetStatus) => {
     // Optimistic update
     set((state) => ({
       items: state.items.map((i) => 
-        i._id === id ? { ...i, isAvailable: !currentStatus } : i
+        i._id === id ? { ...i, isAvailable: targetStatus } : i
       )
     }));
 
     try {
-      await MenuService.toggleAvailability(id, !currentStatus);
+      await MenuService.toggleAvailability(id, targetStatus);
     } catch (error) {
       toast.error("Failed to update status");
+      // Revert if we have items
+      set((state) => ({
+        items: state.items.map((i) => 
+            i._id === id ? { ...i, isAvailable: !targetStatus } : i
+        )
+      }));
+    }
+  },
+
+  toggleFeatured: async (id, targetStatus) => {
+    // Optimistic update
+    set((state) => ({
+      items: state.items.map((i) => 
+        i._id === id ? { ...i, isFeatured: targetStatus } : i
+      )
+    }));
+
+    try {
+      await MenuService.updateMenuItem(id, { isFeatured: targetStatus });
+    } catch (error) {
+      toast.error("Failed to update featured status");
       // Revert
       set((state) => ({
         items: state.items.map((i) => 
-            i._id === id ? { ...i, isAvailable: currentStatus } : i
+            i._id === id ? { ...i, isFeatured: !targetStatus } : i
         )
       }));
     }
@@ -96,7 +129,6 @@ export const useMenuStore = create((set, get) => ({
 
     try {
       // 2. Sync with Server
-      // We send all item IDs in their new relative order
       const ids = newItems.map(i => i._id);
       await MenuService.reorderMenuItems(ids);
     } catch (error) {

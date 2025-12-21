@@ -22,9 +22,9 @@ const FONT_OPTIONS = [
 ];
 
 export default function BrandingPage() {
-    const { restaurant, setRestaurant } = useRestaurantStore();
-    const { items: menuItems, fetchItems } = useMenuStore();
-    const { categories, fetchCategories } = useCategoryStore();
+    const { restaurant, updateBranding } = useRestaurantStore();
+    const { items: menuItems } = useMenuStore();
+    const { categories } = useCategoryStore();
 
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -42,8 +42,6 @@ export default function BrandingPage() {
                 fontFamily: restaurant.fontFamily || "Inter",
                 logoUrl: restaurant.logoUrl || "",
             });
-            fetchItems();
-            fetchCategories();
         }
     }, [restaurant]);
 
@@ -51,31 +49,15 @@ export default function BrandingPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        try {
-            const res = await fetch("/api/restaurant/branding", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
+        const result = await updateBranding(formData);
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                if (res.status === 403) {
-                    toast.error("Upgrade to Pro to save changes!");
-                } else {
-                    toast.error(data.message || "Failed to save settings");
-                }
-                return;
-            }
-
-            setRestaurant(data.restaurant);
+        if (result.success) {
             toast.success("Branding updated successfully!");
-        } catch (error) {
-            toast.error("Something went wrong");
-        } finally {
-            setIsLoading(false);
+        } else {
+            toast.error(result.error);
         }
+
+        setIsLoading(false);
     };
 
     return (

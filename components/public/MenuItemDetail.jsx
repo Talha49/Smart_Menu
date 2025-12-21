@@ -1,22 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, ChevronLeft } from "lucide-react";
+import { X, ChevronLeft, Sparkles, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function MenuItemDetail({ item, isOpen, onClose }) {
-    const [isClosing, setIsClosing] = useState(false);
-
-    // Handle closing animation
-    const handleClose = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            setIsClosing(false);
-            onClose();
-        }, 200);
-    };
-
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
@@ -26,78 +16,111 @@ export function MenuItemDetail({ item, isOpen, onClose }) {
         return () => { document.body.style.overflow = "unset"; };
     }, [isOpen]);
 
-    if (!isOpen && !isClosing) return null;
+    if (!item) return null;
 
     return (
-        <div className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 transition-opacity duration-200",
-            isClosing ? "opacity-0" : "opacity-100" // fade out on close
-        )}>
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                onClick={handleClose}
-            />
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden">
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                        onClick={onClose}
+                    />
 
-            {/* Modal - Full screen on mobile, card on desktop */}
-            <div className={cn(
-                "relative w-full h-full md:h-auto md:max-w-lg bg-background md:rounded-3xl shadow-2xl overflow-hidden flex flex-col transition-transform duration-300",
-                isOpen && !isClosing ? "translate-y-0 scale-100" : "translate-y-full md:translate-y-10 md:scale-95"
-            )}>
-
-                {/* Close Button or Back header */}
-                <div className="absolute top-4 left-4 z-10">
-                    <Button variant="secondary" size="icon" className="rounded-full shadow-md bg-white/90 text-black hover:bg-white" onClick={handleClose}>
-                        <ChevronLeft className="w-5 h-5 md:hidden" />
-                        <X className="w-5 h-5 hidden md:block" />
-                    </Button>
-                </div>
-
-                {/* Image Area */}
-                <div className="w-full h-72 md:h-64 bg-muted relative shrink-0">
-                    {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/50">
-                            <span className="text-4xl opacity-20">🍽️</span>
+                    {/* Modal Content */}
+                    <motion.div
+                        initial={{ y: "100%", opacity: 0, scale: 0.9 }}
+                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        exit={{ y: "100%", opacity: 0, scale: 0.9 }}
+                        transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
+                        className="relative w-full max-w-2xl h-[90vh] md:h-auto md:max-h-[85vh] bg-zinc-950 text-white md:rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden flex flex-col md:flex-row m-0 md:m-4"
+                    >
+                        {/* Close button - Top right for desktop, Top left for mobile as back */}
+                        <div className="absolute top-6 right-6 z-20 hidden md:block">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full bg-white/5 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md"
+                                onClick={onClose}
+                            >
+                                <X className="w-5 h-5" />
+                            </Button>
                         </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60 md:hidden" />
-                </div>
+                        <div className="absolute top-6 left-6 z-20 md:hidden">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/10 backdrop-blur-md"
+                                onClick={onClose}
+                            >
+                                <ChevronLeft className="w-6 h-6" />
+                            </Button>
+                        </div>
 
-                {/* Content Area */}
-                <div className="p-6 md:p-8 flex-1 overflow-y-auto -mt-6 md:mt-0 relative bg-background rounded-t-3xl md:rounded-none">
-                    <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6 md:hidden opacity-50" />
+                        {/* Image Section */}
+                        <div className="w-full md:w-1/2 h-[45%] md:h-auto bg-zinc-900 relative group">
+                            {item.imageUrl ? (
+                                <img
+                                    src={item.imageUrl}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-7xl opacity-20">🍽️</div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
 
-                    <div className="flex justify-between items-start mb-2">
-                        <h2 className="text-2xl font-bold leading-tight">{item.name}</h2>
-                        <span className="text-xl font-bold text-primary whitespace-nowrap">${item.price.toFixed(2)}</span>
-                    </div>
+                            {item.isFeatured && (
+                                <div className="absolute bottom-6 left-6 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-black tracking-[0.2em] text-white flex items-center gap-2">
+                                    <Sparkles className="w-3.5 h-3.5 fill-primary text-primary" />
+                                    OUR SIGNATURE
+                                </div>
+                            )}
+                        </div>
 
-                    <p className="text-muted-foreground leading-relaxed text-base mb-6">
-                        {item.description}
-                    </p>
+                        {/* Text Section */}
+                        <div className="flex-1 p-8 md:p-12 flex flex-col bg-zinc-950 overflow-y-auto">
+                            <div className="flex-1">
+                                <div className="flex flex-col gap-2 mb-6 md:mb-8">
+                                    <span className="text-[10px] font-black tracking-[0.3em] text-primary uppercase">{item.category}</span>
+                                    <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-tight md:leading-none">{item.name}</h2>
+                                </div>
 
-                    {/* Future: Add-ons / Dietary tags could go here */}
-                    <div className="space-y-4">
-                        {item.isAvailable ? (
-                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Available
+                                <p className="text-zinc-400 text-sm md:text-base leading-relaxed font-medium mb-8 md:mb-12 antialiased">
+                                    {item.description || "A masterfully crafted selection from our kitchen, prepared with only the finest ingredients and a passion for flavor."}
+                                </p>
+
+                                <div className="space-y-4 mb-8 md:mb-0">
+                                    <div className="flex items-center gap-3 text-[10px] font-black tracking-widest text-zinc-500 uppercase">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                        In Stock & Ready
+                                    </div>
+                                </div>
                             </div>
-                        ) : (
-                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Sold Out
+
+                            <div className="pt-8 md:pt-10 border-t border-white/5 flex flex-wrap items-end justify-between gap-6 mt-6 md:mt-10">
+                                <div className="flex flex-col min-w-[120px]">
+                                    <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Price Value</span>
+                                    <div className="text-3xl md:text-5xl font-black tracking-tighter text-white whitespace-nowrap">
+                                        <span className="text-base md:text-xl align-top mr-0.5">$</span>
+                                        {item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </div>
+                                </div>
+                                <Button
+                                    className="h-12 md:h-14 px-8 md:px-10 rounded-xl md:rounded-2xl bg-white text-black font-black uppercase tracking-widest hover:bg-zinc-200 transition-all active:scale-95 shadow-xl shadow-white/5 flex-grow md:flex-grow-0"
+                                    onClick={onClose}
+                                >
+                                    Dismiss
+                                </Button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    </motion.div>
                 </div>
-
-                {/* Actions (if ordering is enabled later) */}
-                <div className="p-4 border-t bg-background sticky bottom-0 md:static">
-                    {/* Not functional yet for View Only mode */}
-                </div>
-
-            </div>
-        </div>
+            )}
+        </AnimatePresence>
     );
 }

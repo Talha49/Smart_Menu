@@ -7,7 +7,10 @@ export const useCategoryStore = create((set, get) => ({
   isLoading: false,
   error: null,
   
-  fetchCategories: async () => {
+  fetchCategories: async (force = false) => {
+    // If we already have data and not forcing, skip
+    if (get().categories.length > 0 && !force) return;
+
     set({ isLoading: true, error: null });
     try {
       const data = await CategoryService.getCategories();

@@ -39,12 +39,16 @@ const MenuItemSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
 // Compound index for fetching a restaurant's menu items efficiently
-// Also optimized for sorting by order
-MenuItemSchema.index({ restaurant: 1, category: 1, sortOrder: 1 });
+// Also optimized for sorting by featured status and order
+MenuItemSchema.index({ restaurant: 1, category: 1, isFeatured: -1, sortOrder: 1 });
 
 export default mongoose.models.MenuItem || mongoose.model("MenuItem", MenuItemSchema);

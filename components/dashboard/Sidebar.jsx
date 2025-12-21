@@ -22,7 +22,7 @@ const sidebarLinks = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Menu Management", href: "/dashboard/menu", icon: UtensilsCrossed },
     { name: "QR Code", href: "/dashboard/qr", icon: QrCode },
-    { name: "Branding", href: "/dashboard/settings/branding", icon: Settings },
+    { name: "Shop Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar({ className, onClose, isMobile }) {

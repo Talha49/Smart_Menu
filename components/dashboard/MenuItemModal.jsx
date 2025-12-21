@@ -5,10 +5,10 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ImageUpload } from "@/components/dashboard/ImageUpload";
-import { useFormStatus } from "react-dom"; // N/A using client form state
-import { Loader2 } from "lucide-react";
+import { Loader2, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCategoryStore } from "@/hooks/use-category-store";
+import { cn } from "@/lib/utils";
 
 function CategorySelect({ value, onChange }) {
     const { categories } = useCategoryStore();
@@ -20,7 +20,6 @@ function CategorySelect({ value, onChange }) {
             onChange={(e) => onChange(e.target.value)}
         >
             <option value="" disabled>Select a category</option>
-            {/* Allow keeping existing value even if not in current list (edge case) */}
             {!categories.some(c => c.name === value) && value && <option value={value}>{value}</option>}
 
             {categories.map(cat => (
@@ -38,7 +37,8 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
         description: "",
         category: "Mains",
         imageUrl: "",
-        isAvailable: true
+        isAvailable: true,
+        isFeatured: false
     });
 
     // Reset form when modal opens/closes or initialData changes
@@ -46,7 +46,8 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
         if (initialData) {
             setFormData({
                 ...initialData,
-                price: initialData.price.toString() // Ensure string for input
+                price: initialData.price.toString(),
+                isFeatured: initialData.isFeatured || false
             });
         } else {
             setFormData({
@@ -55,7 +56,8 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
                 description: "",
                 category: "",
                 imageUrl: "",
-                isAvailable: true
+                isAvailable: true,
+                isFeatured: false
             });
         }
     }, [initialData, isOpen]);
@@ -85,7 +87,7 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...formData,
-                    price: parseFloat(formData.price) // Convert back to number
+                    price: parseFloat(formData.price)
                 })
             });
 
@@ -96,8 +98,8 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
             }
 
             toast.success(initialData ? "Item updated!" : "Item created!");
-            onRefresh(); // Refresh parent list
-            onClose();   // Close modal
+            onRefresh();
+            onClose();
 
         } catch (error) {
             toast.error(error.message);
@@ -161,6 +163,30 @@ export function MenuItemModal({ isOpen, onClose, initialData, onRefresh }) {
                         onChange={handleChange}
                         maxLength={200}
                     />
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 border-border/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-full bg-yellow-500/10 text-yellow-500">
+                            <Star className="h-4 w-4 fill-current" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium">Top Pick</p>
+                            <p className="text-[10px] text-muted-foreground">Highlight this item at the top of the menu</p>
+                        </div>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                            "h-8 px-3 gap-2 transition-all",
+                            formData.isFeatured ? "bg-yellow-500 text-white hover:bg-yellow-600 shadow-sm" : "border text-muted-foreground hover:bg-muted"
+                        )}
+                        onClick={() => setFormData(prev => ({ ...prev, isFeatured: !prev.isFeatured }))}
+                    >
+                        {formData.isFeatured ? "Featured" : "Set Featured"}
+                    </Button>
                 </div>
 
                 <div className="pt-4 flex justify-end gap-2">

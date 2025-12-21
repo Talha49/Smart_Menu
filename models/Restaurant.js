@@ -12,7 +12,7 @@ const RestaurantSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      index: true, // Critical for tenant lookup performance
+      index: true,
       lowercase: true,
       trim: true,
     },
@@ -26,16 +26,40 @@ const RestaurantSchema = new mongoose.Schema(
       enum: ["free", "pro"],
       default: "free",
     },
-    // Branding & Pro Features
     logoUrl: { type: String },
-    brandColor: { type: String, default: "#4f46e5" }, // Default primary color
+    brandColor: { type: String, default: "#4f46e5" }, 
     fontFamily: { type: String, default: "Inter" },
     
-    // Payment Info
+    // Grouped Business Profile
+    businessProfile: {
+        description: { type: String, maxlength: 500, default: "" },
+        address: { type: String, default: "" },
+        phone: { type: String, default: "" },
+        whatsapp: { type: String, default: "" },
+        socialLinks: {
+            instagram: { type: String, default: "" },
+            facebook: { type: String, default: "" },
+            twitter: { type: String, default: "" },
+        },
+        openingHours: [
+            {
+                day: { type: String, enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+                open: { type: String, default: "09:00" },
+                close: { type: String, default: "22:00" },
+                isClosed: { type: Boolean, default: false },
+            }
+        ],
+    },
+
     stripeCustomerId: { type: String },
     stripeSubscriptionId: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true, minimize: false }
 );
+
+// Force delete the model in development to ensure schema changes are picked up
+if (process.env.NODE_ENV === "development") {
+    delete mongoose.models.Restaurant;
+}
 
 export default mongoose.models.Restaurant || mongoose.model("Restaurant", RestaurantSchema);

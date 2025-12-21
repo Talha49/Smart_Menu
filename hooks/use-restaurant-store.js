@@ -1,36 +1,87 @@
 import { create } from 'zustand';
 
 // Global store for restaurant data to avoid prop drilling and frequent refetches
-export const useRestaurantStore = create((set) => ({
+export const useRestaurantStore = create((set, get) => ({
   restaurant: null,
   isLoading: false,
   error: null,
 
   setRestaurant: (data) => set({ restaurant: data }),
   
-  // Fetch restaurant details using the authenticated session or specific slug
+  // Fetch restaurant details using the authenticated session
   fetchRestaurant: async () => {
     set({ isLoading: true, error: null });
     try {
-      // In a real app, this might fetch from a dedicated /api/restaurant/me endpoint
-      // For now, we'll assume the session has initial data, or we fetch fresh by ID if needed.
-      // But standard practice: GET /api/restaurant/me
       const res = await fetch('/api/restaurant/me');
-      
       if (!res.ok) {
-         // If 404, maybe not created yet/handled by middleware?
-         // We'll handle gracefully.
          if(res.status === 404) {
              set({ restaurant: null, isLoading: false });
              return;
          }
          throw new Error('Failed to fetch restaurant');
       }
-      
       const data = await res.json();
       set({ restaurant: data, isLoading: false });
     } catch (error) {
       set({ error: error.message, isLoading: false });
     }
   },
+
+  updateBranding: async (formData) => {
+    const previousState = get().restaurant;
+    
+    // 1. Optimistic Update
+    set((state) => ({
+      restaurant: { ...state.restaurant, ...formData }
+    }));
+
+    try {
+      const res = await fetch("/api/restaurant/branding", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to save settings");
+      }
+
+      const data = await res.json();
+      set({ restaurant: data.restaurant });
+      return { success: true };
+    } catch (error) {
+      set({ restaurant: previousState });
+      return { success: false, error: error.message };
+    }
+  },
+
+  updateBusinessProfile: async (formData) => {
+    const previousState = get().restaurant;
+    
+    // 1. Optimistic Update
+    set((state) => ({
+      restaurant: { ...state.restaurant, ...formData }
+    }));
+
+    try {
+      const res = await fetch("/api/restaurant/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to save profile");
+      }
+
+      const data = await res.json();
+      set({ restaurant: data.restaurant });
+      return { success: true };
+    } catch (error) {
+      set({ restaurant: previousState });
+      return { success: false, error: error.message };
+    }
+  }
 }));
