@@ -55,7 +55,7 @@ export function BrandingTab() {
     };
 
     return (
-        <div className="space-y-6 relative h-full flex flex-col">
+        <div className="space-y-6 relative pb-12">
             {!isPro && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center text-center p-6 rounded-xl border border-primary/20 bg-muted/10">
                     <Lock className="w-12 h-12 text-primary mb-4" />

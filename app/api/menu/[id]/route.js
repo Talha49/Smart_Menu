@@ -38,10 +38,23 @@ export async function PUT(req, { params }) {
         return NextResponse.json({ message: "Invalid input", errors: validation.error.flatten() }, { status: 400 });
     }
 
+    // Explicitly update all fields to ensure variants/modifiers are saved
+    const updateData = {
+        name: validation.data.name,
+        price: validation.data.price,
+        description: validation.data.description,
+        category: validation.data.category,
+        imageUrl: validation.data.imageUrl,
+        isAvailable: validation.data.isAvailable,
+        isFeatured: validation.data.isFeatured,
+        variants: validation.data.variants || [],
+        modifiers: validation.data.modifiers || []
+    };
+
     const updatedItem = await MenuItem.findOneAndUpdate(
         { _id: id, restaurant: restaurant._id },
-        validation.data,
-        { new: true }
+        { $set: updateData },
+        { new: true, runValidators: true }
     );
 
     if (!updatedItem) return NextResponse.json({ message: "Item not found or unauthorized" }, { status: 404 });

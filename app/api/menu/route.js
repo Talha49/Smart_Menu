@@ -91,11 +91,25 @@ export async function POST(req) {
 
     // 3. Validate Input
     const body = await req.json();
+    console.log('[API /menu POST] Received body:', {
+        name: body.name,
+        hasVariants: body.variants?.length > 0,
+        variantsCount: body.variants?.length || 0,
+        modifiersCount: body.modifiers?.length || 0
+    });
+    
     const validation = MenuItemSchema.safeParse(body);
     
     if (!validation.success) {
+        console.error('[API /menu POST] Validation failed:', validation.error.flatten());
         return NextResponse.json({ message: "Invalid input", errors: validation.error.flatten() }, { status: 400 });
     }
+
+    console.log('[API /menu POST] Validation passed. Data:', {
+        name: validation.data.name,
+        variantsCount: validation.data.variants?.length || 0,
+        modifiersCount: validation.data.modifiers?.length || 0
+    });
 
     // 4. Find max sortOrder within this category
     const lastItem = await MenuItem.findOne({ 
@@ -104,12 +118,22 @@ export async function POST(req) {
     }).sort({ sortOrder: -1 });
     const nextOrder = lastItem ? (lastItem.sortOrder || 0) + 1 : 0;
 
-    // 5. Create Item
-    const newItem = await MenuItem.create({
-        ...validation.data,
+    // 5. Create Item - Explicit Mapping for maximum reliability
+    const newItemData = {
+        name: validation.data.name,
+        price: validation.data.price || 0,
+        description: validation.data.description || "",
+        category: validation.data.category,
+        imageUrl: validation.data.imageUrl || "",
+        isAvailable: validation.data.isAvailable ?? true,
+        isFeatured: validation.data.isFeatured || false,
         restaurant: restaurant._id,
-        sortOrder: nextOrder
-    });
+        sortOrder: nextOrder,
+        variants: validation.data.variants || [],
+        modifiers: validation.data.modifiers || []
+    };
+
+    const newItem = await MenuItem.create(newItemData);
 
     return NextResponse.json({ item: newItem }, { status: 201 });
 

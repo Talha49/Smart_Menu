@@ -43,6 +43,44 @@ const MenuItemSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Variants for size options (e.g., Small, Medium, Large)
+    variants: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: [0, "Variant price cannot be negative"],
+        },
+        isDefault: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+    // Modifiers for add-ons (e.g., Extra Cheese, Bacon)
+    modifiers: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: [0, "Modifier price cannot be negative"],
+        },
+        category: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -51,4 +89,11 @@ const MenuItemSchema = new mongoose.Schema(
 // Also optimized for sorting by featured status and order
 MenuItemSchema.index({ restaurant: 1, category: 1, isFeatured: -1, sortOrder: 1 });
 
-export default mongoose.models.MenuItem || mongoose.model("MenuItem", MenuItemSchema);
+// Ensure we don't use a cached model if we're in development and need schema updates
+const MenuItem = mongoose.models.MenuItem || mongoose.model("MenuItem", MenuItemSchema);
+
+// If the model exists but doesn't have the new fields (variants/modifiers), 
+// we might need to recreate it in development environment.
+// However, the most robust way in Next.js is just ensuring the schema is complete initially.
+
+export default MenuItem;

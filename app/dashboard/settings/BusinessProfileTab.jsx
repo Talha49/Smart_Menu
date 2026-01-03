@@ -144,7 +144,7 @@ export function BusinessProfileTab() {
 
     const FieldLabel = ({ icon: Icon, label, required, error, touched, colorClass }) => (
         <div className="flex items-center justify-between mb-2">
-            <label className={cn("text-xs font-bold uppercase tracking-widest flex items-center gap-2", colorClass || "text-muted-foreground")}>
+            <label className={cn("text-xs font-bold uppercase tracking-wider flex items-center gap-2", colorClass || "text-zinc-500")}>
                 <Icon className="w-3.5 h-3.5" />
                 {label}
                 {required && <span className="text-red-500">*</span>}
@@ -161,42 +161,62 @@ export function BusinessProfileTab() {
     );
 
     return (
-        <div className="max-w-5xl mx-auto space-y-12 pb-20">
-            <div className="flex flex-col gap-2 border-b pb-8">
-                <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    Business Persona
-                    <div className="px-2 py-0.5 rounded text-[10px] bg-primary/10 text-primary uppercase tracking-tighter">SaaS Edition</div>
-                </h1>
-                <p className="text-muted-foreground max-w-2xl">
-                    Craft an elegant digital presence. These details power your public menu, SEO metadata, and customer communication channels.
+        <div className="space-y-12 animate-in fade-in duration-700">
+            {/* Executive Summary Header */}
+            <div className="flex flex-col gap-3 pb-8 border-b border-zinc-100">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                        Business Profile
+                    </h1>
+                </div>
+                <p className="text-zinc-500 text-sm font-medium leading-relaxed max-w-2xl">
+                    Update your restaurant's details, location, and communication channels. These details will be visible on your public digital menu and SEO metadata.
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                {/* Left Column: Essential Identity */}
-                <div className="lg:col-span-7 space-y-10">
-                    {/* Brand Story Card */}
-                    <div className="space-y-4">
-                        <FieldLabel icon={Info} label="Brand Story & Description" />
-                        <div className="relative group">
-                            <textarea
-                                className="flex min-h-[160px] w-full rounded-2xl border-2 border-muted bg-background px-4 py-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary/50 transition-all resize-none group-hover:border-muted-foreground/20"
-                                placeholder="What makes your restaurant unique? Share your vision..."
-                                value={formData.description}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                maxLength={500}
-                            />
-                            <div className="absolute bottom-4 right-4 text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                                {formData.description.length}/500
-                            </div>
+            <form onSubmit={handleSubmit} className="space-y-10">
+                {/* Identity Card: Brand Story */}
+                <div className="bg-white rounded-[2rem] border border-zinc-100 p-8 md:p-10 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-900 border border-zinc-100">
+                            <Info className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-zinc-900">Brand Story</h3>
+                            <p className="text-xs text-zinc-400 font-medium">Describe your vision and what makes your restaurant unique</p>
                         </div>
                     </div>
 
-                    {/* Geolocation & Contact Grid */}
-                    <div className="grid sm:grid-cols-2 gap-8 pt-4">
+                    <div className="relative group">
+                        <textarea
+                            className="flex min-h-[200px] w-full rounded-2xl border-2 border-zinc-50 bg-zinc-50/30 px-6 py-6 text-base font-medium ring-offset-background placeholder:text-zinc-300 focus-visible:outline-none focus-visible:border-zinc-200 focus-visible:bg-white transition-all resize-none"
+                            placeholder="What makes your restaurant unique? Share your vision, heritage, and flavors..."
+                            value={formData.description}
+                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                            maxLength={500}
+                        />
+                        <div className="absolute bottom-6 right-6 text-[10px] font-bold text-zinc-400 bg-white border border-zinc-100 px-3 py-1.5 rounded-full shadow-sm">
+                            {formData.description.length} <span className="opacity-30">/</span> 500
+                        </div>
+                    </div>
+                </div>
+
+                {/* Connect Card: Address & Contact */}
+                <div className="bg-white rounded-[2rem] border border-zinc-100 p-8 md:p-10 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4 mb-10">
+                        <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-900 border border-zinc-100">
+                            <MapPin className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-zinc-900">Location & Contact</h3>
+                            <p className="text-xs text-zinc-400 font-medium">Help customers find and reach you easily</p>
+                        </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-10">
                         <div className="space-y-4">
                             <FieldLabel
-                                icon={MapPin}
+                                icon={Globe}
                                 label="Physical Address"
                                 required
                                 touched={touched.address}
@@ -204,167 +224,162 @@ export function BusinessProfileTab() {
                             />
                             <div className="relative">
                                 <Input
-                                    className="h-12 rounded-xl border-2 pl-10 focus-visible:ring-0 focus-visible:border-primary transition-all"
-                                    placeholder="123 Culinary Ave, City"
+                                    className="h-14 rounded-2xl border-2 border-zinc-50 bg-zinc-50/50 pl-12 focus-visible:ring-0 focus-visible:border-zinc-200 focus-visible:bg-white transition-all text-sm font-bold"
+                                    placeholder="123 Culinary Avenue, Food District"
                                     value={formData.address}
                                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                                     onBlur={() => handleBlur('address')}
                                 />
-                                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300" />
                             </div>
                         </div>
+
                         <div className="space-y-4">
                             <FieldLabel
                                 icon={Phone}
                                 label="Primary Contact"
+                                required
                                 touched={touched.phone}
                                 error={errors.phone}
                             />
                             <div className="relative">
                                 <Input
-                                    className="h-12 rounded-xl border-2 pl-10 focus-visible:ring-0 focus-visible:border-primary transition-all"
+                                    className="h-14 rounded-2xl border-2 border-zinc-50 bg-zinc-50/50 pl-12 focus-visible:ring-0 focus-visible:border-zinc-200 focus-visible:bg-white transition-all text-sm font-bold"
                                     placeholder="+1 234 567 890"
                                     value={formData.phone}
                                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                                     onBlur={() => handleBlur('phone')}
                                 />
-                                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Digital Presence Card */}
-                    <div className="bg-muted/30 rounded-[2rem] p-8 border-2 border-dashed border-muted-foreground/10 space-y-8">
-                        <div className="flex items-center gap-3 border-b border-muted-foreground/10 pb-4">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                <Globe className="w-5 h-5 text-primary" />
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-black uppercase tracking-wider">Social Channels</h3>
-                                <p className="text-[10px] text-muted-foreground">Boost your reach and engagement</p>
-                            </div>
-                        </div>
-
-                        <div className="grid sm:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <FieldLabel icon={MessageCircle} label="WhatsApp Business" colorClass="text-green-600" />
-                                <Input
-                                    className="h-11 rounded-lg border-green-100 focus-visible:border-green-500 focus-visible:ring-0 transition-opacity"
-                                    placeholder="Number only"
-                                    value={formData.whatsapp}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <FieldLabel icon={Instagram} label="Instagram Handle" colorClass="text-pink-600" />
-                                <Input
-                                    className="h-11 rounded-lg border-pink-100 focus-visible:border-pink-500 focus-visible:ring-0"
-                                    placeholder="@yourbrand"
-                                    value={formData.socialLinks.instagram}
-                                    onChange={(e) => updateSocial('instagram', e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <FieldLabel icon={Facebook} label="Facebook Page" colorClass="text-blue-600" />
-                                <Input
-                                    className="h-11 rounded-lg border-blue-100 focus-visible:border-blue-500 focus-visible:ring-0"
-                                    placeholder="fb.com/page"
-                                    value={formData.socialLinks.facebook}
-                                    onChange={(e) => updateSocial('facebook', e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <FieldLabel icon={Twitter} label="X / Twitter" colorClass="text-sky-500" />
-                                <Input
-                                    className="h-11 rounded-lg border-sky-100 focus-visible:border-sky-500 focus-visible:ring-0"
-                                    placeholder="@handle"
-                                    value={formData.socialLinks.twitter}
-                                    onChange={(e) => updateSocial('twitter', e.target.value)}
-                                />
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column: Schedule & Status */}
-                <div className="lg:col-span-5 space-y-8">
-                    <div className="bg-card rounded-[2.5rem] border-2 border-muted shadow-2xl shadow-primary/5 overflow-hidden">
-                        <div className="bg-primary p-6 text-primary-foreground">
-                            <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
-                                <Clock className="w-5 h-5" />
-                                Service Hours
-                            </h3>
-                            <p className="text-primary-foreground/60 text-[10px] mt-1 font-medium">Keep your customers informed about your availability.</p>
+                {/* Social Hub Card */}
+                <div className="bg-zinc-900 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-zinc-950/20 text-white overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+                        <Instagram className="w-48 h-48" />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-4 mb-12">
+                            <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-white border border-white/5 backdrop-blur-md">
+                                <Globe className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Social Media Channels</h3>
+                                <p className="text-xs text-white/40 font-bold tracking-wider uppercase">Connect with your audience</p>
+                            </div>
                         </div>
 
-                        <div className="p-6 divide-y divide-muted">
-                            {formData.openingHours.map((h, i) => (
-                                <div key={h.day} className="py-4 first:pt-0 last:pb-0 group">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <span className="text-xs font-black w-20 group-hover:text-primary transition-colors">{h.day}</span>
-                                        <div className={cn("inline-flex items-center gap-2 p-1 bg-muted rounded-lg border-2 border-transparent transition-all", h.isClosed ? "opacity-30 grayscale" : "focus-within:border-primary/20 bg-background border-muted")}>
-                                            <input
-                                                type="time"
-                                                className="bg-transparent text-[11px] font-bold outline-none w-20 px-1"
-                                                value={h.open}
-                                                disabled={h.isClosed}
-                                                onChange={(e) => updateOpeningHour(i, 'open', e.target.value)}
-                                            />
-                                            <span className="text-[10px] opacity-30 font-black">—</span>
-                                            <input
-                                                type="time"
-                                                className="bg-transparent text-[11px] font-bold outline-none w-20 px-1"
-                                                value={h.close}
-                                                disabled={h.isClosed}
-                                                onChange={(e) => updateOpeningHour(i, 'close', e.target.value)}
-                                            />
-                                        </div>
-                                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                                            <div className="relative">
-                                                <input
-                                                    type="checkbox"
-                                                    className="sr-only peer"
-                                                    checked={!h.isClosed}
-                                                    onChange={(e) => updateOpeningHour(i, 'isClosed', !e.target.checked)}
-                                                />
-                                                <div className="w-8 h-4 bg-red-100 peer-checked:bg-green-100 rounded-full transition-colors" />
-                                                <div className="absolute top-0.5 left-0.5 w-3 h-3 bg-red-500 peer-checked:bg-green-500 peer-checked:translate-x-4 rounded-full transition-transform shadow-sm" />
-                                            </div>
-                                            <span className={cn("text-[10px] font-black uppercase tracking-tighter", h.isClosed ? "text-red-500" : "text-green-600")}>
-                                                {h.isClosed ? "OFF" : "ON"}
-                                            </span>
-                                        </label>
-                                    </div>
+                        <div className="grid sm:grid-cols-2 gap-8">
+                            {[
+                                { id: 'whatsapp', label: 'WhatsApp Business', icon: MessageCircle, color: 'text-green-400', border: 'border-green-500/20', focus: 'focus-visible:border-green-400' },
+                                { id: 'instagram', label: 'Instagram Profile', icon: Instagram, color: 'text-pink-400', border: 'border-pink-500/20', focus: 'focus-visible:border-pink-400' },
+                                { id: 'facebook', label: 'Facebook Page', icon: Facebook, color: 'text-blue-400', border: 'border-blue-500/20', focus: 'focus-visible:border-blue-400' },
+                                { id: 'twitter', label: 'X / Twitter', icon: Twitter, color: 'text-zinc-400', border: 'border-zinc-500/20', focus: 'focus-visible:border-zinc-400' }
+                            ].map((social) => (
+                                <div key={social.id} className="space-y-3">
+                                    <label className={cn("text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2", social.color)}>
+                                        <social.icon className="w-3.5 h-3.5" />
+                                        {social.label}
+                                    </label>
+                                    <Input
+                                        className={cn(
+                                            "h-12 bg-white/5 border-2 rounded-xl transition-all font-bold placeholder:text-white/10 focus-visible:ring-0 text-white",
+                                            social.border,
+                                            social.focus
+                                        )}
+                                        placeholder={social.id === 'whatsapp' ? '+1 234...' : '@handle'}
+                                        value={social.id === 'whatsapp' ? formData.whatsapp : formData.socialLinks[social.id]}
+                                        onChange={(e) => social.id === 'whatsapp' ? setFormData(prev => ({ ...prev, whatsapp: e.target.value })) : updateSocial(social.id, e.target.value)}
+                                    />
                                 </div>
                             ))}
                         </div>
                     </div>
+                </div>
 
-                    {/* Action Hub */}
-                    <div className="sticky top-8 space-y-4">
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full h-16 rounded-[1.5rem] bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all text-sm group overflow-hidden relative"
-                        >
-                            <span className="relative z-10 flex items-center justify-center gap-3">
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        Finalizing Changes...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-5 h-5 group-hover:animate-bounce" />
-                                        Commit Profile
-                                    </>
-                                )}
-                            </span>
-                            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </Button>
-                        <p className="text-center text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
-                            Last synced: {restaurant?.updatedAt ? new Date(restaurant.updatedAt).toLocaleTimeString() : 'Never'}
-                        </p>
+                {/* Scheduling Engine Card */}
+                <div className="bg-white rounded-[2rem] border border-zinc-100 p-8 md:p-10 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4 mb-10">
+                        <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-900 border border-zinc-100">
+                            <Clock className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-zinc-900">Service Window</h3>
+                            <p className="text-xs text-zinc-400 font-medium">Set your weekly opening and closing hours</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2">
+                        {formData.openingHours.map((h, i) => (
+                            <div key={h.day} className="flex items-center justify-between p-4 rounded-2xl hover:bg-zinc-50 transition-colors group">
+                                <span className="text-sm font-bold tracking-tight w-24 group-hover:text-primary transition-colors">{h.day}</span>
+
+                                <div className="flex items-center gap-6">
+                                    {!h.isClosed ? (
+                                        <div className="flex items-center gap-3 px-4 py-2 bg-zinc-100 rounded-xl border border-zinc-200 shadow-inner">
+                                            <input
+                                                type="time"
+                                                className="bg-transparent text-xs font-bold outline-none w-16"
+                                                value={h.open}
+                                                onChange={(e) => updateOpeningHour(i, 'open', e.target.value)}
+                                            />
+                                            <span className="text-xs font-bold text-zinc-300">TO</span>
+                                            <input
+                                                type="time"
+                                                className="bg-transparent text-xs font-bold outline-none w-16"
+                                                value={h.close}
+                                                onChange={(e) => updateOpeningHour(i, 'close', e.target.value)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="h-10 px-8 flex items-center text-[10px] font-bold uppercase tracking-wider text-zinc-300 border border-dashed border-zinc-100 rounded-xl">
+                                            Station Closed
+                                        </div>
+                                    )}
+
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => updateOpeningHour(i, 'isClosed', !h.isClosed)}
+                                        className={cn(
+                                            "rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-wider transition-all",
+                                            h.isClosed ? "bg-red-50 text-red-500 hover:bg-red-100" : "bg-green-50 text-green-600 hover:bg-green-100"
+                                        )}
+                                    >
+                                        {h.isClosed ? "Closed" : "Open"}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Final Commit Button */}
+                <div className="pt-8 flex flex-col items-center gap-4">
+                    <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="h-16 w-full max-w-md rounded-2xl bg-zinc-950 text-white font-bold uppercase tracking-widest shadow-xl shadow-zinc-950/20 hover:scale-[1.01] active:scale-[0.99] transition-all text-xs group relative overflow-hidden"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-3">
+                            {isLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    Save Profile Changes
+                                </>
+                            )}
+                        </span>
+                    </Button>
+                    <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider flex items-center gap-2">
+                        <div className="w-1 h-1 rounded-full bg-green-500" />
+                        Settings synchronized with live menu
                     </div>
                 </div>
             </form>

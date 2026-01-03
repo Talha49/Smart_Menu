@@ -64,7 +64,7 @@ export default function DashboardLayout({ children }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar onMenuClick={toggleSidebar} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
-           <div className="mx-auto max-w-6xl animate-fade-in">
+           <div className="mx-auto max-w-7xl animate-fade-in">
               {children}
            </div>
         </main>

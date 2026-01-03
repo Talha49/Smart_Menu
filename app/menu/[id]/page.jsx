@@ -19,11 +19,13 @@ import {
     Monitor,
     X,
     Info,
-    ChevronDown
+    ChevronDown,
+    Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CategoryNav } from "@/components/public/CategoryNav";
 import { MenuItemDetail } from "@/components/public/MenuItemDetail";
+import { ItemCustomizationModal } from "@/components/public/ItemCustomizationModal";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
@@ -185,7 +187,7 @@ export default function PublicMenuPage() {
             isTVMode ? "bg-black text-white" : "bg-white text-zinc-950 font-medium"
         )} style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}>
 
-            <MenuItemDetail
+            <ItemCustomizationModal
                 item={selectedItem}
                 isOpen={!!selectedItem}
                 onClose={() => setSelectedItem(null)}
@@ -311,9 +313,41 @@ export default function PublicMenuPage() {
                                         <p className={cn("text-zinc-500 font-medium leading-relaxed antialiased", isTVMode ? "text-sm md:text-lg line-clamp-2" : "text-[10px] md:text-xs line-clamp-2")}>
                                             {item.description || "Crafted with passion using the finest seasonal ingredients."}
                                         </p>
-                                        <div className={cn("font-black tracking-tighter mt-2 md:mt-4 flex items-center gap-1 md:gap-2", isTVMode ? "text-xl md:text-4xl" : "text-lg md:text-xl")}>
-                                            <span className="text-[10px] md:text-sm opacity-30 mt-0.5 md:mt-1">$</span>
-                                            {item.price.toFixed(2)}
+
+                                        {/* Actions and Price Area */}
+                                        <div className="flex items-center justify-between mt-3 md:mt-5">
+                                            <div className="flex items-center gap-2">
+                                                <div className={cn("font-black tracking-tighter flex items-center gap-0.5 md:gap-1", isTVMode ? "text-xl md:text-4xl text-white" : "text-lg md:text-xl text-zinc-950")}>
+                                                    <span className="text-[10px] md:text-sm opacity-30 mt-0.5 md:mt-1">$</span>
+                                                    {(() => {
+                                                        if (item.variants && item.variants.length > 0) {
+                                                            const prices = item.variants.map(v => v.price);
+                                                            const min = Math.min(...prices);
+                                                            const max = Math.max(...prices);
+                                                            return min === max ? min.toFixed(2) : `${min.toFixed(2)} - ${max.toFixed(2)}`;
+                                                        }
+                                                        return item.price.toFixed(2);
+                                                    })()}
+                                                </div>
+
+                                                {(item.variants?.length > 0 || item.modifiers?.length > 0) && !isTVMode && (
+                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-zinc-100 text-[8px] font-bold text-zinc-500 uppercase tracking-tighter shrink-0">
+                                                        <Plus className="w-2 h-2" />
+                                                        Add-ons
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Subtle Hover Action */}
+                                            {(item.variants?.length > 0 || item.modifiers?.length > 0) && !isTVMode && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, x: 10 }}
+                                                    whileHover={{ opacity: 1, x: 0 }}
+                                                    className="hidden lg:flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all"
+                                                >
+                                                    Customize <Plus className="w-3 h-3" />
+                                                </motion.div>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
