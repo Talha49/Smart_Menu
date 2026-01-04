@@ -1,4 +1,5 @@
 export const authConfig = {
+  basePath: "/api/auth",
   pages: {
     signIn: "/login",
     error: "/login",
@@ -10,10 +11,10 @@ export const authConfig = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    authorized({ auth, request: nextUrl }) {
+    authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const hasRestaurant = !!auth?.user?.restaurantId;
-      const { pathname } = nextUrl.nextUrl;
+      const { pathname } = nextUrl;
       
       const isOnDashboard = pathname.startsWith('/dashboard');
       const isOnOnboarding = pathname.startsWith('/onboarding');
@@ -24,10 +25,7 @@ export const authConfig = {
         return Response.redirect(new URL('/onboarding', nextUrl.url));
       }
 
-      // 2. Prevent Onboarding if already has restaurant (unless manually visiting settings)
-      // Actually, let's just let the page guard handle the content.
-      
-      // 3. Auth Protection
+      // 2. Auth Protection
       if (isOnDashboard || isOnOnboarding) {
         if (isLoggedIn) return true;
         return false; // Redirect to login
