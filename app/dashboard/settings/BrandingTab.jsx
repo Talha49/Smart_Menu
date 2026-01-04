@@ -5,7 +5,7 @@ import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 import { Button } from "@/components/ui/Button";
 import { ColorPicker } from "@/components/settings/ColorPicker";
 import { ImageUpload } from "@/components/dashboard/ImageUpload";
-import { Loader2, Lock, Save } from "lucide-react";
+import { Loader2, Lock, Save, LayoutGrid, RotateCcw, Waves } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -18,13 +18,22 @@ const FONT_OPTIONS = [
     { name: "Lato", value: "Lato" },
 ];
 
+const LAYOUT_OPTIONS = [
+    { id: "classic-grid", label: "Classic Grid", icon: LayoutGrid, description: "Professional grid layout for most restaurants." },
+    { id: "orbital-wheel", label: "Orbital Wheel", icon: RotateCcw, description: "Interactive circular navigation for discovery." },
+    { id: "liquid-carousel", label: "Liquid Carousel", icon: Waves, description: "High-impact vertical visuals for food focus." },
+];
+
 export function BrandingTab() {
-    const { restaurant, updateBranding } = useRestaurantStore();
+    const { restaurant, updateBranding, setPreviewData } = useRestaurantStore();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         brandColor: "#4f46e5",
         fontFamily: "Inter",
         logoUrl: "",
+        experienceConfig: {
+            layoutID: "classic-grid"
+        }
     });
 
     const isPro = restaurant?.plan === "pro";
@@ -35,9 +44,17 @@ export function BrandingTab() {
                 brandColor: restaurant.brandColor || "#4f46e5",
                 fontFamily: restaurant.fontFamily || "Inter",
                 logoUrl: restaurant.logoUrl || "",
+                experienceConfig: {
+                    layoutID: restaurant.experienceConfig?.layoutID || "classic-grid"
+                }
             });
         }
     }, [restaurant]);
+
+    // Sync local form data with store preview state for real-time mockup updates
+    useEffect(() => {
+        setPreviewData(formData);
+    }, [formData, setPreviewData]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -55,7 +72,7 @@ export function BrandingTab() {
     };
 
     return (
-        <div className="space-y-6 relative pb-12">
+        <div className="space-y-6 relative h-full flex flex-col">
             {!isPro && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center text-center p-6 rounded-xl border border-primary/20 bg-muted/10">
                     <Lock className="w-12 h-12 text-primary mb-4" />
@@ -116,6 +133,50 @@ export function BrandingTab() {
                             >
                                 <span style={{ fontFamily: font.value }} className="text-lg">Aa</span>
                                 <span className="text-xs text-muted-foreground">{font.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Menu Experience (Vibe) */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                    <div>
+                        <label className="text-sm font-medium">Menu Experience (Vibe)</label>
+                        <p className="text-xs text-muted-foreground mt-1">Choose how your customers experience your menu.</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                        {LAYOUT_OPTIONS.map((layout) => (
+                            <button
+                                key={layout.id}
+                                type="button"
+                                onClick={() => setFormData(prev => ({
+                                    ...prev,
+                                    experienceConfig: { ...prev.experienceConfig, layoutID: layout.id }
+                                }))}
+                                className={cn(
+                                    "relative flex items-center gap-4 p-4 border rounded-xl text-left transition-all hover:bg-accent group",
+                                    formData.experienceConfig.layoutID === layout.id
+                                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                        : "border-border"
+                                )}
+                            >
+                                <div className={cn(
+                                    "w-12 h-12 rounded-lg flex items-center justify-center transition-all",
+                                    formData.experienceConfig.layoutID === layout.id
+                                        ? "bg-primary text-white"
+                                        : "bg-muted text-muted-foreground group-hover:bg-accent-foreground group-hover:text-accent"
+                                )}>
+                                    <layout.icon className="w-6 h-6" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-bold text-sm tracking-tight">{layout.label}</h4>
+                                        {formData.experienceConfig.layoutID === layout.id && (
+                                            <div className="w-2 h-2 rounded-full bg-primary" />
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{layout.description}</p>
+                                </div>
                             </button>
                         ))}
                     </div>

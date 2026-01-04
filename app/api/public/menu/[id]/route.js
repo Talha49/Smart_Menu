@@ -20,7 +20,8 @@ export async function GET(request, { params }) {
                 fontFamily: 1,
                 restaurantId: 1,
                 plan: 1,
-                businessProfile: 1, // NEW: Select the grouped object
+                businessProfile: 1, 
+                experienceConfig: 1, // Added for dynamic layouts
                 _id: 1
             })
             .lean();

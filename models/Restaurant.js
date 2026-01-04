@@ -51,6 +51,21 @@ const RestaurantSchema = new mongoose.Schema(
         ],
     },
 
+    // Next-Gen Branding Engine Configuration
+    experienceConfig: {
+        layoutID: { type: String, default: "classic-grid" },
+        motionProfile: { type: String, default: "liquid" },
+        visualDNA: {
+            borderRadius: { type: Number, default: 16 },
+            shadowIntensity: { type: String, default: "subtle" },
+            glassmorphism: { type: Number, default: 0 }, // 0 to 100 opacity
+        },
+        seasonalAtmosphere: {
+            activeTheme: { type: String, default: "none" },
+            intensity: { type: Number, default: 50 },
+        },
+    },
+
     stripeCustomerId: { type: String },
     stripeSubscriptionId: { type: String },
   },

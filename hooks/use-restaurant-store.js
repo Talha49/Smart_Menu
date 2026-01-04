@@ -3,10 +3,17 @@ import { create } from 'zustand';
 // Global store for restaurant data to avoid prop drilling and frequent refetches
 export const useRestaurantStore = create((set, get) => ({
   restaurant: null,
+  previewData: null,
   isLoading: false,
   error: null,
 
-  setRestaurant: (data) => set({ restaurant: data }),
+  setRestaurant: (data) => set({ restaurant: data, previewData: data }),
+  
+  setPreviewData: (data) => set((state) => ({
+    previewData: state.previewData ? { ...state.previewData, ...data } : data
+  })),
+
+  resetPreview: () => set((state) => ({ previewData: state.restaurant })),
   
   // Fetch restaurant details using the authenticated session
   fetchRestaurant: async () => {
@@ -21,7 +28,7 @@ export const useRestaurantStore = create((set, get) => ({
          throw new Error('Failed to fetch restaurant');
       }
       const data = await res.json();
-      set({ restaurant: data, isLoading: false });
+      set({ restaurant: data, previewData: data, isLoading: false });
     } catch (error) {
       set({ error: error.message, isLoading: false });
     }
@@ -32,7 +39,14 @@ export const useRestaurantStore = create((set, get) => ({
     
     // 1. Optimistic Update
     set((state) => ({
-      restaurant: { ...state.restaurant, ...formData }
+      restaurant: { 
+        ...state.restaurant, 
+        ...formData,
+        experienceConfig: formData.experienceConfig ? {
+            ...state.restaurant.experienceConfig,
+            ...formData.experienceConfig
+        } : state.restaurant.experienceConfig
+      }
     }));
 
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import useSWR from "swr";
@@ -29,6 +29,7 @@ import { ItemCustomizationModal } from "@/components/public/ItemCustomizationMod
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
+import { LayoutFactory } from "@/components/public/layouts/LayoutFactory";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -44,20 +45,48 @@ export default function PublicMenuPage() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [showSplash, setShowSplash] = useState(true);
     const [showInfo, setShowInfo] = useState(false);
+    const [previewOverride, setPreviewOverride] = useState(null);
+    const searchParams = useSearchParams();
+    const isPreview = searchParams.get("preview") === "true";
 
     const scrollInterval = useRef(null);
+
+    // 0. Preview Mode Listener
+    useEffect(() => {
+        if (!isPreview) return;
+
+        const handleMessage = (event) => {
+            // In production, we should check event.origin for security
+            if (event.data?.type === "PREVIEW_UPDATE") {
+                setPreviewOverride(event.data.data);
+            }
+        };
+
+        window.addEventListener("message", handleMessage);
+        return () => window.removeEventListener("message", handleMessage);
+    }, [isPreview]);
+
+    // Apply overrides if in preview mode
+    const activeRestaurant = previewOverride ? {
+        ...data?.restaurant,
+        ...previewOverride,
+        experienceConfig: {
+            ...data?.restaurant?.experienceConfig,
+            ...previewOverride.experienceConfig
+        }
+    } : data?.restaurant;
 
     // 1. Cinematic Intro Sequence
     useEffect(() => {
         if (!isLoading && data && showSplash) {
             const tl = gsap.timeline();
 
-            tl.to(".splash-logo", { duration: 0.8, scale: 1.1, opacity: 1, ease: "power4.out" })
-                .to(".splash-text", { duration: 0.8, y: 0, opacity: 1, stagger: 0.2, ease: "back.out" }, "-=0.3")
+            tl.to(".splash-logo", { duration: isPreview ? 0.3 : 0.8, scale: 1.1, opacity: 1, ease: "power4.out" })
+                .to(".splash-text", { duration: isPreview ? 0.3 : 0.8, y: 0, opacity: 1, stagger: 0.1, ease: "back.out" }, "-=0.2")
                 .to(".splash-screen", {
-                    duration: 1.2,
+                    duration: isPreview ? 0.5 : 1.2,
                     y: "-100%",
-                    delay: 1.2,
+                    delay: isPreview ? 0.2 : 1.2,
                     ease: "expo.inOut",
                     onComplete: () => {
                         setShowSplash(false);
@@ -163,9 +192,10 @@ export default function PublicMenuPage() {
     );
 
     // If we're here, we have data and splash is done
-    if (!data || !data.restaurant || !data.menu) return null;
+    if (!data || !activeRestaurant || !data.menu) return null;
 
-    const { restaurant, menu } = data;
+    const restaurant = activeRestaurant;
+    const menu = data.menu;
     const bp = restaurant.businessProfile || {};
 
     const formatUrl = (url) => {
@@ -196,9 +226,12 @@ export default function PublicMenuPage() {
             {/* Header: High-End Minimalist */}
             <header className={cn(
                 "sticky top-0 z-50 backdrop-blur-3xl border-b transition-all duration-700",
-                isTVMode ? "bg-black/90 border-white/5 py-4" : "bg-white/80 border-zinc-100 py-4 md:py-8 px-4 md:px-6"
+                isTVMode ? "bg-black/90 border-white/5 py-4" : (restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "bg-white/80 border-zinc-100 py-1 px-4" : "bg-white/80 border-zinc-100 py-4 md:py-8 px-4 md:px-6")
             )}>
-                <div className="max-w-7xl mx-auto flex flex-col items-center gap-4 md:gap-6">
+                <div className={cn(
+                    "max-w-7xl mx-auto flex flex-col items-center",
+                    restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "gap-1" : "gap-4 md:gap-6"
+                )}>
                     <div className="w-full flex items-center justify-between">
                         <div className="flex items-center gap-3 md:gap-6">
                             {restaurant.logoUrl && (
@@ -247,120 +280,42 @@ export default function PublicMenuPage() {
                                 placeholder="Curate your experience..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border-2 border-zinc-50 bg-zinc-50 focus:bg-white focus:border-zinc-200 transition-all outline-none text-xs md:text-sm font-bold tracking-tight"
+                                className={cn(
+                                    "w-full pl-12 pr-6 rounded-2xl md:rounded-3xl border-2 border-zinc-50 bg-zinc-50 focus:bg-white focus:border-zinc-200 transition-all outline-none text-xs md:text-sm font-bold tracking-tight",
+                                    restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "py-2" : "py-3 md:py-4"
+                                )}
                             />
                         </div>
                     )}
                 </div>
             </header>
 
-            {!isTVMode && <CategoryNav categories={filteredMenu} activeCategory={activeCategory} brandColor={restaurant.brandColor} />}
+            {!isTVMode && restaurant.experienceConfig?.layoutID !== "orbital-wheel" && (
+                <CategoryNav
+                    categories={filteredMenu}
+                    activeCategory={activeCategory}
+                    brandColor={restaurant.brandColor}
+                />
+            )}
 
             <main className={cn(
                 "max-w-7xl mx-auto px-4 md:px-6 transition-all duration-1000",
-                isTVMode ? "pt-10" : "pt-8 md:pt-12"
+                isTVMode ? "pt-10" : (restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "pt-0" : "pt-8 md:pt-12")
             )}>
-                {filteredMenu.map((group) => (
-                    <section key={group._id} id={`category-${group.name}`} className="mb-12 md:mb-24 scroll-mt-32 md:scroll-mt-48">
-                        <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12">
-                            <div className="text-3xl md:text-4xl shrink-0 drop-shadow-sm">{group.emoji}</div>
-                            <h2 className={cn("font-black italic tracking-tighter leading-none uppercase", isTVMode ? "text-4xl md:text-6xl text-white" : "text-2xl md:text-4xl text-zinc-950")}>
-                                {group.name}
-                            </h2>
-                            <div className="flex-1 h-[1px] md:h-[2px] bg-zinc-100 mt-2" />
-                        </div>
-
-                        <div className={cn(
-                            "grid gap-6 md:gap-12",
-                            isTVMode ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                        )}>
-                            {group.items.map((item) => (
-                                <motion.div
-                                    key={item._id}
-                                    layout
-                                    onClick={() => setSelectedItem(item)}
-                                    className={cn(
-                                        "menu-item group transition-all duration-700 cursor-pointer relative",
-                                        isTVMode
-                                            ? "bg-zinc-900/50 border border-white/5 rounded-2xl md:rounded-[2.5rem] flex gap-4 md:gap-8 p-4 md:p-6 h-auto md:h-72 items-center"
-                                            : "flex md:flex-col gap-4 md:gap-0"
-                                    )}
-                                >
-                                    <div className={cn(
-                                        "relative overflow-hidden shrink-0 transition-all duration-700",
-                                        isTVMode
-                                            ? "w-32 h-32 md:w-60 md:h-60 rounded-xl md:rounded-3xl border border-white/10"
-                                            : "w-24 h-24 md:w-full md:h-auto md:aspect-video lg:aspect-square rounded-2xl md:rounded-[2rem] border md:border-2 border-zinc-50 group-hover:border-zinc-200 md:shadow-xl md:shadow-zinc-200/50 md:group-hover:shadow-zinc-300/50 md:group-hover:-translate-y-3 md:mb-6"
-                                    )}>
-                                        {item.imageUrl ? (
-                                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                                        ) : (
-                                            <div className="w-full h-full bg-zinc-50 flex items-center justify-center text-3xl md:text-5xl opacity-20">🍽️</div>
-                                        )}
-                                        {item.isFeatured && (
-                                            <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10 px-2 md:px-4 py-1 rounded-full bg-black/60 backdrop-blur-md text-[7px] md:text-[9px] font-black tracking-widest text-white border border-white/10 flex items-center gap-1 md:gap-2">
-                                                <Sparkles className="w-2 h-2 md:w-3 md:h-3 fill-primary text-primary" />
-                                                SIGNATURE
-                                            </div>
-                                        )}
-                                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
-
-                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                        <h3 className={cn("font-black tracking-tighter italic leading-tight mb-1 md:mb-2 transition-colors", isTVMode ? "text-xl md:text-4xl text-white underline decoration-primary decoration-2 md:decoration-4 underline-offset-4 md:underline-offset-8" : "text-base md:text-xl text-zinc-900 group-hover:text-primary")}>
-                                            {item.name}
-                                        </h3>
-                                        <p className={cn("text-zinc-500 font-medium leading-relaxed antialiased", isTVMode ? "text-sm md:text-lg line-clamp-2" : "text-[10px] md:text-xs line-clamp-2")}>
-                                            {item.description || "Crafted with passion using the finest seasonal ingredients."}
-                                        </p>
-
-                                        {/* Actions and Price Area */}
-                                        <div className="flex items-center justify-between mt-3 md:mt-5">
-                                            <div className="flex items-center gap-2">
-                                                <div className={cn("font-black tracking-tighter flex items-center gap-0.5 md:gap-1", isTVMode ? "text-xl md:text-4xl text-white" : "text-lg md:text-xl text-zinc-950")}>
-                                                    <span className="text-[10px] md:text-sm opacity-30 mt-0.5 md:mt-1">$</span>
-                                                    {(() => {
-                                                        if (item.variants && item.variants.length > 0) {
-                                                            const prices = item.variants.map(v => v.price);
-                                                            const min = Math.min(...prices);
-                                                            const max = Math.max(...prices);
-                                                            return min === max ? min.toFixed(2) : `${min.toFixed(2)} - ${max.toFixed(2)}`;
-                                                        }
-                                                        return item.price.toFixed(2);
-                                                    })()}
-                                                </div>
-
-                                                {(item.variants?.length > 0 || item.modifiers?.length > 0) && !isTVMode && (
-                                                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-zinc-100 text-[8px] font-bold text-zinc-500 uppercase tracking-tighter shrink-0">
-                                                        <Plus className="w-2 h-2" />
-                                                        Add-ons
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Subtle Hover Action */}
-                                            {(item.variants?.length > 0 || item.modifiers?.length > 0) && !isTVMode && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, x: 10 }}
-                                                    whileHover={{ opacity: 1, x: 0 }}
-                                                    className="hidden lg:flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all"
-                                                >
-                                                    Customize <Plus className="w-3 h-3" />
-                                                </motion.div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </section>
-                ))}
+                <LayoutFactory
+                    layoutID={restaurant.experienceConfig?.layoutID}
+                    isTVMode={isTVMode}
+                    groupedItems={filteredMenu}
+                    setSelectedItem={setSelectedItem}
+                    {...restaurant.experienceConfig}
+                />
             </main>
+
 
             {/* Minimalist Premium Footer */}
             <footer className={cn(
                 "py-12 md:py-16 px-4 md:px-6 border-t border-zinc-100 transition-opacity duration-1000",
-                isTVMode ? "hidden" : "block"
+                (isTVMode || isPreview) ? "hidden" : "block"
             )}>
                 <div className="max-w-7xl mx-auto flex flex-col items-center gap-8 md:gap-12">
                     <div className="flex items-center gap-6 md:gap-12 border-b border-zinc-100 pb-8 md:pb-12 w-full justify-center flex-wrap">

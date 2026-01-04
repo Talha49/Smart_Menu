@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import dbConnect from "@/lib/mongodb";
 import Restaurant from "@/models/Restaurant";
+import { UpdateBrandingSchema } from "@/lib/validations";
 
 export async function PUT(req) {
   try {
@@ -27,12 +28,40 @@ export async function PUT(req) {
     }
 
     const body = await req.json();
-    const { brandColor, fontFamily, logoUrl } = body;
+    
+    // 3. Validate Input
+    const validation = UpdateBrandingSchema.safeParse(body);
+    if (!validation.success) {
+        return NextResponse.json({ 
+            message: "Invalid input", 
+            errors: validation.error.flatten() 
+        }, { status: 400 });
+    }
 
-    // 3. Update Fields
+    const { brandColor, fontFamily, logoUrl, experienceConfig } = validation.data;
+
+    // 4. Update Fields
     if (brandColor) restaurant.brandColor = brandColor;
     if (fontFamily) restaurant.fontFamily = fontFamily;
-    if (logoUrl !== undefined) restaurant.logoUrl = logoUrl; // Allow clearing logo with empty string
+    if (logoUrl !== undefined) restaurant.logoUrl = logoUrl;
+    
+    if (experienceConfig) {
+        // Deep merge for experienceConfig to avoid wiping out other settings
+        const currentConfig = restaurant.experienceConfig || {};
+        
+        restaurant.experienceConfig = {
+            ...currentConfig,
+            ...experienceConfig,
+            visualDNA: {
+                ...(currentConfig.visualDNA || {}),
+                ...(experienceConfig.visualDNA || {})
+            },
+            seasonalAtmosphere: {
+                ...(currentConfig.seasonalAtmosphere || {}),
+                ...(experienceConfig.seasonalAtmosphere || {})
+            }
+        };
+    }
 
     await restaurant.save();
 

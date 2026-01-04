@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export function BusinessProfileTab() {
-    const { restaurant, updateBusinessProfile } = useRestaurantStore();
+    const { restaurant, updateBusinessProfile, setPreviewData } = useRestaurantStore();
     const [isLoading, setIsLoading] = useState(false);
     const [touched, setTouched] = useState({});
 
@@ -71,6 +71,11 @@ export function BusinessProfileTab() {
             });
         }
     }, [restaurant]);
+
+    // Sync local form data with store preview state for real-time mockup updates
+    useEffect(() => {
+        setPreviewData({ businessProfile: formData });
+    }, [formData, setPreviewData]);
 
     const validate = (field, value) => {
         let error = "";

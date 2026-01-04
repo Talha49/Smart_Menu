@@ -11,34 +11,37 @@ import { BusinessProfileTab } from "./BusinessProfileTab";
 import { Palette, Store } from "lucide-react";
 
 export default function SettingsPage() {
-    const { restaurant } = useRestaurantStore();
+    const { restaurant, previewData } = useRestaurantStore();
     const { items: menuItems } = useMenuStore();
     const { categories } = useCategoryStore();
 
+    // Use preview data if available, otherwise fallback to saved restaurant data
+    const activeData = previewData || restaurant;
+
     return (
-        <div className="min-h-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-            <div className="grid lg:grid-cols-12 gap-8 items-start">
+        <div className="h-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid lg:grid-cols-12 gap-6 h-full items-stretch">
 
                 {/* Left Column: Form Controls (Tabs) */}
-                <div className="lg:col-span-7 flex flex-col gap-6">
-                    <Card className="shadow-2xl shadow-zinc-200/50 border border-zinc-100 bg-white rounded-[2.5rem]">
-                        <Tabs defaultValue="branding" className="flex flex-col">
-                            <div className="px-8 pt-8 border-b bg-zinc-50/50">
-                                <TabsList className="grid grid-cols-2 w-full max-w-md mb-8 p-1 bg-zinc-100 rounded-2xl">
-                                    <TabsTrigger value="branding" className="gap-2 rounded-xl py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <div className="lg:col-span-5 flex flex-col h-full overflow-hidden">
+                    <Card className="flex-1 flex flex-col shadow-sm border-none bg-card/50 backdrop-blur-sm overflow-hidden">
+                        <Tabs defaultValue="branding" className="flex-1 flex flex-col overflow-hidden">
+                            <div className="px-6 pt-6 border-b bg-muted/20">
+                                <TabsList className="grid grid-cols-2 w-full mb-6">
+                                    <TabsTrigger value="branding" className="gap-2">
                                         <Palette className="w-4 h-4" /> Branding
                                     </TabsTrigger>
-                                    <TabsTrigger value="profile" className="gap-2 rounded-xl py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                    <TabsTrigger value="profile" className="gap-2">
                                         <Store className="w-4 h-4" /> Business Profile
                                     </TabsTrigger>
                                 </TabsList>
                             </div>
 
-                            <div className="p-8">
-                                <TabsContent value="branding" className="m-0 focus-visible:outline-none">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-4">
+                                <TabsContent value="branding" className="m-0 h-full focus-visible:outline-none">
                                     <BrandingTab />
                                 </TabsContent>
-                                <TabsContent value="profile" className="m-0 focus-visible:outline-none">
+                                <TabsContent value="profile" className="m-0 h-full focus-visible:outline-none">
                                     <BusinessProfileTab />
                                 </TabsContent>
                             </div>
@@ -46,25 +49,25 @@ export default function SettingsPage() {
                     </Card>
                 </div>
 
-                {/* Right Column: Live Preview Mockup - Fixed Sticky Wrapper */}
-                <div className="lg:col-span-5 sticky top-8 self-start">
-                    <Card className="flex flex-col overflow-hidden bg-zinc-50/50 border-2 border-dashed border-zinc-200 relative rounded-[2.5rem]">
-                        <div className="absolute top-18 left-3 z-10">
-                            <div className="bg-white/80 backdrop-blur-md border border-zinc-200 px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest text-zinc-500 shadow-sm flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                {/* Right Column: Live Preview Mockup */}
+                <div className="lg:col-span-7 flex flex-col h-full">
+                    <Card className="h-full flex flex-col overflow-hidden bg-muted/30 border-dashed border-2 relative">
+                        <div className="absolute top-4 left-4 z-10">
+                            <div className="bg-background/80 backdrop-blur-sm border px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-muted-foreground shadow-sm">
                                 Live Preview Sync
                             </div>
                         </div>
 
-                        <div className="flex-1 flex flex-col items-center justify-center p-4 relative min-h-[700px]">
+                        <div className="flex-1 flex flex-col items-center justify-center p-8 relative min-h-[600px]">
                             {/* Device Emulator */}
-                            <div className="scale-[0.85] xl:scale-[1.0] origin-center w-full flex justify-center">
+                            <div className="scale-[0.8] md:scale-[0.85] origin-center w-full flex justify-center">
                                 <LivePreview
-                                    restaurant={restaurant}
+                                    restaurant={activeData}
                                     branding={{
-                                        brandColor: restaurant?.brandColor || "#4f46e5",
-                                        fontFamily: restaurant?.fontFamily || "Inter",
-                                        logoUrl: restaurant?.logoUrl || ""
+                                        brandColor: activeData?.brandColor || "#4f46e5",
+                                        fontFamily: activeData?.fontFamily || "Inter",
+                                        logoUrl: activeData?.logoUrl || "",
+                                        layoutID: activeData?.experienceConfig?.layoutID || "classic-grid"
                                     }}
                                     menuItems={menuItems}
                                     categories={categories}
@@ -72,9 +75,6 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-zinc-100 bg-white/50 text-center text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
-                            Global Sync Engine v2.0
-                        </div>
                     </Card>
                 </div>
             </div>
