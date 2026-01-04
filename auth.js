@@ -17,27 +17,43 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const validatedFields = UserLoginSchema.safeParse(credentials);
+        try {
+          const validatedFields = UserLoginSchema.safeParse(credentials);
 
-        if (!validatedFields.success) return null;
+          if (!validatedFields.success) return null;
 
-        const { email, password } = validatedFields.data;
+          const { email, password } = validatedFields.data;
 
-        await dbConnect();
-        
-        const user = await User.findOne({ email }).select("+password");
+          console.log("[Auth] Connecting to database...");
+          await dbConnect();
+          
+          console.log("[Auth] Looking up user:", email);
+          const user = await User.findOne({ email }).select("+password");
 
-        if (!user || !user.password) return null;
+          if (!user || !user.password) {
+            console.log("[Auth] User not found or invalid credentials");
+            return null;
+          }
 
-        const isMatch = await user.matchPassword(password);
+          console.log("[Auth] Verifying password...");
+          const isMatch = await user.matchPassword(password);
 
-        if (!isMatch) return null;
+          if (!isMatch) {
+            console.log("[Auth] Password mismatch");
+            return null;
+          }
 
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-        };
+          console.log("[Auth] Authorization successful");
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+          };
+        } catch (error) {
+          console.error("[Auth] Authorize Error:", error);
+          // Return null instead of crashing the whole API route
+          return null;
+        }
       },
     }),
   ],

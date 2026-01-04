@@ -21,7 +21,7 @@ export const authConfig = {
 
       // 1. Force Onboarding if logged in but no restaurant
       if (isOnDashboard && isLoggedIn && !hasRestaurant) {
-        return Response.redirect(new URL('/onboarding', nextUrl.nextUrl));
+        return Response.redirect(new URL('/onboarding', nextUrl.url));
       }
 
       // 2. Prevent Onboarding if already has restaurant (unless manually visiting settings)
