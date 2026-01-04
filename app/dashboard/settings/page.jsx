@@ -20,10 +20,10 @@ export default function SettingsPage() {
 
     return (
         <div className="h-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid lg:grid-cols-12 gap-6 h-full items-stretch">
+            <div className="grid lg:grid-cols-12 gap-6 items-start">
 
                 {/* Left Column: Form Controls (Tabs) */}
-                <div className="lg:col-span-5 flex flex-col h-full overflow-hidden">
+                <div className="lg:col-span-5 flex flex-col overflow-hidden">
                     <Card className="flex-1 flex flex-col shadow-sm border-none bg-card/50 backdrop-blur-sm overflow-hidden">
                         <Tabs defaultValue="branding" className="flex-1 flex flex-col overflow-hidden">
                             <div className="px-6 pt-6 border-b bg-muted/20">
@@ -49,16 +49,16 @@ export default function SettingsPage() {
                     </Card>
                 </div>
 
-                {/* Right Column: Live Preview Mockup */}
-                <div className="lg:col-span-7 flex flex-col h-full">
-                    <Card className="h-full flex flex-col overflow-hidden bg-muted/30 border-dashed border-2 relative">
+                {/* Right Column: Live Preview Mockup - Sticky */}
+                <div className="lg:col-span-7 lg:sticky lg:top-0 self-start">
+                    <Card className="flex flex-col overflow-hidden bg-muted/30 border-dashed border-2 relative">
                         <div className="absolute top-4 left-4 z-10">
                             <div className="bg-background/80 backdrop-blur-sm border px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-muted-foreground shadow-sm">
                                 Live Preview Sync
                             </div>
                         </div>
 
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 relative min-h-[600px]">
+                        <div className="flex flex-col items-center justify-center p-8 relative min-h-[600px]">
                             {/* Device Emulator */}
                             <div className="scale-[0.8] md:scale-[0.85] origin-center w-full flex justify-center">
                                 <LivePreview

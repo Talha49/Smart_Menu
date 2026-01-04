@@ -214,7 +214,8 @@ export default function PublicMenuPage() {
     return (
         <div key="menu-main" className={cn(
             "min-h-screen transition-all duration-1000",
-            isTVMode ? "bg-black text-white" : "bg-white text-zinc-950 font-medium"
+            isTVMode ? "bg-black text-white" : "bg-white text-zinc-950 font-medium",
+            isPreview && "scrollbar-hide"
         )} style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}>
 
             <ItemCustomizationModal
