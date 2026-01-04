@@ -1,5 +1,4 @@
 export const authConfig = {
-  basePath: "/api/auth",
   pages: {
     signIn: "/login",
     error: "/login",
