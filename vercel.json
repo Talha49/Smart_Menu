@@ -1,7 +1,13 @@
 {
   "functions": {
-    "api/remove-background.py": {
+    "python-api/remove-background.py": {
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/python/remove-background",
+      "destination": "/python-api/remove-background.py"
+    }
+  ]
 }

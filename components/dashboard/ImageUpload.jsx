@@ -176,7 +176,7 @@ export function ImageUpload({ value, onChange, disabled }) {
                                             const formData = new FormData();
                                             formData.append('file', blob, 'image.png');
 
-                                            const apiRes = await fetch('/api/remove-background', {
+                                            const apiRes = await fetch('/api/python/remove-background', {
                                                 method: 'POST',
                                                 body: formData
                                             });
