@@ -12,27 +12,40 @@ export async function GET(request, { params }) {
         const { id } = await params;
 
         if (!id) {
-            return NextResponse.json({ error: "No ID provided" }, { status: 400 });
+            return NextResponse.json({ 
+                error: "No ID provided",
+                debug: { id: null }
+            }, { status: 400 });
         }
 
         // 1. Find the restaurant by its custom slug (restaurantId)
-        const restaurant = await Restaurant.findOne({ restaurantId: id.toLowerCase() })
-            .select({
-                name: 1, 
-                logoUrl: 1, 
-                brandColor: 1, 
-                fontFamily: 1,
-                restaurantId: 1,
-                plan: 1,
-                businessProfile: 1, 
-                experienceConfig: 1,
-                _id: 1
-            })
-            .lean();
+        // We use regex to be safe about case sensitivity and potential whitespace
+        const restaurant = await Restaurant.findOne({ 
+            restaurantId: { $regex: new RegExp(`^${id}$`, "i") } 
+        })
+        .select({
+            name: 1, 
+            logoUrl: 1, 
+            brandColor: 1, 
+            fontFamily: 1,
+            restaurantId: 1,
+            plan: 1,
+            businessProfile: 1, 
+            experienceConfig: 1,
+            _id: 1
+        })
+        .lean();
 
         if (!restaurant) {
-            console.log(`[Public Menu API] Restaurant not found for ID: ${id}`);
-            return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+            console.log(`[Public Menu API] NOT FOUND: ${id}`);
+            return NextResponse.json({ 
+                error: "Restaurant not found",
+                debug: { 
+                    searchedId: id,
+                    timestamp: new Date().toISOString(),
+                    hint: "Check if the restaurantId in the database exactly matches this ID (including any random suffixes)."
+                }
+            }, { status: 404 });
         }
 
         // 2. Fetch categories and items
@@ -58,7 +71,8 @@ export async function GET(request, { params }) {
         console.error("Public Menu API Error:", error);
         return NextResponse.json({ 
             error: "Internal Server Error",
-            message: error.message
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, { status: 500 });
     }
 }
