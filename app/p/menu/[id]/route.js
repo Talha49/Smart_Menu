@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
                 debug: { 
                     searchedId: id,
                     timestamp: new Date().toISOString(),
-                    hint: "Check if the restaurantId in the database exactly matches this ID (including any random suffixes)."
+                    hint: "Check if the restaurantId in the database exactly matches this ID."
                 }
             }, { status: 404 });
         }
@@ -71,8 +71,7 @@ export async function GET(request, { params }) {
         console.error("Public Menu API Error:", error);
         return NextResponse.json({ 
             error: "Internal Server Error",
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            message: error.message
         }, { status: 500 });
     }
 }

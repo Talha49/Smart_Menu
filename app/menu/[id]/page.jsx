@@ -35,7 +35,7 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function PublicMenuPage() {
     const { id } = useParams();
-    const { data, error, isLoading } = useSWR(`/api/public/menu/${id}`, fetcher, {
+    const { data, error, isLoading } = useSWR(`/p/menu/${id}`, fetcher, {
         revalidateOnFocus: false,
     });
 
