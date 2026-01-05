@@ -53,7 +53,7 @@ def postprocess(pred, original_size):
     mask = mask.resize(original_size, Image.BILINEAR)
     return mask
 
-@app.route('/api/python/remove-background', methods=['POST'])
+@app.route('/api/remove-background', methods=['POST'])
 def remove_background_handler():
     if 'file' not in request.files:
         return {'error': 'No file part'}, 400
