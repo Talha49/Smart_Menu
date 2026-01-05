@@ -29,7 +29,7 @@ export const authConfig = {
         if (isLoggedIn) return true;
         return false; // Redirect to login
       } else if (isLoggedIn && isOnAuth) {
-        return Response.redirect(new URL('/dashboard', nextUrl.url));
+        return Response.redirect(new URL('/dashboard/welcome', nextUrl.url));
       }
       return true;
     },
