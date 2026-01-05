@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
 import MenuItem from "@/models/MenuItem";
@@ -7,15 +8,18 @@ import Restaurant from "@/models/Restaurant";
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session || !session.user) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
 
     // Find the user's restaurant
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) {
       return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
     }
@@ -34,10 +38,8 @@ export async function GET() {
     }
 
     // 2. Initialize Menu Items per Category
-    // We group by category and sort by createdAt
     const items = await MenuItem.find({ restaurant: restaurant._id }).sort({ category: 1, createdAt: 1 });
     
-    // Group items by category to reset indices per category
     const groupedItems = items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
       acc[item.category].push(item);

@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import MenuItem from "@/models/MenuItem";
 import Restaurant from "@/models/Restaurant";
 
 export async function PUT(req, { params }) {
   try {
-    const session = await auth();
-    if (!session || !session.user) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params; // Await params in newer Next.js versions
+    const { id } = await params;
     const { isAvailable } = await req.json();
 
     await dbConnect();
 
-    // Verify ownership indirectly by checking if restaurant owned by user has this item?
-    // Or fetch restaurant first.
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
-    // Ensure item belongs to this restaurant
     const updatedItem = await MenuItem.findOneAndUpdate(
         { _id: id, restaurant: restaurant._id },
         { isAvailable },

@@ -1,20 +1,22 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import Restaurant from "@/models/Restaurant";
 
 export async function GET(req) {
   try {
-    const session = await auth();
-    if (!session || !session.user) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
 
-    // Use restaurantId from session if available, or find by owner
-    // Session strategy updates can ensure restaurantId is present
-    let restaurant = await Restaurant.findOne({ owner: session.user.id });
+    let restaurant = await Restaurant.findOne({ owner: user.id });
 
     if (!restaurant) {
       return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });

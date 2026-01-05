@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import toast from "react-hot-toast";
 import { Lock, Mail, User, ArrowRight, CheckCircle2 } from "lucide-react";
-
 import { AuthService } from "@/services/authService";
 
 export default function SignupPage() {
     const router = useRouter();
+    const { login } = useAuth();
 
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -46,8 +46,16 @@ export default function SignupPage() {
         return "bg-green-500";
     };
 
-
     const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        if (formData.password !== formData.confirmPassword) {
+            toast.error("Passwords do not match");
+            setLoading(false);
+            return;
+        }
+
         try {
             // 1. Register User
             await AuthService.signup({
@@ -56,26 +64,25 @@ export default function SignupPage() {
                 password: formData.password
             });
 
-            // 2. Auto Login
-            const loginResult = await signIn("credentials", {
-                redirect: false,
+            // 2. Auto Login using our new manual flow
+            const loginResult = await login({
                 email: formData.email,
                 password: formData.password,
             });
 
-            if (loginResult?.error) {
-                toast.error("Login failed after registration");
+            if (!loginResult.success) {
+                toast.error("Registration successful, but login failed. Please sign in manually.");
                 router.push("/login");
             } else {
                 toast.success("Account created successfully!");
-                router.push("/onboarding"); // Redirect to onboarding instead of dashboard
+                router.push("/onboarding");
             }
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message || "Something went wrong during registration");
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">

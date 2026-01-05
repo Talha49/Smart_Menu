@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import MenuItem from "@/models/MenuItem";
 import Restaurant from "@/models/Restaurant";
@@ -8,8 +9,11 @@ import mongoose from "mongoose";
 
 export async function GET(req) {
   try {
-    const session = await auth();
-    if (!session || !session.user) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,30 +22,8 @@ export async function GET(req) {
     const category = searchParams.get("category");
     const search = searchParams.get("search");
 
-    // Ensure we have a restaurant link
-    // We can rely on session.user.restaurantId or fetch from DB if needed for security flexibility
-    // Using session for speed
-    let restaurantId = session.user.restaurantId;
-    
-    // Fallback if not in session (Edge case)
-    if (!restaurantId) {
-       const rest = await Restaurant.findOne({ owner: session.user.id });
-       if (!rest) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
-       restaurantId = rest.restaurantId; // Assuming we use _id ref? Note: Models usually Ref ObjectId.
-       // Let's check MenuItem model: restaurant: { type: ObjectId, ref: 'Restaurant' }
-       // So we need the _id, not the string ID.
-       
-       // Wait, if restaurantId in session is the slug? 
-       // User model doesn't store restaurant ObjectId directly?
-       // Let's check the Restaurant model structure again.
-       // Restaurant.js: restaurantId (slug), owner (user ObjectId).
-       // MenuItem.js: restaurant (ObjectId ref).
-       
-       // So we need the Restaurant Object ID.
-    }
-    
     // Always safer to fetch the Restaurant Object ID based on the authenticated user to prevent IDOR
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) {
         return NextResponse.json({ message: "Restaurant setup required" }, { status: 404 });
     }
@@ -68,15 +50,18 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const session = await auth();
-    if (!session || !session.user) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
 
     // 1. Get Restaurant
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) {
         return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
     }

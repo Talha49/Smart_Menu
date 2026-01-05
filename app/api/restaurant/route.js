@@ -3,13 +3,16 @@ import { CreateRestaurantSchema } from "@/lib/validations";
 import dbConnect from "@/lib/mongodb";
 import Restaurant from "@/models/Restaurant";
 import User from "@/models/User";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 
 export async function POST(req) {
   try {
-    const session = await auth();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -37,14 +40,14 @@ export async function POST(req) {
     const restaurant = await Restaurant.create({
       name,
       restaurantId: finalRestaurantId,
-      owner: session.user.id,
+      owner: user.id,
       brandColor: brandColor || "#4f46e5",
       logoUrl: logoUrl || "",
       fontFamily: "Inter",
     });
 
     // 4. Update User with restaurant reference
-    await User.findByIdAndUpdate(session.user.id, {
+    await User.findByIdAndUpdate(user.id, {
       restaurant: restaurant._id
     });
 

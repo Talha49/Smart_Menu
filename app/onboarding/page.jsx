@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -29,17 +29,16 @@ const BRAND_COLORS = [
 
 export default function OnboardingPage() {
     const router = useRouter();
-    const { data: session, status, update } = useSession();
+    const { user, loading: authLoading, refresh } = useAuth();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [isAlreadyOnboarded, setIsAlreadyOnboarded] = useState(false);
 
     useEffect(() => {
-        // Robust check: ensure it's a valid ID and user is fully loaded
-        if (status === "authenticated" && session?.user?.restaurantId) {
+        if (!authLoading && user?.restaurantId) {
             setIsAlreadyOnboarded(true);
         }
-    }, [session, status]);
+    }, [user, authLoading]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -163,14 +162,8 @@ export default function OnboardingPage() {
 
             toast.success("Welcome to SmartMenu!");
 
-            // Update session
-            await update({
-                ...session,
-                user: {
-                    ...session?.user,
-                    restaurantId: restData.restaurant.restaurantId
-                }
-            });
+            // Refresh user state to get the new restaurantId
+            await refresh();
 
             setTimeout(() => {
                 router.push("/dashboard");

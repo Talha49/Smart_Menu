@@ -1,10 +1,14 @@
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { auth } from "@/auth";
 
 export default async function Home() {
-  const session = await auth();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth-token")?.value;
+  const user = token ? await verifyJWT(token) : null;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navbar */}
@@ -16,7 +20,7 @@ export default async function Home() {
             </span>
           </Link>
           <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse gap-4">
-            {session ? (
+            {user ? (
               <Link href="/dashboard">
                 <Button>Go to Dashboard</Button>
               </Link>
@@ -71,14 +75,14 @@ export default async function Home() {
               { title: "QR & TV Mode", desc: "One menu, optimized for both mobile phones and large displays." },
               { title: "Premium Design", desc: "Beautiful glassmorphism themes that wow your customers." }
              ].map((feature, i) => (
-               <div key={i} className="glass p-6 rounded-2xl hover:scale-105 transition-transform duration-300">
-                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
-                    <CheckCircle2 className="h-6 w-6" />
-                 </div>
-                 <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                 <p className="text-muted-foreground">{feature.desc}</p>
-               </div>
-             ))}
+                <div key={i} className="glass p-6 rounded-2xl hover:scale-105 transition-transform duration-300">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
+                     <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.desc}</p>
+                </div>
+              ))}
           </div>
         </div>
       </main>

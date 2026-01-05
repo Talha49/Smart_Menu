@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import MenuItem from "@/models/MenuItem";
 import Restaurant from "@/models/Restaurant";
@@ -22,14 +23,17 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
-    const session = await auth();
-    if (!session || !session.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
     const body = await req.json();
 
     await dbConnect();
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
     // Validate Input
@@ -65,17 +69,18 @@ export async function PUT(req, { params }) {
   }
 }
 
-
-
 export async function DELETE(req, { params }) {
   try {
-    const session = await auth();
-    if (!session || !session.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
 
     await dbConnect();
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
     // Find the item first to get the image URL
@@ -86,11 +91,9 @@ export async function DELETE(req, { params }) {
     // Attempt to delete image from Blob storage if it exists
     if (itemToDelete.imageUrl) {
         try {
-            // del needs the full URL
             await del(itemToDelete.imageUrl);
         } catch (blobError) {
             console.error("Failed to delete blob image:", blobError);
-            // We verify continued deletion of the item even if image delete fails, to avoid zombie records.
         }
     }
 

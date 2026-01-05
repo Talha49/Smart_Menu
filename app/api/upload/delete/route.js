@@ -1,12 +1,15 @@
 import { del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 
 export async function POST(request) {
   const { url } = await request.json();
-  const session = await auth();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth-token")?.value;
+  const user = token ? await verifyJWT(token) : null;
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

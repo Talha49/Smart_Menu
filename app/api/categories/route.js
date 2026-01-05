@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import Category from "@/models/Category";
 import Restaurant from "@/models/Restaurant";
 
 export async function GET(req) {
   try {
-    const session = await auth();
-    if (!session || !session.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     await dbConnect();
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
     // Sort by 'sortOrder'
@@ -24,14 +28,17 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const session = await auth();
-    if (!session || !session.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
+    
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const { name, emoji } = await req.json();
     if (!name) return NextResponse.json({ message: "Name is required" }, { status: 400 });
 
     await dbConnect();
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
 
     // Check existing

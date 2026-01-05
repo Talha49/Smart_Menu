@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 
 export default async function WelcomePage() {
-    const session = await auth();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -16,7 +19,7 @@ export default async function WelcomePage() {
                 </h1>
 
                 <p className="text-muted-foreground">
-                    Welcome, <span className="text-foreground font-semibold">{session?.user?.name || "User"}</span>.
+                    Welcome, <span className="text-foreground font-semibold">{user?.name || "User"}</span>.
                     The authentication system is now stable and correctly routing on Vercel.
                 </p>
 

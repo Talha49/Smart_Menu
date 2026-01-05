@@ -14,7 +14,7 @@ import {
     Tv,
     QrCode
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 
@@ -28,6 +28,7 @@ const sidebarLinks = [
 export function Sidebar({ className, onClose, isMobile }) {
     const pathname = usePathname();
     const { restaurant } = useRestaurantStore();
+    const { logout } = useAuth();
     const liveMenuUrl = restaurant?.restaurantId ? `/menu/${restaurant.restaurantId}` : "/";
     const tvMenuUrl = restaurant?.restaurantId ? `/tv/${restaurant.restaurantId}` : "/";
 
@@ -101,7 +102,7 @@ export function Sidebar({ className, onClose, isMobile }) {
                     Launch TV Mode
                 </Link>
                 <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    onClick={logout}
                     className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                 >
                     <LogOut className="h-4 w-4" />

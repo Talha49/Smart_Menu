@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import Restaurant from "@/models/Restaurant";
 import { UpdateBrandingSchema } from "@/lib/validations";
 
 export async function PUT(req) {
   try {
-    const session = await auth();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
     
-    if (!session || !session.user) {
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
 
     // 1. Get Restaurant
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) {
         return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
     }
 
     // 2. Check Plan (Pro Only)
-    // Note: If you want to allow Free users to see but not save, handle it in frontend. 
-    // Here we strictly enforce it for security.
     if (restaurant.plan !== 'pro') {
         return NextResponse.json({ message: "Branding customization is a Pro feature. Please upgrade." }, { status: 403 });
     }
@@ -46,7 +47,6 @@ export async function PUT(req) {
     if (logoUrl !== undefined) restaurant.logoUrl = logoUrl;
     
     if (experienceConfig) {
-        // Deep merge for experienceConfig to avoid wiping out other settings
         const currentConfig = restaurant.experienceConfig || {};
         
         restaurant.experienceConfig = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { usePathname } from "next/navigation";
 import { Menu as MenuIcon, User } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,7 @@ const PAGE_TITLES = {
 };
 
 export function TopBar({ onMenuClick, isSidebarOpen }) {
-    const { data: session } = useSession();
+    const { user } = useAuth();
     const pathname = usePathname();
 
     const currentTitle = PAGE_TITLES[pathname] || "Dashboard";
@@ -35,8 +35,8 @@ export function TopBar({ onMenuClick, isSidebarOpen }) {
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-sm">
                     <div className="text-right hidden sm:block">
-                        <p className="font-medium leading-none">{session?.user?.name}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{session?.user?.email}</p>
+                        <p className="font-medium leading-none">{user?.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{user?.email}</p>
                     </div>
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
                         <User className="h-4 w-4" />

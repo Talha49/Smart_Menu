@@ -1,21 +1,24 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { cookies } from "next/headers";
+import { verifyJWT } from "@/lib/jwt";
 import dbConnect from "@/lib/mongodb";
 import Restaurant from "@/models/Restaurant";
 import { UpdateBusinessProfileSchema } from "@/lib/validations";
 
 export async function PUT(req) {
   try {
-    const session = await auth();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth-token")?.value;
+    const user = token ? await verifyJWT(token) : null;
     
-    if (!session || !session.user) {
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
 
     // 1. Get Restaurant
-    const restaurant = await Restaurant.findOne({ owner: session.user.id });
+    const restaurant = await Restaurant.findOne({ owner: user.id });
     if (!restaurant) {
         return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +12,7 @@ import { Lock, Mail, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
@@ -30,18 +31,17 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const result = await signIn("credentials", {
-                redirect: false,
+            const result = await login({
+                email: formData.email,
                 email: formData.email,
                 password: formData.password,
             });
 
-            if (result?.error) {
-                toast.error("Invalid email or password");
+            if (!result.success) {
+                toast.error(result.error || "Invalid email or password");
             } else {
                 toast.success("Welcome back!");
                 router.push("/dashboard");
-                router.refresh();
             }
         } catch (error) {
             toast.error("Something went wrong");
