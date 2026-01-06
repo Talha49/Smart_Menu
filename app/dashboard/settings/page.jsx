@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { LivePreview } from "@/components/settings/LivePreview";
 import { BrandingTab } from "./BrandingTab";
 import { BusinessProfileTab } from "./BusinessProfileTab";
-import { Palette, Store } from "lucide-react";
+import { Palette, Store, Sparkles } from "lucide-react";
+import { VibeStudio } from "@/components/dashboard/vibe-studio/VibeStudio";
 
 export default function SettingsPage() {
     const { restaurant, previewData } = useRestaurantStore();
@@ -25,19 +26,25 @@ export default function SettingsPage() {
                 {/* Left Column: Form Controls (Tabs) */}
                 <div className="lg:col-span-5 flex flex-col overflow-hidden">
                     <Card className="flex-1 flex flex-col shadow-sm border-none bg-card/50 backdrop-blur-sm overflow-hidden">
-                        <Tabs defaultValue="branding" className="flex-1 flex flex-col overflow-hidden">
+                        <Tabs defaultValue="vibe" className="flex-1 flex flex-col overflow-hidden">
                             <div className="px-6 pt-6 border-b bg-muted/20">
-                                <TabsList className="grid grid-cols-2 w-full mb-6">
+                                <TabsList className="grid grid-cols-3 w-full mb-6">
+                                    <TabsTrigger value="vibe" className="gap-2">
+                                        <Sparkles className="w-4 h-4" /> Vibe Studio
+                                    </TabsTrigger>
                                     <TabsTrigger value="branding" className="gap-2">
                                         <Palette className="w-4 h-4" /> Branding
                                     </TabsTrigger>
                                     <TabsTrigger value="profile" className="gap-2">
-                                        <Store className="w-4 h-4" /> Business Profile
+                                        <Store className="w-4 h-4" /> Profile
                                     </TabsTrigger>
                                 </TabsList>
                             </div>
 
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-4">
+                                <TabsContent value="vibe" className="m-0 h-full focus-visible:outline-none">
+                                    <VibeStudio />
+                                </TabsContent>
                                 <TabsContent value="branding" className="m-0 h-full focus-visible:outline-none">
                                     <BrandingTab />
                                 </TabsContent>

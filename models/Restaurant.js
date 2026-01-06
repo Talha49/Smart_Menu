@@ -58,11 +58,44 @@ const RestaurantSchema = new mongoose.Schema(
         visualDNA: {
             borderRadius: { type: Number, default: 16 },
             shadowIntensity: { type: String, default: "subtle" },
-            glassmorphism: { type: Number, default: 0 }, // 0 to 100 opacity
+            glassmorphism: { type: Number, default: 0 }, 
+        },
+        // Vibe Studio: The Global Design Token Store
+        vibeTokens: {
+            dna: {
+                radius: { type: String, default: "1.5rem" },
+                glass: { type: Number, default: 20 },
+                motion: { type: String, default: "liquid-spring" },
+                glow: { type: String, default: "none" }
+            },
+            palette: {
+                primary: { type: String, default: "#4f46e5" },
+                accent: { type: String, default: "#f43f5e" },
+                surface: { type: String, default: "glass-white" },
+                background: { type: String, default: "minimal" }
+            },
+            atmosphere: {
+                active: { type: String, default: "none" },
+                intensity: { type: Number, default: 50 },
+                effects: { type: [String], default: [] }
+            }
         },
         seasonalAtmosphere: {
             activeTheme: { type: String, default: "none" },
             intensity: { type: Number, default: 50 },
+            autoSchedule: { type: Boolean, default: false },
+            schedule: [
+                {
+                    name: String,
+                    startMonth: Number, // 0-11
+                    endMonth: Number, // 0-11
+                    vibe: {
+                        dna: { radius: String, glass: Number, motion: String },
+                        palette: { primary: String, accent: String },
+                        atmosphere: { active: String, intensity: Number }
+                    }
+                }
+            ]
         },
     },
 

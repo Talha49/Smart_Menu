@@ -56,6 +56,20 @@ export async function PUT(req) {
                 ...(currentConfig.visualDNA || {}),
                 ...(experienceConfig.visualDNA || {})
             },
+            vibeTokens: {
+                dna: {
+                    ...(currentConfig.vibeTokens?.dna || {}),
+                    ...(experienceConfig.vibeTokens?.dna || {})
+                },
+                palette: {
+                    ...(currentConfig.vibeTokens?.palette || {}),
+                    ...(experienceConfig.vibeTokens?.palette || {})
+                },
+                atmosphere: {
+                    ...(currentConfig.vibeTokens?.atmosphere || {}),
+                    ...(experienceConfig.vibeTokens?.atmosphere || {})
+                }
+            },
             seasonalAtmosphere: {
                 ...(currentConfig.seasonalAtmosphere || {}),
                 ...(experienceConfig.seasonalAtmosphere || {})

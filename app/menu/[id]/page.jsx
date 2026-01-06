@@ -30,6 +30,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { LayoutFactory } from "@/components/public/layouts/LayoutFactory";
+import { AtmosphereStage } from "@/components/public/AtmosphereStage";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -66,13 +67,50 @@ export default function PublicMenuPage() {
         return () => window.removeEventListener("message", handleMessage);
     }, [isPreview]);
 
-    // Apply overrides if in preview mode
-    const activeRestaurant = previewOverride ? {
+    const getScheduledVibe = (restaurant) => {
+        if (!restaurant?.experienceConfig?.seasonalAtmosphere?.autoSchedule) return null;
+
+        const currentMonth = new Date().getMonth();
+        const schedule = restaurant.experienceConfig.seasonalAtmosphere.schedule || [];
+
+        const matchingSchedule = schedule.find(s => {
+            if (s.startMonth <= s.endMonth) {
+                return currentMonth >= s.startMonth && currentMonth <= s.endMonth;
+            } else {
+                // Crosses year boundary (e.g. Dec to Feb)
+                return currentMonth >= s.startMonth || currentMonth <= s.endMonth;
+            }
+        });
+
+        return matchingSchedule?.vibe || null;
+    };
+
+    const scheduledVibe = !previewOverride ? getScheduledVibe(data?.restaurant) : null;
+
+    // Apply overrides if in preview mode OR scheduled automation is active
+    const activeRestaurant = (previewOverride || scheduledVibe) ? {
         ...data?.restaurant,
-        ...previewOverride,
+        ...(previewOverride || {}),
         experienceConfig: {
             ...data?.restaurant?.experienceConfig,
-            ...previewOverride.experienceConfig
+            ...(previewOverride?.experienceConfig || {}),
+            vibeTokens: {
+                dna: {
+                    ...(data?.restaurant?.experienceConfig?.vibeTokens?.dna || {}),
+                    ...(scheduledVibe?.dna || {}),
+                    ...(previewOverride?.experienceConfig?.vibeTokens?.dna || {})
+                },
+                palette: {
+                    ...(data?.restaurant?.experienceConfig?.vibeTokens?.palette || {}),
+                    ...(scheduledVibe?.palette || {}),
+                    ...(previewOverride?.experienceConfig?.vibeTokens?.palette || {})
+                },
+                atmosphere: {
+                    ...(data?.restaurant?.experienceConfig?.vibeTokens?.atmosphere || {}),
+                    ...(scheduledVibe?.atmosphere || {}),
+                    ...(previewOverride?.experienceConfig?.vibeTokens?.atmosphere || {})
+                }
+            }
         }
     } : data?.restaurant;
 
@@ -123,7 +161,7 @@ export default function PublicMenuPage() {
                 if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    window.scrollBy({ top: 1, behavior: 'auto' }); // Fixed: 'linear' is not a valid ScrollBehavior
+                    window.scrollBy({ top: 1, behavior: 'auto' });
                 }
             }, 30);
             document.documentElement.requestFullscreen?.();
@@ -133,6 +171,32 @@ export default function PublicMenuPage() {
         }
         return () => clearInterval(scrollInterval.current);
     }, [isTVMode]);
+
+    // 3. Category Tracking (Intersection Observer)
+    useEffect(() => {
+        if (isLoading || !data || isTVMode || isPreview) return;
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -70% 0px', // Smaller window for activation
+            threshold: 0
+        };
+
+        const handleIntersect = (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const categoryName = entry.target.id.replace('category-', '');
+                    setActiveCategory(categoryName);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(handleIntersect, observerOptions);
+        const sections = document.querySelectorAll('[id^="category-"]');
+        sections.forEach(section => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, [isLoading, data, isTVMode, isPreview]);
 
     const handleShare = async () => {
         try {
@@ -213,10 +277,38 @@ export default function PublicMenuPage() {
 
     return (
         <div key="menu-main" className={cn(
-            "min-h-screen transition-all duration-1000",
+            "relative min-h-screen transition-all duration-1000 overflow-x-hidden",
             isTVMode ? "bg-black text-white" : "bg-white text-zinc-950 font-medium",
             isPreview && "scrollbar-hide"
         )} style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}>
+
+            {/* Premium Liquid Aura Background */}
+            {!isTVMode && !isPreview && (
+                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 45, 0],
+                            x: [0, 50, 0],
+                            y: [0, -30, 0]
+                        }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px]"
+                        style={{ backgroundColor: `${restaurant.brandColor}15` }}
+                    />
+                    <motion.div
+                        animate={{
+                            scale: [1.2, 1, 1.2],
+                            rotate: [45, 0, 45],
+                            x: [0, -40, 0],
+                            y: [0, 40, 0]
+                        }}
+                        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                        className="absolute -bottom-[10%] -right-[5%] w-[50%] h-[50%] rounded-full blur-[100px]"
+                        style={{ backgroundColor: `${restaurant.brandColor}10` }}
+                    />
+                </div>
+            )}
 
             <ItemCustomizationModal
                 item={selectedItem}
@@ -291,26 +383,31 @@ export default function PublicMenuPage() {
                 </div>
             </header>
 
-            {!isTVMode && restaurant.experienceConfig?.layoutID !== "orbital-wheel" && (
+            {!isTVMode && activeRestaurant.experienceConfig?.layoutID !== "orbital-wheel" && (
                 <CategoryNav
                     categories={filteredMenu}
                     activeCategory={activeCategory}
-                    brandColor={restaurant.brandColor}
+                    brandColor={activeRestaurant.brandColor}
                 />
             )}
 
-            <main className={cn(
-                "max-w-7xl mx-auto px-4 md:px-6 transition-all duration-1000",
-                isTVMode ? "pt-10" : (restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "pt-0" : "pt-8 md:pt-12")
-            )}>
-                <LayoutFactory
-                    layoutID={restaurant.experienceConfig?.layoutID}
-                    isTVMode={isTVMode}
-                    groupedItems={filteredMenu}
-                    setSelectedItem={setSelectedItem}
-                    {...restaurant.experienceConfig}
-                />
-            </main>
+            <AtmosphereStage
+                atmosphere={activeRestaurant.experienceConfig?.vibeTokens?.atmosphere}
+                brandColor={activeRestaurant.brandColor}
+            >
+                <main className={cn(
+                    "max-w-7xl mx-auto px-4 md:px-6 transition-all duration-1000",
+                    isTVMode ? "pt-10" : (activeRestaurant.experienceConfig?.layoutID === "orbital-wheel" ? "pt-0" : "pt-8 md:pt-12")
+                )}>
+                    <LayoutFactory
+                        layoutID={activeRestaurant.experienceConfig?.layoutID}
+                        isTVMode={isTVMode}
+                        groupedItems={filteredMenu}
+                        setSelectedItem={setSelectedItem}
+                        {...activeRestaurant.experienceConfig}
+                    />
+                </main>
+            </AtmosphereStage>
 
 
             {/* Minimalist Premium Footer */}
@@ -340,7 +437,7 @@ export default function PublicMenuPage() {
                     <div className="flex flex-col items-center text-center gap-3 md:gap-4">
                         <div className="text-xl md:text-2xl font-black italic tracking-tighter opacity-20 select-none">SMART MENU</div>
                         <p className="text-[8px] md:text-[10px] uppercase font-black tracking-[0.2em] text-zinc-300">
-                            ©{new Date().getFullYear()} {restaurant.name.toUpperCase()} / THE FUTURE OF DINING
+                            ©{new Date().getFullYear()} {activeRestaurant.name.toUpperCase()} / THE FUTURE OF DINING
                         </p>
                     </div>
                 </div>

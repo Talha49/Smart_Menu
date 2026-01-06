@@ -30,35 +30,47 @@ export function CategoryNav({ categories, activeCategory, brandColor }) {
     };
 
     return (
-        <div className="sticky top-[72px] md:top-[80px] z-40 bg-white/80 backdrop-blur-3xl border-b w-full overflow-hidden transition-all duration-500">
+        <div className="sticky top-[72px] md:top-[80px] z-40 w-full transition-all duration-700">
+            {/* Glossy Backdrop */}
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-3xl border-b border-zinc-100/50 shadow-sm shadow-zinc-950/5" />
+
             <div
                 ref={navRef}
-                className="flex overflow-x-auto py-4 px-6 gap-3 scrollbar-hide snap-x max-w-7xl mx-auto"
+                className="relative flex overflow-x-auto py-5 px-6 gap-4 scrollbar-hide snap-x max-w-7xl mx-auto items-center"
                 role="tablist"
             >
                 {categories.map((cat) => (
                     <motion.button
                         key={cat._id}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => scrollToCategory(cat.name)}
                         className={cn(
-                            "group flex items-center gap-2.5 px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300 snap-center border-2",
+                            "group flex items-center gap-3 px-6 py-3 rounded-[1.25rem] text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-500 snap-center border-2",
                             active === cat.name
-                                ? "text-white border-transparent shadow-[0_10px_20px_-5px_rgba(0,0,0,0.1)]"
-                                : "bg-zinc-50 text-zinc-400 border-zinc-100 hover:border-zinc-200 hover:text-zinc-900"
+                                ? "text-white border-transparent"
+                                : "bg-white/50 text-zinc-400 border-zinc-50 hover:border-zinc-200 hover:text-zinc-900 shadow-sm"
                         )}
                         style={active === cat.name ? {
                             backgroundColor: brandColor || "black",
-                            boxShadow: `0 10px 25px -5px ${brandColor ? brandColor + '40' : 'rgba(0,0,0,0.1)'}`
+                            boxShadow: `0 15px 35px -10px ${brandColor ? brandColor + '60' : 'rgba(0,0,0,0.1)'}`
                         } : {}}
                     >
-                        <span className="text-xl group-hover:scale-125 transition-transform duration-500">{cat.emoji || "🍽️"}</span>
-                        {cat.name}
+                        <span className="text-xl md:text-2xl group-hover:scale-110 transition-transform duration-500 transform">{cat.emoji || "🍽️"}</span>
+                        <span>{cat.name}</span>
+                        {active === cat.name && (
+                            <motion.div
+                                layoutId="navIndicator"
+                                className="w-1 h-1 rounded-full bg-white ml-1"
+                            />
+                        )}
                     </motion.button>
                 ))}
             </div>
-            {/* Elegant glass indicator */}
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+
+            {/* Elegant glass edge fades */}
+            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white/80 via-white/40 to-transparent pointer-events-none z-10" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/80 via-white/40 to-transparent pointer-events-none z-10" />
         </div>
     );
 }

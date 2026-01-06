@@ -37,14 +37,36 @@ export const useRestaurantStore = create((set, get) => ({
   updateBranding: async (formData) => {
     const previousState = get().restaurant;
     
-    // 1. Optimistic Update
+    // 1. Optimistic Update with Deep Merging for experienceConfig
     set((state) => ({
       restaurant: { 
         ...state.restaurant, 
         ...formData,
         experienceConfig: formData.experienceConfig ? {
             ...state.restaurant.experienceConfig,
-            ...formData.experienceConfig
+            ...formData.experienceConfig,
+            visualDNA: {
+                ...(state.restaurant.experienceConfig?.visualDNA || {}),
+                ...(formData.experienceConfig.visualDNA || {})
+            },
+            vibeTokens: {
+                dna: {
+                    ...(state.restaurant.experienceConfig?.vibeTokens?.dna || {}),
+                    ...(formData.experienceConfig.vibeTokens?.dna || {})
+                },
+                palette: {
+                    ...(state.restaurant.experienceConfig?.vibeTokens?.palette || {}),
+                    ...(formData.experienceConfig.vibeTokens?.palette || {})
+                },
+                atmosphere: {
+                    ...(state.restaurant.experienceConfig?.vibeTokens?.atmosphere || {}),
+                    ...(formData.experienceConfig.vibeTokens?.atmosphere || {})
+                }
+            },
+            seasonalAtmosphere: {
+                ...(state.restaurant.experienceConfig?.seasonalAtmosphere || {}),
+                ...(formData.experienceConfig.seasonalAtmosphere || {})
+            }
         } : state.restaurant.experienceConfig
       }
     }));

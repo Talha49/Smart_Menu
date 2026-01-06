@@ -62,7 +62,8 @@ export function LivePreview({
                         fontFamily,
                         logoUrl,
                         experienceConfig: {
-                            layoutID: layoutID || branding?.experienceConfig?.layoutID
+                            layoutID: layoutID || branding?.experienceConfig?.layoutID,
+                            vibeTokens: restaurant?.experienceConfig?.vibeTokens || branding?.vibeTokens
                         }
                     }
                 }, "*");
@@ -72,7 +73,7 @@ export function LivePreview({
         sendUpdate();
         const timer = setTimeout(sendUpdate, 1000);
         return () => clearTimeout(timer);
-    }, [brandColor, fontFamily, logoUrl, layoutID, previewUrl]);
+    }, [brandColor, fontFamily, logoUrl, layoutID, previewUrl, restaurant?.experienceConfig?.vibeTokens]);
 
     if (minimal) return <PreviewContent previewUrl={previewUrl} iframeRef={iframeRef} />;
 
