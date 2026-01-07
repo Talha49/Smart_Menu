@@ -55,6 +55,9 @@ export function LivePreview({
     useEffect(() => {
         const sendUpdate = () => {
             if (iframeRef.current?.contentWindow) {
+                // Use restaurant's experienceConfig as the base (it's already deep-merged activeData)
+                const experienceConfig = restaurant?.experienceConfig || {};
+
                 iframeRef.current.contentWindow.postMessage({
                     type: "PREVIEW_UPDATE",
                     data: {
@@ -62,8 +65,10 @@ export function LivePreview({
                         fontFamily,
                         logoUrl,
                         experienceConfig: {
-                            layoutID: layoutID || branding?.experienceConfig?.layoutID,
-                            vibeTokens: restaurant?.experienceConfig?.vibeTokens || branding?.vibeTokens
+                            ...experienceConfig,
+                            // Ensure layoutID and others are explicit if needed
+                            layoutID: layoutID || experienceConfig.layoutID,
+                            themeConfig: branding?.themeConfig || experienceConfig.themeConfig
                         }
                     }
                 }, "*");
@@ -73,7 +78,7 @@ export function LivePreview({
         sendUpdate();
         const timer = setTimeout(sendUpdate, 1000);
         return () => clearTimeout(timer);
-    }, [brandColor, fontFamily, logoUrl, layoutID, previewUrl, restaurant?.experienceConfig?.vibeTokens]);
+    }, [brandColor, fontFamily, logoUrl, layoutID, previewUrl, restaurant?.experienceConfig?.vibeTokens, restaurant?.experienceConfig?.themeConfig]);
 
     if (minimal) return <PreviewContent previewUrl={previewUrl} iframeRef={iframeRef} />;
 

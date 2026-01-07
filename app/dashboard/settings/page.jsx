@@ -8,16 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { LivePreview } from "@/components/settings/LivePreview";
 import { BrandingTab } from "./BrandingTab";
 import { BusinessProfileTab } from "./BusinessProfileTab";
-import { Palette, Store, Sparkles } from "lucide-react";
+import { Palette, Store, Sparkles, Paintbrush } from "lucide-react";
 import { VibeStudio } from "@/components/dashboard/vibe-studio/VibeStudio";
+import { ThemeStudio } from "@/components/dashboard/theme-studio/ThemeStudio";
+import { deepMerge } from "@/lib/object-utils";
 
 export default function SettingsPage() {
     const { restaurant, previewData } = useRestaurantStore();
     const { items: menuItems } = useMenuStore();
     const { categories } = useCategoryStore();
 
-    // Use preview data if available, otherwise fallback to saved restaurant data
-    const activeData = previewData || restaurant;
+    // Merge preview data with saved restaurant data for complete context
+    // Use deepMerge to ensure nested configs like experienceConfig aren't partially overwritten
+    const activeData = previewData ? deepMerge(restaurant, previewData) : restaurant;
 
     return (
         <div className="h-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -28,15 +31,18 @@ export default function SettingsPage() {
                     <Card className="flex-1 flex flex-col shadow-sm border-none bg-card/50 backdrop-blur-sm overflow-hidden">
                         <Tabs defaultValue="vibe" className="flex-1 flex flex-col overflow-hidden">
                             <div className="px-6 pt-6 border-b bg-muted/20">
-                                <TabsList className="grid grid-cols-3 w-full mb-6">
+                                <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full mb-6">
                                     <TabsTrigger value="vibe" className="gap-2">
-                                        <Sparkles className="w-4 h-4" /> Vibe Studio
+                                        <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">Vibe Studio</span><span className="sm:hidden">Vibe</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="theme" className="gap-2">
+                                        <Paintbrush className="w-4 h-4" /> <span className="hidden sm:inline">Theme Studio</span><span className="sm:hidden">Theme</span>
                                     </TabsTrigger>
                                     <TabsTrigger value="branding" className="gap-2">
-                                        <Palette className="w-4 h-4" /> Branding
+                                        <Palette className="w-4 h-4" /> <span className="hidden sm:inline">Branding</span><span className="sm:hidden">Brand</span>
                                     </TabsTrigger>
                                     <TabsTrigger value="profile" className="gap-2">
-                                        <Store className="w-4 h-4" /> Profile
+                                        <Store className="w-4 h-4" /> <span className="hidden sm:inline">Profile</span><span className="sm:hidden">Info</span>
                                     </TabsTrigger>
                                 </TabsList>
                             </div>
@@ -44,6 +50,9 @@ export default function SettingsPage() {
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-4">
                                 <TabsContent value="vibe" className="m-0 h-full focus-visible:outline-none">
                                     <VibeStudio />
+                                </TabsContent>
+                                <TabsContent value="theme" className="m-0 h-full focus-visible:outline-none">
+                                    <ThemeStudio />
                                 </TabsContent>
                                 <TabsContent value="branding" className="m-0 h-full focus-visible:outline-none">
                                     <BrandingTab />
@@ -74,7 +83,8 @@ export default function SettingsPage() {
                                         brandColor: activeData?.brandColor || "#4f46e5",
                                         fontFamily: activeData?.fontFamily || "Inter",
                                         logoUrl: activeData?.logoUrl || "",
-                                        layoutID: activeData?.experienceConfig?.layoutID || "classic-grid"
+                                        layoutID: activeData?.experienceConfig?.layoutID || "classic-grid",
+                                        themeConfig: activeData?.experienceConfig?.themeConfig
                                     }}
                                     menuItems={menuItems}
                                     categories={categories}

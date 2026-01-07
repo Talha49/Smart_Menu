@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { LayoutFactory } from "@/components/public/layouts/LayoutFactory";
 import { AtmosphereStage } from "@/components/public/AtmosphereStage";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -92,7 +93,7 @@ export default function PublicMenuPage() {
         ...data?.restaurant,
         ...(previewOverride || {}),
         experienceConfig: {
-            ...data?.restaurant?.experienceConfig,
+            ...(data?.restaurant?.experienceConfig || {}),
             ...(previewOverride?.experienceConfig || {}),
             vibeTokens: {
                 dna: {
@@ -110,6 +111,16 @@ export default function PublicMenuPage() {
                     ...(scheduledVibe?.atmosphere || {}),
                     ...(previewOverride?.experienceConfig?.vibeTokens?.atmosphere || {})
                 }
+            },
+            // Properly merge themeConfig
+            themeConfig: {
+                ...(data?.restaurant?.experienceConfig?.themeConfig || {}),
+                ...(previewOverride?.experienceConfig?.themeConfig || {})
+            },
+            // Ensure layoutConfig and other nested fields are also merged if they exist in override
+            layoutConfig: {
+                ...(data?.restaurant?.experienceConfig?.layoutConfig || {}),
+                ...(previewOverride?.experienceConfig?.layoutConfig || {})
             }
         }
     } : data?.restaurant;
@@ -276,242 +287,244 @@ export default function PublicMenuPage() {
     })).filter(group => group.items.length > 0);
 
     return (
-        <div key="menu-main" className={cn(
-            "relative min-h-screen transition-all duration-1000 overflow-x-hidden",
-            isTVMode ? "bg-black text-white" : "bg-white text-zinc-950 font-medium",
-            isPreview && "scrollbar-hide"
-        )} style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}>
+        <ThemeProvider experienceConfig={restaurant.experienceConfig}>
+            <div key="menu-main" className={cn(
+                "relative min-h-screen transition-all duration-1000 overflow-x-hidden",
+                isTVMode ? "text-white" : "text-zinc-950 font-medium",
+                isPreview && "scrollbar-hide"
+            )} style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}>
 
-            {/* Premium Liquid Aura Background */}
-            {!isTVMode && !isPreview && (
-                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
-                    <motion.div
-                        animate={{
-                            scale: [1, 1.2, 1],
-                            rotate: [0, 45, 0],
-                            x: [0, 50, 0],
-                            y: [0, -30, 0]
-                        }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px]"
-                        style={{ backgroundColor: `${restaurant.brandColor}15` }}
-                    />
-                    <motion.div
-                        animate={{
-                            scale: [1.2, 1, 1.2],
-                            rotate: [45, 0, 45],
-                            x: [0, -40, 0],
-                            y: [0, 40, 0]
-                        }}
-                        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                        className="absolute -bottom-[10%] -right-[5%] w-[50%] h-[50%] rounded-full blur-[100px]"
-                        style={{ backgroundColor: `${restaurant.brandColor}10` }}
-                    />
-                </div>
-            )}
+                {/* Premium Liquid Aura Background */}
+                {!isTVMode && !isPreview && (
+                    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 45, 0],
+                                x: [0, 50, 0],
+                                y: [0, -30, 0]
+                            }}
+                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[120px]"
+                            style={{ backgroundColor: `${restaurant.brandColor}15` }}
+                        />
+                        <motion.div
+                            animate={{
+                                scale: [1.2, 1, 1.2],
+                                rotate: [45, 0, 45],
+                                x: [0, -40, 0],
+                                y: [0, 40, 0]
+                            }}
+                            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                            className="absolute -bottom-[10%] -right-[5%] w-[50%] h-[50%] rounded-full blur-[100px]"
+                            style={{ backgroundColor: `${restaurant.brandColor}10` }}
+                        />
+                    </div>
+                )
+                }
 
-            <ItemCustomizationModal
-                item={selectedItem}
-                isOpen={!!selectedItem}
-                onClose={() => setSelectedItem(null)}
-            />
+                <ItemCustomizationModal
+                    item={selectedItem}
+                    isOpen={!!selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
 
-            {/* Header: High-End Minimalist */}
-            <header className={cn(
-                "sticky top-0 z-50 backdrop-blur-3xl border-b transition-all duration-700",
-                isTVMode ? "bg-black/90 border-white/5 py-4" : (restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "bg-white/80 border-zinc-100 py-1 px-4" : "bg-white/80 border-zinc-100 py-4 md:py-8 px-4 md:px-6")
-            )}>
-                <div className={cn(
-                    "max-w-7xl mx-auto flex flex-col items-center",
-                    restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "gap-1" : "gap-4 md:gap-6"
+                {/* Header: High-End Minimalist */}
+                <header className={cn(
+                    "sticky top-0 z-50 backdrop-blur-3xl border-b transition-all duration-700",
+                    isTVMode ? "bg-black/90 border-white/5 py-4" : (restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "bg-white/80 border-zinc-100 py-1 px-4" : "bg-white/80 border-zinc-100 py-4 md:py-8 px-4 md:px-6")
                 )}>
-                    <div className="w-full flex items-center justify-between">
-                        <div className="flex items-center gap-3 md:gap-6">
-                            {restaurant.logoUrl && (
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl overflow-hidden border border-zinc-100 relative bg-white flex items-center justify-center p-1 md:p-1.5 shadow-sm"
-                                >
-                                    <img src={restaurant.logoUrl} alt={restaurant.name} className="w-full h-full object-contain" />
-                                </motion.div>
-                            )}
-                            <div className="flex flex-col">
-                                <h1 className={cn("font-black tracking-tighter leading-none italic", isTVMode ? "text-2xl md:text-4xl" : "text-xl md:text-3xl")}>
-                                    {restaurant.name.toUpperCase()}
-                                </h1>
-                                {!isTVMode && <span className="hidden md:block text-[10px] font-black tracking-[0.4em] text-zinc-400 mt-1 uppercase">Visual Gastronomy</span>}
+                    <div className={cn(
+                        "max-w-7xl mx-auto flex flex-col items-center",
+                        restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "gap-1" : "gap-4 md:gap-6"
+                    )}>
+                        <div className="w-full flex items-center justify-between">
+                            <div className="flex items-center gap-3 md:gap-6">
+                                {restaurant.logoUrl && (
+                                    <motion.div
+                                        whileHover={{ scale: 1.05 }}
+                                        className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl overflow-hidden border border-zinc-100 relative bg-white flex items-center justify-center p-1 md:p-1.5 shadow-sm"
+                                    >
+                                        <img src={restaurant.logoUrl} alt={restaurant.name} className="w-full h-full object-contain" />
+                                    </motion.div>
+                                )}
+                                <div className="flex flex-col">
+                                    <h1 className={cn("font-black tracking-tighter leading-none italic", isTVMode ? "text-2xl md:text-4xl" : "text-xl md:text-3xl")}>
+                                        {restaurant.name.toUpperCase()}
+                                    </h1>
+                                    {!isTVMode && <span className="hidden md:block text-[10px] font-black tracking-[0.4em] text-zinc-400 mt-1 uppercase">Visual Gastronomy</span>}
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsTVMode(!isTVMode)}
-                                className={cn("rounded-xl md:rounded-2xl w-10 h-10 md:w-12 md:h-12 transition-all border", isTVMode ? "bg-white/10 text-white border-white/10" : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:text-zinc-950")}
-                            >
-                                {isTVMode ? <X className="w-4 h-4 md:w-5 md:h-5" /> : <Monitor className="w-4 h-4 md:w-5 md:h-5" />}
-                            </Button>
-                            {!isTVMode && (
+                            <div className="flex items-center gap-2 md:gap-3">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => setShowInfo(!showInfo)}
-                                    className="rounded-xl md:rounded-2xl w-10 h-10 md:w-12 md:h-12 bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-zinc-950"
+                                    onClick={() => setIsTVMode(!isTVMode)}
+                                    className={cn("rounded-xl md:rounded-2xl w-10 h-10 md:w-12 md:h-12 transition-all border", isTVMode ? "bg-white/10 text-white border-white/10" : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:text-zinc-950")}
                                 >
-                                    <Info className="w-4 h-4 md:w-5 md:h-5" />
+                                    {isTVMode ? <X className="w-4 h-4 md:w-5 md:h-5" /> : <Monitor className="w-4 h-4 md:w-5 md:h-5" />}
                                 </Button>
-                            )}
-                        </div>
-                    </div>
-
-                    {!isTVMode && (
-                        <div className="relative max-w-xl w-full">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300" />
-                            <input
-                                type="text"
-                                placeholder="Curate your experience..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className={cn(
-                                    "w-full pl-12 pr-6 rounded-2xl md:rounded-3xl border-2 border-zinc-50 bg-zinc-50 focus:bg-white focus:border-zinc-200 transition-all outline-none text-xs md:text-sm font-bold tracking-tight",
-                                    restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "py-2" : "py-3 md:py-4"
+                                {!isTVMode && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setShowInfo(!showInfo)}
+                                        className="rounded-xl md:rounded-2xl w-10 h-10 md:w-12 md:h-12 bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-zinc-950"
+                                    >
+                                        <Info className="w-4 h-4 md:w-5 md:h-5" />
+                                    </Button>
                                 )}
-                            />
-                        </div>
-                    )}
-                </div>
-            </header>
-
-            {!isTVMode && activeRestaurant.experienceConfig?.layoutID !== "orbital-wheel" && (
-                <CategoryNav
-                    categories={filteredMenu}
-                    activeCategory={activeCategory}
-                    brandColor={activeRestaurant.brandColor}
-                />
-            )}
-
-            <AtmosphereStage
-                atmosphere={activeRestaurant.experienceConfig?.vibeTokens?.atmosphere}
-                brandColor={activeRestaurant.brandColor}
-            >
-                <main className={cn(
-                    "max-w-7xl mx-auto px-4 md:px-6 transition-all duration-1000",
-                    isTVMode ? "pt-10" : (activeRestaurant.experienceConfig?.layoutID === "orbital-wheel" ? "pt-0" : "pt-8 md:pt-12")
-                )}>
-                    <LayoutFactory
-                        layoutID={activeRestaurant.experienceConfig?.layoutID}
-                        isTVMode={isTVMode}
-                        groupedItems={filteredMenu}
-                        setSelectedItem={setSelectedItem}
-                        {...activeRestaurant.experienceConfig}
-                    />
-                </main>
-            </AtmosphereStage>
-
-
-            {/* Minimalist Premium Footer */}
-            <footer className={cn(
-                "py-12 md:py-16 px-4 md:px-6 border-t border-zinc-100 transition-opacity duration-1000",
-                (isTVMode || isPreview) ? "hidden" : "block"
-            )}>
-                <div className="max-w-7xl mx-auto flex flex-col items-center gap-8 md:gap-12">
-                    <div className="flex items-center gap-6 md:gap-12 border-b border-zinc-100 pb-8 md:pb-12 w-full justify-center flex-wrap">
-                        <div className="flex items-center gap-3">
-                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300">Share</span>
-                            <div className="flex gap-2">
-                                <Button variant="ghost" size="icon" onClick={handleShare} className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-zinc-100">
-                                    <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                </Button>
                             </div>
                         </div>
 
-                        <div className="w-[1px] h-4 bg-zinc-100 hidden md:block" />
-
-                        <div className="flex items-center gap-6">
-                            {bp.socialLinks?.instagram && <a href={formatUrl(bp.socialLinks.instagram)} className="text-zinc-400 hover:text-zinc-950 transition-colors"><Instagram className="w-4 h-4 md:w-5 md:h-5" /></a>}
-                            {bp.socialLinks?.facebook && <a href={formatUrl(bp.socialLinks.facebook)} className="text-zinc-400 hover:text-zinc-950 transition-colors"><Facebook className="w-4 h-4 md:w-5 md:h-5" /></a>}
-                        </div>
+                        {!isTVMode && (
+                            <div className="relative max-w-xl w-full">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-300" />
+                                <input
+                                    type="text"
+                                    placeholder="Curate your experience..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={cn(
+                                        "w-full pl-12 pr-6 rounded-2xl md:rounded-3xl border-2 border-zinc-50 bg-zinc-50 focus:bg-white focus:border-zinc-200 transition-all outline-none text-xs md:text-sm font-bold tracking-tight",
+                                        restaurant.experienceConfig?.layoutID === "orbital-wheel" ? "py-2" : "py-3 md:py-4"
+                                    )}
+                                />
+                            </div>
+                        )}
                     </div>
+                </header>
 
-                    <div className="flex flex-col items-center text-center gap-3 md:gap-4">
-                        <div className="text-xl md:text-2xl font-black italic tracking-tighter opacity-20 select-none">SMART MENU</div>
-                        <p className="text-[8px] md:text-[10px] uppercase font-black tracking-[0.2em] text-zinc-300">
-                            ©{new Date().getFullYear()} {activeRestaurant.name.toUpperCase()} / THE FUTURE OF DINING
-                        </p>
-                    </div>
-                </div>
-            </footer>
-
-            {/* Business Info Drawer */}
-            <AnimatePresence>
-                {showInfo && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-lg"
-                            onClick={() => setShowInfo(false)}
+                {
+                    !isTVMode && activeRestaurant.experienceConfig?.layoutID !== "orbital-wheel" && (
+                        <CategoryNav
+                            categories={filteredMenu}
+                            activeCategory={activeCategory}
+                            brandColor={activeRestaurant.brandColor}
                         />
-                        <motion.div
-                            initial={{ y: "100%" }}
-                            animate={{ y: 0 }}
-                            exit={{ y: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed inset-x-0 bottom-0 z-[120] bg-zinc-950 text-white rounded-t-[3rem] p-10 max-w-3xl mx-auto shadow-2xl border-t border-white/5"
-                        >
-                            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-10" />
-                            <div className="space-y-12">
-                                <div className="text-center">
-                                    <h3 className="text-4xl font-black italic tracking-tighter mb-4">ESTABLISHMENT INFO</h3>
-                                    <p className="text-zinc-500 font-medium italic">"{bp.description || "A premier dining destination focused on exceptional quality and flavor."}"</p>
+                    )
+                }
+
+                <AtmosphereStage>
+                    <main className={cn(
+                        "max-w-7xl mx-auto px-4 md:px-6 transition-all duration-1000",
+                        isTVMode ? "pt-10" : (activeRestaurant.experienceConfig?.layoutID === "orbital-wheel" ? "pt-0" : "pt-8 md:pt-12")
+                    )}>
+                        <LayoutFactory
+                            layoutID={activeRestaurant.experienceConfig?.layoutID}
+                            isTVMode={isTVMode}
+                            groupedItems={filteredMenu}
+                            setSelectedItem={setSelectedItem}
+                            {...activeRestaurant.experienceConfig}
+                        />
+                    </main>
+                </AtmosphereStage>
+
+
+                {/* Minimalist Premium Footer */}
+                <footer className={cn(
+                    "py-12 md:py-16 px-4 md:px-6 border-t border-zinc-100 transition-opacity duration-1000",
+                    (isTVMode || isPreview) ? "hidden" : "block"
+                )}>
+                    <div className="max-w-7xl mx-auto flex flex-col items-center gap-8 md:gap-12">
+                        <div className="flex items-center gap-6 md:gap-12 border-b border-zinc-100 pb-8 md:pb-12 w-full justify-center flex-wrap">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300">Share</span>
+                                <div className="flex gap-2">
+                                    <Button variant="ghost" size="icon" onClick={handleShare} className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-zinc-100">
+                                        <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    </Button>
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-6">
-                                        <div className="flex gap-6 items-start">
-                                            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"><MapPin className="w-5 h-5 text-primary" /></div>
-                                            <div>
-                                                <span className="text-[10px] font-black tracking-widest text-zinc-600 block mb-1">LOCATION</span>
-                                                <span className="text-sm font-bold text-zinc-300">{bp.address || "Contact for address"}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-6 items-start">
-                                            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"><Phone className="w-5 h-5 text-primary" /></div>
-                                            <div>
-                                                <span className="text-[10px] font-black tracking-widest text-zinc-600 block mb-1">CONTACT</span>
-                                                <span className="text-sm font-bold text-zinc-300">{bp.phone || "No phone listed"}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 bg-white/5 p-6 rounded-3xl border border-white/10">
-                                        <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-zinc-500 mb-2">
-                                            <Clock className="w-4 h-4" /> SERVICE HOURS
-                                        </div>
-                                        <div className="space-y-2">
-                                            {bp.openingHours?.map((h, i) => (
-                                                <div key={i} className="flex justify-between text-xs font-bold">
-                                                    <span className="text-zinc-600">{h.day}</span>
-                                                    <span className={h.isClosed ? "text-red-500" : "text-white"}>{h.isClosed ? "Closed" : `${h.open} - ${h.close}`}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Button
-                                    className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black uppercase tracking-widest mt-4"
-                                    onClick={() => setShowInfo(false)}
-                                >
-                                    Return to Menu
-                                </Button>
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-        </div>
+
+                            <div className="w-[1px] h-4 bg-zinc-100 hidden md:block" />
+
+                            <div className="flex items-center gap-6">
+                                {bp.socialLinks?.instagram && <a href={formatUrl(bp.socialLinks.instagram)} className="text-zinc-400 hover:text-zinc-950 transition-colors"><Instagram className="w-4 h-4 md:w-5 md:h-5" /></a>}
+                                {bp.socialLinks?.facebook && <a href={formatUrl(bp.socialLinks.facebook)} className="text-zinc-400 hover:text-zinc-950 transition-colors"><Facebook className="w-4 h-4 md:w-5 md:h-5" /></a>}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-center text-center gap-3 md:gap-4">
+                            <div className="text-xl md:text-2xl font-black italic tracking-tighter opacity-20 select-none">SMART MENU</div>
+                            <p className="text-[8px] md:text-[10px] uppercase font-black tracking-[0.2em] text-zinc-300">
+                                ©{new Date().getFullYear()} {activeRestaurant.name.toUpperCase()} / THE FUTURE OF DINING
+                            </p>
+                        </div>
+                    </div>
+                </footer>
+
+                {/* Business Info Drawer */}
+                <AnimatePresence>
+                    {showInfo && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-lg"
+                                onClick={() => setShowInfo(false)}
+                            />
+                            <motion.div
+                                initial={{ y: "100%" }}
+                                animate={{ y: 0 }}
+                                exit={{ y: "100%" }}
+                                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                                className="fixed inset-x-0 bottom-0 z-[120] bg-zinc-950 text-white rounded-t-[3rem] p-10 max-w-3xl mx-auto shadow-2xl border-t border-white/5"
+                            >
+                                <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-10" />
+                                <div className="space-y-12">
+                                    <div className="text-center">
+                                        <h3 className="text-4xl font-black italic tracking-tighter mb-4">ESTABLISHMENT INFO</h3>
+                                        <p className="text-zinc-500 font-medium italic">"{bp.description || "A premier dining destination focused on exceptional quality and flavor."}"</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-6">
+                                            <div className="flex gap-6 items-start">
+                                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"><MapPin className="w-5 h-5 text-primary" /></div>
+                                                <div>
+                                                    <span className="text-[10px] font-black tracking-widest text-zinc-600 block mb-1">LOCATION</span>
+                                                    <span className="text-sm font-bold text-zinc-300">{bp.address || "Contact for address"}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-6 items-start">
+                                                <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/10"><Phone className="w-5 h-5 text-primary" /></div>
+                                                <div>
+                                                    <span className="text-[10px] font-black tracking-widest text-zinc-600 block mb-1">CONTACT</span>
+                                                    <span className="text-sm font-bold text-zinc-300">{bp.phone || "No phone listed"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4 bg-white/5 p-6 rounded-3xl border border-white/10">
+                                            <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-zinc-500 mb-2">
+                                                <Clock className="w-4 h-4" /> SERVICE HOURS
+                                            </div>
+                                            <div className="space-y-2">
+                                                {bp.openingHours?.map((h, i) => (
+                                                    <div key={i} className="flex justify-between text-xs font-bold">
+                                                        <span className="text-zinc-600">{h.day}</span>
+                                                        <span className={h.isClosed ? "text-red-500" : "text-white"}>{h.isClosed ? "Closed" : `${h.open} - ${h.close}`}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black uppercase tracking-widest mt-4"
+                                        onClick={() => setShowInfo(false)}
+                                    >
+                                        Return to Menu
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+            </div>
+        </ThemeProvider>
     );
 }

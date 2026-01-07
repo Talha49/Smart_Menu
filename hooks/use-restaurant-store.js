@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { deepMerge } from '@/lib/object-utils';
 
 // Global store for restaurant data to avoid prop drilling and frequent refetches
 export const useRestaurantStore = create((set, get) => ({
@@ -10,7 +11,7 @@ export const useRestaurantStore = create((set, get) => ({
   setRestaurant: (data) => set({ restaurant: data, previewData: data }),
   
   setPreviewData: (data) => set((state) => ({
-    previewData: state.previewData ? { ...state.previewData, ...data } : data
+    previewData: state.previewData ? deepMerge(state.previewData, data) : data
   })),
 
   resetPreview: () => set((state) => ({ previewData: state.restaurant })),
@@ -37,37 +38,12 @@ export const useRestaurantStore = create((set, get) => ({
   updateBranding: async (formData) => {
     const previousState = get().restaurant;
     
-    // 1. Optimistic Update with Deep Merging for experienceConfig
+    // Simple optimistic update - just merge top level
+    // Let the API handle deep merging to avoid spreading undefined values
     set((state) => ({
       restaurant: { 
         ...state.restaurant, 
-        ...formData,
-        experienceConfig: formData.experienceConfig ? {
-            ...state.restaurant.experienceConfig,
-            ...formData.experienceConfig,
-            visualDNA: {
-                ...(state.restaurant.experienceConfig?.visualDNA || {}),
-                ...(formData.experienceConfig.visualDNA || {})
-            },
-            vibeTokens: {
-                dna: {
-                    ...(state.restaurant.experienceConfig?.vibeTokens?.dna || {}),
-                    ...(formData.experienceConfig.vibeTokens?.dna || {})
-                },
-                palette: {
-                    ...(state.restaurant.experienceConfig?.vibeTokens?.palette || {}),
-                    ...(formData.experienceConfig.vibeTokens?.palette || {})
-                },
-                atmosphere: {
-                    ...(state.restaurant.experienceConfig?.vibeTokens?.atmosphere || {}),
-                    ...(formData.experienceConfig.vibeTokens?.atmosphere || {})
-                }
-            },
-            seasonalAtmosphere: {
-                ...(state.restaurant.experienceConfig?.seasonalAtmosphere || {}),
-                ...(formData.experienceConfig.seasonalAtmosphere || {})
-            }
-        } : state.restaurant.experienceConfig
+        ...formData
       }
     }));
 

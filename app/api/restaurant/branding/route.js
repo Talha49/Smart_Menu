@@ -47,34 +47,71 @@ export async function PUT(req) {
     if (logoUrl !== undefined) restaurant.logoUrl = logoUrl;
     
     if (experienceConfig) {
-        const currentConfig = restaurant.experienceConfig || {};
+        // Import utilities for cleaning and merging
+        const { deepMerge, removeUndefined } = await import('@/lib/object-utils');
         
-        restaurant.experienceConfig = {
-            ...currentConfig,
-            ...experienceConfig,
-            visualDNA: {
-                ...(currentConfig.visualDNA || {}),
-                ...(experienceConfig.visualDNA || {})
-            },
-            vibeTokens: {
-                dna: {
-                    ...(currentConfig.vibeTokens?.dna || {}),
-                    ...(experienceConfig.vibeTokens?.dna || {})
-                },
-                palette: {
-                    ...(currentConfig.vibeTokens?.palette || {}),
-                    ...(experienceConfig.vibeTokens?.palette || {})
-                },
-                atmosphere: {
-                    ...(currentConfig.vibeTokens?.atmosphere || {}),
-                    ...(experienceConfig.vibeTokens?.atmosphere || {})
-                }
-            },
-            seasonalAtmosphere: {
-                ...(currentConfig.seasonalAtmosphere || {}),
-                ...(experienceConfig.seasonalAtmosphere || {})
+        // Ensure experienceConfig root exists
+        if (!restaurant.experienceConfig) {
+            restaurant.experienceConfig = {};
+        }
+        
+        // Update layoutID if provided
+        if (experienceConfig.layoutID !== undefined) {
+            restaurant.experienceConfig.layoutID = experienceConfig.layoutID;
+        }
+        
+        // Update vibeTokens if provided
+        if (experienceConfig.vibeTokens) {
+            if (!restaurant.experienceConfig.vibeTokens) {
+                restaurant.experienceConfig.vibeTokens = {};
             }
-        };
+            if (experienceConfig.vibeTokens.dna) {
+                const clean = removeUndefined(experienceConfig.vibeTokens.dna);
+                const existing = removeUndefined(restaurant.experienceConfig.vibeTokens.dna || {});
+                restaurant.experienceConfig.vibeTokens.dna = deepMerge(existing, clean);
+            }
+            if (experienceConfig.vibeTokens.palette) {
+                const clean = removeUndefined(experienceConfig.vibeTokens.palette);
+                const existing = removeUndefined(restaurant.experienceConfig.vibeTokens.palette || {});
+                restaurant.experienceConfig.vibeTokens.palette = deepMerge(existing, clean);
+            }
+            if (experienceConfig.vibeTokens.atmosphere) {
+                const clean = removeUndefined(experienceConfig.vibeTokens.atmosphere);
+                const existing = removeUndefined(restaurant.experienceConfig.vibeTokens.atmosphere || {});
+                restaurant.experienceConfig.vibeTokens.atmosphere = deepMerge(existing, clean);
+            }
+        }
+        
+        // Update themeConfig if provided - CLEAN BOTH EXISTING AND NEW DATA
+        if (experienceConfig.themeConfig) {
+            const clean = removeUndefined(experienceConfig.themeConfig);
+            const existing = removeUndefined(restaurant.experienceConfig.themeConfig || {});
+            restaurant.experienceConfig.themeConfig = deepMerge(existing, clean);
+        }
+        
+        // Update layoutConfig if provided - CLEAN BOTH EXISTING AND NEW DATA
+        if (experienceConfig.layoutConfig) {
+            const clean = removeUndefined(experienceConfig.layoutConfig);
+            const existing = removeUndefined(restaurant.experienceConfig.layoutConfig || {});
+            restaurant.experienceConfig.layoutConfig = deepMerge(existing, clean);
+        }
+        
+        // Update seasonalAtmosphere if provided - CLEAN BOTH EXISTING AND NEW DATA
+        if (experienceConfig.seasonalAtmosphere) {
+            const clean = removeUndefined(experienceConfig.seasonalAtmosphere);
+            const existing = removeUndefined(restaurant.experienceConfig.seasonalAtmosphere || {});
+            restaurant.experienceConfig.seasonalAtmosphere = deepMerge(existing, clean);
+        }
+        
+        // Update visualDNA if provided - CLEAN BOTH EXISTING AND NEW DATA
+        if (experienceConfig.visualDNA) {
+            const clean = removeUndefined(experienceConfig.visualDNA);
+            const existing = removeUndefined(restaurant.experienceConfig.visualDNA || {});
+            restaurant.experienceConfig.visualDNA = deepMerge(existing, clean);
+        }
+        
+        // Mark experienceConfig as modified to ensure Mongoose saves it
+        restaurant.markModified('experienceConfig');
     }
 
     await restaurant.save();
@@ -83,6 +120,13 @@ export async function PUT(req) {
 
   } catch (error) {
     console.error("Error updating branding:", error);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    console.error("Error details:", error.message);
+    if (error.errors) {
+      console.error("Validation errors:", Object.keys(error.errors));
+    }
+    return NextResponse.json({ 
+      message: "Server error", 
+      error: error.message 
+    }, { status: 500 });
   }
 }

@@ -58,7 +58,13 @@ const ATMOSPHERE_CONFIGS = {
     }
 };
 
-export function AtmosphereStage({ atmosphere, children, brandColor }) {
+import { useTheme } from "@/contexts/ThemeContext";
+
+export function AtmosphereStage({ children }) {
+    const theme = useTheme();
+    const atmosphere = theme.config?.atmosphere || { active: 'none', intensity: 50 };
+    const brandColor = theme.config?.colors?.brand?.primary;
+
     const [init, setInit] = useState(false);
 
     useEffect(() => {
