@@ -136,7 +136,7 @@ const RestaurantSchema = new mongoose.Schema(
                 
                 // Pattern backgrounds (procedurally generated)
                 pattern: {
-                    type: { type: String, enum: ['dots', 'grid', 'waves', 'checkered', 'custom'] },
+                    type: { type: String, enum: ['dots', 'grid', 'waves', 'checkered', 'diagonal', 'custom'] },
                     color: String,
                     opacity: { type: Number, min: 0, max: 1 },
                     scale: { type: Number, min: 0.5, max: 3 }

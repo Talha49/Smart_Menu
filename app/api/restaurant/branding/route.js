@@ -128,9 +128,17 @@ export async function PUT(req) {
   } catch (error) {
     console.error("Error updating branding:", error);
     console.error("Error details:", error.message);
-    if (error.errors) {
-      console.error("Validation errors:", Object.keys(error.errors));
+    
+    // Gracefully handle Mongoose Validation Errors
+    if (error.name === 'ValidationError') {
+      const errorMessages = Object.values(error.errors).map(err => err.message);
+      console.error("Validation errors:", errorMessages);
+      return NextResponse.json({ 
+        message: "Validation Error", 
+        errors: errorMessages 
+      }, { status: 400 });
     }
+
     return NextResponse.json({ 
       message: "Server error", 
       error: error.message 

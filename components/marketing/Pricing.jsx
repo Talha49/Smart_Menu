@@ -24,7 +24,7 @@ export function Pricing() {
         },
         {
             name: "Smart Pro",
-            price: "$29",
+            price: "TBD",
             period: "/mo",
             desc: "Everything you need for growth.",
             icon: Zap,
@@ -41,7 +41,7 @@ export function Pricing() {
         },
         {
             name: "Enterprise",
-            price: "$99",
+            price: "TBD",
             period: "/mo",
             desc: "For multi-location restaurant groups.",
             icon: Sparkles,
@@ -78,8 +78,8 @@ export function Pricing() {
                             transition={{ delay: i * 0.1 }}
                             className={cn(
                                 "relative p-10 rounded-[3rem] flex flex-col transition-all duration-500",
-                                plan.popular 
-                                    ? "bg-zinc-900 text-white shadow-2xl scale-105 z-10" 
+                                plan.popular
+                                    ? "bg-zinc-900 text-white shadow-2xl scale-105 z-10"
                                     : "bg-white text-zinc-900 border-2 border-zinc-100"
                             )}
                         >
@@ -120,11 +120,11 @@ export function Pricing() {
                                 ))}
                             </div>
 
-                            <Button 
+                            <Button
                                 className={cn(
                                     "w-full h-14 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all",
-                                    plan.popular 
-                                        ? "bg-primary hover:bg-indigo-500 shadow-xl shadow-primary/40" 
+                                    plan.popular
+                                        ? "bg-primary hover:bg-indigo-500 shadow-xl shadow-primary/40"
                                         : "bg-zinc-900 hover:bg-zinc-800 text-white"
                                 )}
                             >

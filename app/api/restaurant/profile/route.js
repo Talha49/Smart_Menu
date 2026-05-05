@@ -74,6 +74,16 @@ export async function PUT(req) {
 
   } catch (error) {
     console.error("Profile Rebuild - CRITICAL ERROR:", error);
+    
+    // Gracefully handle Mongoose Validation Errors
+    if (error.name === 'ValidationError') {
+      const errorMessages = Object.values(error.errors).map(err => err.message);
+      return NextResponse.json({ 
+        message: "Validation Error", 
+        errors: errorMessages 
+      }, { status: 400 });
+    }
+
     return NextResponse.json({ message: "Server error", detail: error.message }, { status: 500 });
   }
 }
