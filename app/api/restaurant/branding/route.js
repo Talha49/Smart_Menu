@@ -110,6 +110,13 @@ export async function PUT(req) {
             restaurant.experienceConfig.visualDNA = deepMerge(existing, clean);
         }
         
+        // Update designSystem if provided - CLEAN BOTH EXISTING AND NEW DATA
+        if (experienceConfig.designSystem) {
+            const clean = removeUndefined(experienceConfig.designSystem);
+            const existing = removeUndefined(restaurant.experienceConfig.designSystem || {});
+            restaurant.experienceConfig.designSystem = deepMerge(existing, clean);
+        }
+        
         // Mark experienceConfig as modified to ensure Mongoose saves it
         restaurant.markModified('experienceConfig');
     }

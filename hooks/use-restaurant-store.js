@@ -38,13 +38,9 @@ export const useRestaurantStore = create((set, get) => ({
   updateBranding: async (formData) => {
     const previousState = get().restaurant;
     
-    // Simple optimistic update - just merge top level
-    // Let the API handle deep merging to avoid spreading undefined values
+    // Optimistic update using deep merge to preserve nested state (like experienceConfig)
     set((state) => ({
-      restaurant: { 
-        ...state.restaurant, 
-        ...formData
-      }
+      restaurant: deepMerge(state.restaurant, formData)
     }));
 
     try {

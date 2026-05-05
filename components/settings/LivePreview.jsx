@@ -1,63 +1,28 @@
 "use client";
 
 import { useRef, useEffect } from 'react';
-import { DeviceFrameset, DeviceEmulator } from 'react-device-frameset';
+import { DeviceFrameset } from 'react-device-frameset';
 import 'react-device-frameset/styles/marvel-devices.min.css';
-import 'react-device-frameset/styles/device-emulator.min.css';
 
-const PreviewContent = ({ previewUrl, iframeRef }) => (
-    <div className="w-full h-full bg-white overflow-hidden relative group rounded-[2.5rem]">
-        {!previewUrl ? (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 bg-zinc-50">
-                <div className="w-16 h-16 rounded-3xl bg-primary/5 flex items-center justify-center text-3xl animate-pulse">🍱</div>
-                <div>
-                    <h4 className="font-bold text-sm text-zinc-900">Initializing...</h4>
-                    <p className="text-[10px] text-zinc-400 mt-1 uppercase tracking-widest leading-relaxed">Establishing secure sync</p>
-                </div>
-            </div>
-        ) : (
-            <iframe
-                ref={iframeRef}
-                src={previewUrl}
-                className="w-full h-full border-none"
-                title="Menu Preview Overlay"
-                style={{
-                    WebkitOverflowScrolling: 'touch',
-                    overscrollBehavior: 'contain'
-                }}
-            />
-        )}
-
-        {/* Visual Indicator */}
-        <div className="absolute top-6 right-6 z-[60] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className="bg-zinc-950/90 text-white text-[8px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full backdrop-blur-xl border border-white/10 shadow-2xl flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                Perfect Parity Sync
-            </div>
-        </div>
-    </div>
-);
+// Devices that don't accept a color prop (empty colors array)
+const NO_COLOR_DEVICES = ['iPhone X', 'Galaxy Note 8', 'Nexus 5', 'HTC One', 'MacBook Pro'];
+const NOTCH_DEVICES = ['iPhone X', 'Galaxy Note 8'];
 
 export function LivePreview({
     restaurant,
     branding,
+    device = 'iPhone X',
     minimal = false
 }) {
     const iframeRef = useRef(null);
     const restaurantId = restaurant?.restaurantId;
-
-    // Stable preview URL - NO dependencies on branding
     const previewUrl = restaurantId ? `/menu/${restaurantId}?preview=true` : null;
-
     const { brandColor, fontFamily, logoUrl, layoutID } = branding || {};
 
-    // Broadcast changes to the iframe in real-time
     useEffect(() => {
         const sendUpdate = () => {
             if (iframeRef.current?.contentWindow) {
-                // Use restaurant's experienceConfig as the base (it's already deep-merged activeData)
                 const experienceConfig = restaurant?.experienceConfig || {};
-
                 iframeRef.current.contentWindow.postMessage({
                     type: "PREVIEW_UPDATE",
                     data: {
@@ -66,7 +31,6 @@ export function LivePreview({
                         logoUrl,
                         experienceConfig: {
                             ...experienceConfig,
-                            // Ensure layoutID and others are explicit if needed
                             layoutID: layoutID || experienceConfig.layoutID,
                             themeConfig: branding?.themeConfig || experienceConfig.themeConfig
                         }
@@ -74,27 +38,58 @@ export function LivePreview({
                 }, "*");
             }
         };
-
         sendUpdate();
         const timer = setTimeout(sendUpdate, 1000);
         return () => clearTimeout(timer);
-    }, [brandColor, fontFamily, logoUrl, layoutID, previewUrl, restaurant?.experienceConfig?.vibeTokens, restaurant?.experienceConfig?.themeConfig]);
+    }, [
+        brandColor, 
+        fontFamily, 
+        logoUrl, 
+        layoutID, 
+        previewUrl, 
+        restaurant?.experienceConfig?.vibeTokens, 
+        restaurant?.experienceConfig?.themeConfig,
+        restaurant?.experienceConfig?.designSystem?.config
+    ]);
 
-    if (minimal) return <PreviewContent previewUrl={previewUrl} iframeRef={iframeRef} />;
+    const hasNotch = NOTCH_DEVICES.includes(device);
+    const topPad = hasNotch ? 44 : 24;
+
+    const content = (
+        <div className="w-full h-full bg-white overflow-hidden">
+            <div style={{ height: topPad }} className="w-full shrink-0" />
+            {!previewUrl ? (
+                <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-3 bg-zinc-50">
+                    <div className="text-3xl animate-pulse">🍱</div>
+                    <p className="text-sm font-medium text-zinc-500">Initializing preview...</p>
+                </div>
+            ) : (
+                <iframe
+                    ref={iframeRef}
+                    src={previewUrl}
+                    className="w-full border-none"
+                    style={{
+                        height: `calc(100% - ${topPad}px)`,
+                        WebkitOverflowScrolling: 'touch',
+                        overscrollBehavior: 'contain'
+                    }}
+                    title="Live Menu Preview"
+                />
+            )}
+        </div>
+    );
+
+    if (minimal) return content;
+
+    // Build props - only pass color for devices that support it
+    const frameProps = { device };
+    if (!NO_COLOR_DEVICES.includes(device)) {
+        frameProps.color = 'black';
+    }
 
     return (
-        <div className="flex justify-center w-full">
-            <DeviceEmulator banDevices={['HTC One', 'Lumia 920', 'Nexus 5']}>
-                {(props) => (
-                    <DeviceFrameset
-                        {...props}
-                        device={props?.device || "iPhone X"}
-                        color={props?.color || "black"}
-                    >
-                        <PreviewContent previewUrl={previewUrl} iframeRef={iframeRef} />
-                    </DeviceFrameset>
-                )}
-            </DeviceEmulator>
-        </div>
+        <DeviceFrameset {...frameProps}>
+            {content}
+        </DeviceFrameset>
     );
 }

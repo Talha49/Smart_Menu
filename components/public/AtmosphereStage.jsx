@@ -55,6 +55,22 @@ const ATMOSPHERE_CONFIGS = {
                 straight: false,
             },
         }
+    },
+    rain: {
+        particles: {
+            number: { value: 200, density: { enable: true } },
+            color: { value: "#ffffff" },
+            shape: { type: "line" },
+            opacity: { value: 0.3 },
+            size: { value: { min: 1, max: 20 } },
+            move: {
+                enable: true,
+                speed: 15,
+                direction: "bottom",
+                straight: true,
+                outModes: { default: "out" }
+            },
+        }
     }
 };
 
@@ -62,7 +78,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 export function AtmosphereStage({ children }) {
     const theme = useTheme();
-    const atmosphere = theme.config?.atmosphere || { active: 'none', intensity: 50 };
+    const atmosphere = theme.config?.effects?.atmosphere || theme.config?.atmosphere || { active: 'none', intensity: 0 };
     const brandColor = theme.config?.colors?.brand?.primary;
 
     const [init, setInit] = useState(false);

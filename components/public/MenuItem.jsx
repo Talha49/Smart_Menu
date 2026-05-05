@@ -13,19 +13,22 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 
 /**
  * Main MenuItem Component (Polymorphic)
  * Selects card variant based on themeConfig
  */
-export function MenuItem({ item, theme, onClick }) {
-    const layout = theme?.menuItem?.layout || 'horizontal';
+export function MenuItem({ item, theme, onClick, variant }) {
+    const layout = variant || theme?.config?.menuItem?.layout || 'horizontal';
 
     const CardComponent = {
         horizontal: HorizontalCard,
         vertical: VerticalCard,
         overlay: OverlayCard,
-        minimal: MinimalCard
+        minimal: MinimalCard,
+        featured: MagazineCard,
+        compact: HorizontalCard // Fallback for bento compact
     }[layout] || HorizontalCard;
 
     return <CardComponent item={item} theme={theme} onClick={onClick} />;
@@ -38,26 +41,35 @@ export function MenuItem({ item, theme, onClick }) {
 export function HorizontalCard({ item, theme, onClick }) {
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.borders?.radius?.[theme?.menuItem?.card?.borderRadius] || 16;
-    const cardShadow = theme?.shadows?.[theme?.menuItem?.card?.shadow] || '0 2px 4px rgba(0,0,0,0.05)';
-    const cardBg = theme?.colors?.backgrounds?.card || '#FFFFFF';
-    const imageEnabled = theme?.menuItem?.image?.enabled !== false && item.imageUrl;
+    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 16;
+    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 2px 4px rgba(0,0,0,0.05)';
+    const cardBg = theme?.config?.colors?.backgrounds?.card || '#FFFFFF';
+    const imageEnabled = theme?.config?.menuItem?.image?.enabled !== false && item.imageUrl;
+
+    // AI Intelligence - Heatmap
+    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.8);
 
     return (
         <motion.div
             onClick={onClick}
-            className="group flex items-center gap-4 cursor-pointer transition-all duration-300"
+            className={cn(
+                "group flex items-center gap-4 cursor-pointer transition-all duration-300 relative",
+                isPopular && "ring-2 ring-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+            )}
             style={{
                 backgroundColor: cardBg,
-                borderRadius: `${cardRadius}px`,
-                boxShadow: cardShadow,
-                padding: `${theme?.menuItem?.card?.padding || 16}px`
+                borderRadius: `var(--theme-radius, ${cardRadius}px)`,
+                boxShadow: `var(--theme-shadow, ${cardShadow})`,
+                padding: `${theme?.config?.menuItem?.card?.padding || 16}px`,
+                backdropFilter: `blur(var(--theme-glass-blur, 0px))`,
+                opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{
-                scale: theme?.menuItem?.card?.hoverEffect === 'scale' ? 1.02 : 1,
-                y: theme?.menuItem?.card?.hoverEffect === 'lift' ? -4 : 0,
-                boxShadow: theme?.menuItem?.card?.hoverEffect === 'glow'
-                    ? `0 8px 20px ${theme?.colors?.brand?.primary}30`
+                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
+                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0,
+                boxShadow: (theme?.config?.animations?.interactions?.hover === 'glow' || theme?.config?.menuItem?.card?.hoverEffect === 'glow')
+                    ? `0 8px 20px ${theme?.config?.colors?.brand?.primary}40`
                     : cardShadow
             }}
             whileTap={{ scale: 0.98 }}
@@ -67,9 +79,9 @@ export function HorizontalCard({ item, theme, onClick }) {
                 <div
                     className="flex-shrink-0 overflow-hidden"
                     style={{
-                        width: theme?.menuItem?.image?.position === 'left' ? '120px' : '80px',
-                        height: theme?.menuItem?.image?.position === 'left' ? '120px' : '80px',
-                        borderRadius: `${theme?.borders?.radius?.[theme?.menuItem?.image?.borderRadius] || 12}px`
+                        width: theme?.config?.menuItem?.image?.position === 'left' ? '120px' : '80px',
+                        height: theme?.config?.menuItem?.image?.position === 'left' ? '120px' : '80px',
+                        borderRadius: `${theme?.config?.borders?.radius?.[theme?.config?.menuItem?.image?.borderRadius] || 12}px`
                     }}
                 >
                     <img
@@ -77,7 +89,7 @@ export function HorizontalCard({ item, theme, onClick }) {
                         alt={item.name}
                         className={cn(
                             "w-full h-full transition-all duration-500",
-                            theme?.menuItem?.image?.objectFit || 'object-cover',
+                            theme?.config?.menuItem?.image?.objectFit || 'object-cover',
                             imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                             "group-hover:scale-110"
                         )}
@@ -89,22 +101,33 @@ export function HorizontalCard({ item, theme, onClick }) {
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-                <h3
-                    className="font-bold line-clamp-2 mb-2"
-                    style={{
-                        fontSize: `${theme?.typography?.sizes?.itemName || 18}px`,
-                        color: theme?.colors?.text?.primary
-                    }}
-                >
-                    {item.name}
-                </h3>
+                <div className="flex items-center gap-2 mb-1">
+                    <h3
+                        className="font-bold line-clamp-2"
+                        style={{
+                            fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 18}px)`,
+                            color: theme?.config?.colors?.text?.primary,
+                            fontFamily: 'var(--font-heading)',
+                            fontWeight: 'var(--font-heading-weight)'
+                        }}
+                    >
+                        {item.name}
+                    </h3>
+                    {isPopular && (
+                        <div className="bg-amber-400 text-amber-950 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1 shadow-sm">
+                            <Sparkles className="w-2 h-2" />
+                            HOT
+                        </div>
+                    )}
+                </div>
 
                 {item.description && (
                     <p
                         className="line-clamp-2"
                         style={{
-                            fontSize: `${theme?.typography?.sizes?.itemDescription || 14}px`,
-                            color: theme?.colors?.text?.secondary
+                            fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 14}px)`,
+                            color: theme?.config?.colors?.text?.secondary,
+                            fontFamily: 'var(--font-body)'
                         }}
                     >
                         {item.description}
@@ -114,10 +137,12 @@ export function HorizontalCard({ item, theme, onClick }) {
 
             {/* Price */}
             <div
-                className="flex-shrink-0 font-bold"
+                className="flex-shrink-0"
                 style={{
-                    fontSize: `${theme?.typography?.sizes?.price || 18}px`,
-                    color: theme?.colors?.brand?.primary
+                    fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 18}px)`,
+                    color: theme?.config?.colors?.brand?.primary,
+                    fontWeight: 'var(--font-heading-weight)',
+                    fontFamily: 'var(--font-heading)'
                 }}
             >
                 ${item.price}
@@ -133,40 +158,47 @@ export function HorizontalCard({ item, theme, onClick }) {
 export function VerticalCard({ item, theme, onClick }) {
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.borders?.radius?.[theme?.menuItem?.card?.borderRadius] || 16;
-    const cardShadow = theme?.shadows?.[theme?.menuItem?.card?.shadow] || '0 4px 6px rgba(0,0,0,0.1)';
-    const cardBg = theme?.colors?.backgrounds?.card || '#FFFFFF';
-    const imageEnabled = theme?.menuItem?.image?.enabled !== false && item.imageUrl;
+    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 16;
+    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 4px 6px rgba(0,0,0,0.1)';
+    const cardBg = theme?.config?.colors?.backgrounds?.card || '#FFFFFF';
+    const imageEnabled = theme?.config?.menuItem?.image?.enabled !== false && item.imageUrl;
+
+    // AI Intelligence - Heatmap
+    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.85);
 
     return (
         <motion.div
             onClick={onClick}
-            className="group cursor-pointer overflow-hidden transition-all duration-300"
+            className={cn(
+                "group cursor-pointer overflow-hidden transition-all duration-300 relative",
+                isPopular && "ring-2 ring-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+            )}
             style={{
                 backgroundColor: cardBg,
-                borderRadius: `${cardRadius}px`,
-                boxShadow: cardShadow
+                borderRadius: `var(--theme-radius, ${cardRadius}px)`,
+                boxShadow: `var(--theme-shadow, ${cardShadow})`,
+                backdropFilter: `blur(var(--theme-glass-blur, 0px))`,
+                opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{
-                scale: theme?.menuItem?.card?.hoverEffect === 'scale' ? 1.03 : 1,
-                y: theme?.menuItem?.card?.hoverEffect === 'lift' ? -6 : 0
+                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.03 : 1,
+                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -6 : 0,
+                boxShadow: (theme?.config?.animations?.interactions?.hover === 'glow' || theme?.config?.menuItem?.card?.hoverEffect === 'glow')
+                    ? `0 8px 20px ${theme?.config?.colors?.brand?.primary}40`
+                    : cardShadow
             }}
             whileTap={{ scale: 0.97 }}
         >
             {/* Image */}
             {imageEnabled && (
-                <div
-                    className="relative overflow-hidden"
-                    style={{
-                        aspectRatio: theme?.menuItem?.image?.aspectRatio || '4/3'
-                    }}
-                >
+                <div className="aspect-[4/3] overflow-hidden">
                     <img
                         src={item.imageUrl}
                         alt={item.name}
                         className={cn(
                             "w-full h-full transition-all duration-500",
-                            theme?.menuItem?.image?.objectFit || 'object-cover',
+                            theme?.config?.menuItem?.image?.objectFit || 'object-cover',
                             imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                             "group-hover:scale-105"
                         )}
@@ -177,12 +209,14 @@ export function VerticalCard({ item, theme, onClick }) {
             )}
 
             {/* Content */}
-            <div style={{ padding: `${theme?.menuItem?.card?.padding || 20}px` }}>
+            <div className="p-5">
                 <h3
                     className="font-bold line-clamp-2 mb-2"
                     style={{
-                        fontSize: `${theme?.typography?.sizes?.itemName || 20}px`,
-                        color: theme?.colors?.text?.primary
+                        fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 20}px)`,
+                        color: theme?.config?.colors?.text?.primary,
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 'var(--font-heading-weight)'
                     }}
                 >
                     {item.name}
@@ -192,8 +226,9 @@ export function VerticalCard({ item, theme, onClick }) {
                     <p
                         className="line-clamp-3 mb-3"
                         style={{
-                            fontSize: `${theme?.typography?.sizes?.itemDescription || 14}px`,
-                            color: theme?.colors?.text?.secondary
+                            fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 14}px)`,
+                            color: theme?.config?.colors?.text?.secondary,
+                            fontFamily: 'var(--font-body)'
                         }}
                     >
                         {item.description}
@@ -204,8 +239,10 @@ export function VerticalCard({ item, theme, onClick }) {
                 <div
                     className="font-bold"
                     style={{
-                        fontSize: `${theme?.typography?.sizes?.price || 20}px`,
-                        color: theme?.colors?.brand?.primary
+                        fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 20}px)`,
+                        color: theme?.config?.colors?.brand?.primary,
+                        fontWeight: 'var(--font-heading-weight)',
+                        fontFamily: 'var(--font-heading)'
                     }}
                 >
                     ${item.price}
@@ -222,21 +259,31 @@ export function VerticalCard({ item, theme, onClick }) {
 export function OverlayCard({ item, theme, onClick }) {
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.borders?.radius?.[theme?.menuItem?.card?.borderRadius] || 16;
-    const cardShadow = theme?.shadows?.[theme?.menuItem?.card?.shadow] || '0 8px 16px rgba(0,0,0,0.2)';
-    const imageEnabled = theme?.menuItem?.image?.enabled !== false && item.imageUrl;
+    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 16;
+    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 8px 16px rgba(0,0,0,0.2)';
+    const imageEnabled = theme?.config?.menuItem?.image?.enabled !== false && item.imageUrl;
+
+    // AI Intelligence - Heatmap
+    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.9);
 
     return (
         <motion.div
             onClick={onClick}
-            className="group relative cursor-pointer overflow-hidden"
+            className={cn(
+                "group relative cursor-pointer overflow-hidden transition-all duration-300",
+                isPopular && "ring-4 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.4)]"
+            )}
             style={{
-                borderRadius: `${cardRadius}px`,
-                boxShadow: cardShadow,
+                borderRadius: `var(--theme-radius, ${cardRadius}px)`,
+                boxShadow: `var(--theme-shadow, ${cardShadow})`,
                 aspectRatio: '4/3',
                 minHeight: '250px'
             }}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ 
+                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
+                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0
+            }}
             whileTap={{ scale: 0.98 }}
         >
             {/* Background Image */}
@@ -246,7 +293,7 @@ export function OverlayCard({ item, theme, onClick }) {
                     alt={item.name}
                     className={cn(
                         "absolute inset-0 w-full h-full transition-all duration-700",
-                        theme?.menuItem?.image?.objectFit || 'object-cover',
+                        theme?.config?.menuItem?.image?.objectFit || 'object-cover',
                         imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                         "group-hover:scale-110"
                     )}
@@ -256,7 +303,7 @@ export function OverlayCard({ item, theme, onClick }) {
             ) : (
                 <div
                     className="absolute inset-0"
-                    style={{ backgroundColor: theme?.colors?.brand?.primary }}
+                    style={{ backgroundColor: theme?.config?.colors?.brand?.primary }}
                 />
             )}
 
@@ -268,7 +315,9 @@ export function OverlayCard({ item, theme, onClick }) {
                 <h3
                     className="font-bold line-clamp-2 mb-2"
                     style={{
-                        fontSize: `${theme?.typography?.sizes?.itemName || 22}px`
+                        fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 22}px)`,
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 'var(--font-heading-weight)'
                     }}
                 >
                     {item.name}
@@ -278,7 +327,8 @@ export function OverlayCard({ item, theme, onClick }) {
                     <p
                         className="line-clamp-2 mb-3 text-white/90"
                         style={{
-                            fontSize: `${theme?.typography?.sizes?.itemDescription || 14}px`
+                            fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 14}px)`,
+                            fontFamily: 'var(--font-body)'
                         }}
                     >
                         {item.description}
@@ -289,9 +339,10 @@ export function OverlayCard({ item, theme, onClick }) {
                 <div
                     className="inline-flex items-center justify-center px-4 py-2 rounded-full font-bold self-start"
                     style={{
-                        fontSize: `${theme?.typography?.sizes?.price || 18}px`,
-                        backgroundColor: theme?.colors?.brand?.primary,
-                        color: 'white'
+                        fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 18}px)`,
+                        backgroundColor: theme?.config?.colors?.brand?.primary,
+                        color: 'white',
+                        fontWeight: 'var(--font-heading-weight)'
                     }}
                 >
                     ${item.price}
@@ -311,10 +362,10 @@ export function MinimalCard({ item, theme, onClick }) {
             onClick={onClick}
             className="group cursor-pointer border-b transition-all duration-200 py-4"
             style={{
-                borderColor: theme?.colors?.borders?.light || '#E5E7EB'
+                borderColor: theme?.config?.colors?.borders?.light || '#E5E7EB'
             }}
             whileHover={{
-                backgroundColor: theme?.colors?.backgrounds?.card || '#F9FAFB',
+                backgroundColor: theme?.config?.colors?.backgrounds?.card || '#F9FAFB',
                 paddingLeft: '8px'
             }}
         >
@@ -323,8 +374,10 @@ export function MinimalCard({ item, theme, onClick }) {
                     <h3
                         className="font-semibold line-clamp-1"
                         style={{
-                            fontSize: `${theme?.typography?.sizes?.itemName || 16}px`,
-                            color: theme?.colors?.text?.primary
+                            fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 16}px)`,
+                            color: theme?.config?.colors?.text?.primary,
+                            fontFamily: 'var(--font-heading)',
+                            fontWeight: 'var(--font-heading-weight)'
                         }}
                     >
                         {item.name}
@@ -334,8 +387,9 @@ export function MinimalCard({ item, theme, onClick }) {
                         <p
                             className="line-clamp-1 mt-1"
                             style={{
-                                fontSize: `${theme?.typography?.sizes?.itemDescription || 13}px`,
-                                color: theme?.colors?.text?.secondary
+                                fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 13}px)`,
+                                color: theme?.config?.colors?.text?.secondary,
+                                fontFamily: 'var(--font-body)'
                             }}
                         >
                             {item.description}
@@ -347,11 +401,120 @@ export function MinimalCard({ item, theme, onClick }) {
                 <div
                     className="flex-shrink-0 font-bold"
                     style={{
-                        fontSize: `${theme?.typography?.sizes?.price || 16}px`,
-                        color: theme?.colors?.brand?.primary
+                        fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 16}px)`,
+                        color: theme?.config?.colors?.brand?.primary,
+                        fontWeight: 'var(--font-heading-weight)',
+                        fontFamily: 'var(--font-heading)'
                     }}
                 >
                     ${item.price}
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+/**
+ * Magazine Card
+ * High-end editorial style for featured items
+ */
+export function MagazineCard({ item, theme, onClick }) {
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 32;
+    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 20px 40px rgba(0,0,0,0.1)';
+    const cardBg = theme?.config?.colors?.backgrounds?.card || '#FFFFFF';
+
+    // AI Intelligence - Heatmap
+    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.7);
+
+    return (
+        <motion.div
+            onClick={onClick}
+            className={cn(
+                "group relative h-full w-full cursor-pointer overflow-hidden flex flex-col transition-all duration-700",
+                isPopular && "ring-4 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.4)]"
+            )}
+            style={{
+                backgroundColor: cardBg,
+                borderRadius: `var(--theme-radius, ${cardRadius}px)`,
+                boxShadow: `var(--theme-shadow, ${cardShadow})`,
+                backdropFilter: `blur(var(--theme-glass-blur, 0px))`,
+                opacity: `var(--theme-glass-opacity, 1)`
+            }}
+            whileHover={{ 
+                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -8 : 0,
+                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1
+            }}
+            whileTap={{ scale: 0.98 }}
+        >
+            {/* Heatmap Badge */}
+            {isPopular && (
+                <div className="absolute top-4 right-4 z-20 bg-amber-400 text-amber-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 shadow-lg animate-pulse">
+                    <Sparkles className="w-3 h-3" />
+                    Top Seller
+                </div>
+            )}
+
+            {/* Immersive Image */}
+            <div className="relative flex-1 overflow-hidden">
+                <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className={cn(
+                        "w-full h-full object-cover transition-all duration-1000",
+                        imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
+                        "group-hover:scale-110"
+                    )}
+                    onLoad={() => setImageLoaded(true)}
+                />
+                {/* Price Tag */}
+                <div 
+                    className="absolute top-6 left-6 px-6 py-2 rounded-2xl text-white font-black italic text-lg shadow-2xl flex flex-col"
+                    style={{ 
+                        backgroundColor: theme?.config?.colors?.brand?.primary,
+                        fontWeight: 'var(--font-heading-weight)',
+                        fontFamily: 'var(--font-heading)'
+                    }}
+                >
+                    <span className="leading-none">${item.price}</span>
+                    {theme?.config?.intelligence?.dynamicPricing?.enabled && (
+                        <span className="text-[10px] opacity-60 line-through decoration-white/40">${(item.price * 1.2).toFixed(2)}</span>
+                    )}
+                </div>
+            </div>
+
+            {/* Editorial Content */}
+            <div className="p-8 space-y-3">
+                <h3
+                    className="font-black italic tracking-tighter uppercase leading-none"
+                    style={{
+                        fontSize: `var(--text-item-name, 32px)`,
+                        color: theme?.config?.colors?.text?.primary,
+                        fontFamily: 'var(--font-heading)',
+                        fontWeight: 'var(--font-heading-weight)'
+                    }}
+                >
+                    {item.name}
+                </h3>
+                <p
+                    className="line-clamp-2 text-zinc-500 font-medium leading-relaxed"
+                    style={{
+                        fontSize: `var(--text-item-desc, 14px)`,
+                        fontFamily: 'var(--font-body)'
+                    }}
+                >
+                    {item.description}
+                </p>
+                <div className="pt-4 flex items-center gap-2">
+                    <span className="w-8 h-[2px] bg-zinc-900" />
+                    <span 
+                        className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900"
+                        style={{ fontFamily: 'var(--font-heading)' }}
+                    >
+                        Discover More
+                    </span>
                 </div>
             </div>
         </motion.div>

@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
+import { useEffect, useState } from "react";
 
 const sidebarLinks = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -29,6 +30,12 @@ export function Sidebar({ className, onClose, isMobile }) {
     const pathname = usePathname();
     const { restaurant } = useRestaurantStore();
     const { logout } = useAuth();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const liveMenuUrl = restaurant?.restaurantId ? `/menu/${restaurant.restaurantId}` : "/";
     const tvMenuUrl = restaurant?.restaurantId ? `/tv/${restaurant.restaurantId}` : "/";
 
@@ -75,32 +82,36 @@ export function Sidebar({ className, onClose, isMobile }) {
 
             {/* Footer */}
             <div className="border-t p-4 space-y-2">
-                <Link
-                    href={liveMenuUrl}
-                    target="_blank"
-                    className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                        restaurant?.restaurantId
-                            ? "text-primary hover:bg-primary/10 bg-primary/5"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    )}
-                >
-                    <ExternalLink className="h-4 w-4" />
-                    View Live Menu
-                </Link>
-                <Link
-                    href={tvMenuUrl}
-                    target="_blank"
-                    className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-2",
-                        restaurant?.restaurantId
-                            ? "text-primary hover:bg-primary/10 bg-primary/5"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    )}
-                >
-                    <Tv className="h-4 w-4" />
-                    Launch TV Mode
-                </Link>
+                {mounted && (
+                    <>
+                        <Link
+                            href={liveMenuUrl}
+                            target="_blank"
+                            className={cn(
+                                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                                restaurant?.restaurantId
+                                    ? "text-primary hover:bg-primary/10 bg-primary/5"
+                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            )}
+                        >
+                            <ExternalLink className="h-4 w-4" />
+                            View Live Menu
+                        </Link>
+                        <Link
+                            href={tvMenuUrl}
+                            target="_blank"
+                            className={cn(
+                                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors mb-2",
+                                restaurant?.restaurantId
+                                    ? "text-primary hover:bg-primary/10 bg-primary/5"
+                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            )}
+                        >
+                            <Tv className="h-4 w-4" />
+                            Launch TV Mode
+                        </Link>
+                    </>
+                )}
                 <button
                     onClick={logout}
                     className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"

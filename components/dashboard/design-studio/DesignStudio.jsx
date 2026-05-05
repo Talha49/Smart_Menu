@@ -1,0 +1,228 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useRestaurantStore } from '@/hooks/use-restaurant-store';
+import {
+    Save,
+    Loader2,
+    Sparkles,
+    Palette,
+    LayoutGrid,
+    Wind,
+    Calendar,
+    ShieldCheck,
+    Eye
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { cn } from '@/lib/utils';
+import { DEFAULT_CONFIG, validatePresetConfig } from './config-defaults';
+
+// Sub-tabs
+import { QuickStartTab } from './QuickStartTab';
+import { IdentityTab } from './IdentityTab';
+import { VisualTab } from './VisualTab';
+import { ColorsTab } from './ColorsTab';
+import { LayoutTab } from './LayoutTab';
+import { MotionTab } from './MotionTab';
+import { AutomationsTab } from './AutomationsTab';
+
+const NAV_ITEMS = [
+    { id: 'themes', label: 'Themes', icon: Sparkles },
+    { id: 'identity', label: 'Identity', icon: ShieldCheck },
+    { id: 'visuals', label: 'Visuals', icon: Eye },
+    { id: 'colors', label: 'Colors', icon: Palette },
+    { id: 'layout', label: 'Layout', icon: LayoutGrid },
+    { id: 'motion', label: 'Motion', icon: Wind },
+    { id: 'schedule', label: 'Schedule', icon: Calendar },
+];
+
+export function DesignStudio() {
+    const { restaurant, updateBranding, isLoading, setPreviewData } = useRestaurantStore();
+    const [activeTab, setActiveTab] = useState('themes');
+    const [isSaving, setIsSaving] = useState(false);
+
+    const [config, setConfig] = useState(null);
+    const [appliedPresetId, setAppliedPresetId] = useState(null);
+
+    // Initial sync - merge with defaults so nothing is ever null
+    useEffect(() => {
+        if (restaurant && !config) {
+            const designSystem = restaurant?.experienceConfig?.designSystem;
+            const themeConfig = restaurant?.experienceConfig?.themeConfig;
+            const rawConfig = designSystem?.config || themeConfig || {};
+
+            // Merge with defaults - this guarantees every field exists
+            const safeConfig = validatePresetConfig({
+                ...rawConfig,
+                layoutID: rawConfig.layoutID || restaurant?.experienceConfig?.layoutID || 'grid',
+            });
+
+            setConfig(safeConfig);
+            if (designSystem?.appliedPreset) {
+                setAppliedPresetId(designSystem.appliedPreset);
+            }
+        }
+    }, [restaurant, config]);
+
+    // Live preview broadcast
+    useEffect(() => {
+        if (config) {
+            const previewUpdate = {
+                brandColor: config.colors?.brand?.primary,
+                fontFamily: config.typography?.fonts?.heading?.family,
+                experienceConfig: {
+                    designSystem: { config, appliedPreset: appliedPresetId },
+                    themeConfig: config,
+                    layoutID: config.layoutID || 'grid'
+                }
+            };
+            setPreviewData(previewUpdate);
+
+            const iframe = document.querySelector('iframe');
+            if (iframe?.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'PREVIEW_UPDATE', data: previewUpdate }, '*');
+            }
+        }
+    }, [config, appliedPresetId, setPreviewData]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        const loadingToast = toast.loading('Saving design...');
+        try {
+            const payload = {
+                brandColor: config.colors?.brand?.primary,
+                fontFamily: config.typography?.fonts?.heading?.family,
+                logoUrl: config.logoUrl || undefined,
+                experienceConfig: {
+                    designSystem: {
+                        config,
+                        appliedPreset: appliedPresetId,
+                        lastEdited: new Date().toISOString(),
+                        version: '2.0',
+                    },
+                    themeConfig: config,
+                    layoutID: config.layoutID || 'grid'
+                }
+            };
+            const result = await updateBranding(payload);
+            if (result.success) {
+                toast.success("Design saved!", { id: loadingToast });
+            } else {
+                toast.error(`Error: ${result.error}`, { id: loadingToast });
+            }
+        } catch (error) {
+            toast.error("Failed to save", { id: loadingToast });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleConfigChange = (newConfig) => {
+        // Always merge with defaults to prevent null
+        setConfig(validatePresetConfig(newConfig));
+        setAppliedPresetId(null);
+    };
+
+    const handleReset = () => {
+        console.log("Resetting Design Studio...");
+        try {
+            setConfig({ ...DEFAULT_CONFIG });
+            setAppliedPresetId(null);
+            toast.success("Design Studio reset to factory defaults");
+        } catch (err) {
+            console.error("Reset failed:", err);
+            toast.error("Reset failed");
+        }
+    };
+
+    // Loading
+    if (isLoading || !config) {
+        return (
+            <div className="flex items-center justify-center h-full gap-3">
+                <Loader2 className="w-5 h-5 text-zinc-400 animate-spin" />
+                <span className="text-sm text-zinc-400">Loading design engine...</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="h-full flex">
+            {/* Sidebar Nav */}
+            <nav className="w-[72px] shrink-0 border-r bg-zinc-50 flex flex-col items-center py-4 gap-1 overflow-y-auto">
+                {NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            title={item.label}
+                            className={cn(
+                                "w-14 h-14 flex flex-col items-center justify-center gap-1 rounded-xl transition-all",
+                                isActive
+                                    ? "bg-white shadow-sm text-zinc-900 border border-zinc-200"
+                                    : "text-zinc-400 hover:text-zinc-600 hover:bg-white/60"
+                            )}
+                        >
+                            <Icon className="w-[18px] h-[18px]" />
+                            <span className="text-[9px] font-semibold leading-none">{item.label}</span>
+                        </button>
+                    );
+                })}
+
+                {/* Save at bottom */}
+                <div className="mt-auto pt-4 border-t border-zinc-200 w-full flex justify-center">
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        title="Save Design"
+                        className="w-14 h-14 flex flex-col items-center justify-center gap-1 rounded-xl bg-zinc-900 text-white hover:bg-black transition-all active:scale-95"
+                    >
+                        {isSaving
+                            ? <Loader2 className="w-[18px] h-[18px] animate-spin" />
+                            : <Save className="w-[18px] h-[18px]" />
+                        }
+                        <span className="text-[9px] font-semibold leading-none">
+                            {isSaving ? "Saving" : "Save"}
+                        </span>
+                    </button>
+                </div>
+            </nav>
+
+            {/* Content area - scrollable */}
+            <main className="flex-1 min-w-0 overflow-y-auto p-8">
+                <div className="max-w-2xl mx-auto">
+                    {activeTab === 'themes' && (
+                        <QuickStartTab
+                            onApplyPreset={(preset) => {
+                                setAppliedPresetId(preset?.id);
+                                setConfig(validatePresetConfig(preset?.config));
+                                toast.success(`Applied: ${preset?.name}`);
+                            }}
+                            onReset={handleReset}
+                            currentPresetId={appliedPresetId}
+                        />
+                    )}
+                    {activeTab === 'identity' && (
+                        <IdentityTab config={config} restaurant={restaurant} onChange={handleConfigChange} />
+                    )}
+                    {activeTab === 'visuals' && (
+                        <VisualTab config={config} onChange={handleConfigChange} />
+                    )}
+                    {activeTab === 'colors' && (
+                        <ColorsTab config={config} onChange={handleConfigChange} />
+                    )}
+                    {activeTab === 'layout' && (
+                        <LayoutTab config={config} onChange={handleConfigChange} />
+                    )}
+                    {activeTab === 'motion' && (
+                        <MotionTab config={config} onChange={handleConfigChange} />
+                    )}
+                    {activeTab === 'schedule' && (
+                        <AutomationsTab config={config} onChange={handleConfigChange} />
+                    )}
+                </div>
+            </main>
+        </div>
+    );
+}

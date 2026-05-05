@@ -5,6 +5,8 @@ import { OrbitalWheel } from "./OrbitalWheel";
 import { LiquidCarousel } from "./LiquidCarousel";
 import { MasonryLayout } from "./MasonryLayout";
 import { ListLayout } from "./ListLayout";
+import { BentoMagazine } from "./BentoMagazine";
+import { PerspectiveDeck } from "./PerspectiveDeck";
 
 export function LayoutFactory({ layoutID, ...props }) {
     // If layoutID is not provided or explicitly classic, show the grid
@@ -18,6 +20,10 @@ export function LayoutFactory({ layoutID, ...props }) {
             return <ClassicGrid {...props} />;
         case "orbital-wheel":
             return <OrbitalWheel {...props} />;
+        case "perspective-deck":
+            return <PerspectiveDeck {...props} />;
+        case "bento-magazine":
+            return <BentoMagazine {...props} />;
         case "liquid-carousel":
             return <LiquidCarousel {...props} />;
         case "masonry":

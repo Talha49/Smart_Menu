@@ -53,6 +53,14 @@ const RestaurantSchema = new mongoose.Schema(
 
     // Next-Gen Branding Engine Configuration
     experienceConfig: {
+        // Unified Design System State (Phase 2)
+        designSystem: {
+            appliedPreset: { type: String, default: null },
+            config: { type: mongoose.Schema.Types.Mixed, default: null },
+            lastEdited: { type: Date, default: Date.now },
+            version: { type: String, default: "2.0" },
+            layoutID: { type: String, default: "classic-grid" }
+        },
         layoutID: { type: String, default: "classic-grid" },
         motionProfile: { type: String, default: "liquid" },
         visualDNA: {

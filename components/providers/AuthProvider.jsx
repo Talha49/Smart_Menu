@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
     const logout = async () => {
         await fetch("/api/auth/logout", { method: "POST" });
         setUser(null);
-        router.push("/login");
+        router.push("/");
     };
 
     return (

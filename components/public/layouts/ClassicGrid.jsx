@@ -14,8 +14,18 @@ const MOTION_MAPPING = {
 
 export function ClassicGrid({ isTVMode, groupedItems, setSelectedItem }) {
     const theme = useTheme();
-    const dna = theme.config?.animations?.itemEntrance || { motion: "liquid-spring" };
-    const motionEase = MOTION_MAPPING[dna.motion] || MOTION_MAPPING["liquid-spring"];
+    const entrance = theme.config?.animations?.itemEntrance || { type: 'stagger' };
+    
+    // Map IDs to Framer Motion variants
+    const entranceVariants = {
+        stagger: { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 } },
+        fade: { initial: { opacity: 0 }, animate: { opacity: 1 } },
+        scale: { initial: { opacity: 0, scale: 0.8 }, animate: { opacity: 1, scale: 1 } },
+        none: { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    };
+
+    const variant = entranceVariants[entrance.type] || entranceVariants.stagger;
+    const motionEase = MOTION_MAPPING[entrance.motion] || MOTION_MAPPING["liquid-spring"];
 
     return (
         <div className="space-y-12 md:space-y-24">
@@ -41,8 +51,8 @@ export function ClassicGrid({ isTVMode, groupedItems, setSelectedItem }) {
                             <motion.div
                                 key={item._id}
                                 layout
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
+                                initial={variant.initial}
+                                whileInView={variant.animate}
                                 viewport={{ once: true }}
                                 transition={{
                                     duration: 0.8,

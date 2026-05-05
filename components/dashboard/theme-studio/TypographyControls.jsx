@@ -7,105 +7,107 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Type, Plus, Minus } from 'lucide-react';
+import { Type, Plus, Minus, AlignLeft, ArrowRightLeft } from 'lucide-react';
 
 const GOOGLE_FONTS = [
-    { family: 'Inter', category: 'sans-serif' },
-    { family: 'Roboto', category: 'sans-serif' },
-    { family: 'Playfair Display', category: 'serif' },
-    { family: 'Bebas Neue', category: 'display' },
-    { family: 'Lato', category: 'sans-serif' },
-    { family: 'Montserrat', category: 'sans-serif' },
-    { family: 'Poppins', category: 'sans-serif' },
-    { family: 'Merriweather', category: 'serif' },
-    { family: 'Nunito', category: 'sans-serif' },
-    { family: 'Fredoka', category: 'display' }
+    { family: 'Inter', category: 'Sans-Serif' },
+    { family: 'Outfit', category: 'Geometric' },
+    { family: 'Playfair Display', category: 'Serif' },
+    { family: 'Bebas Neue', category: 'Display' },
+    { family: 'Montserrat', category: 'Sans-Serif' },
+    { family: 'Poppins', category: 'Sans-Serif' },
+    { family: 'Lora', category: 'Serif' },
+    { family: 'Syne', category: 'Artistic' },
+    { family: 'Epilogue', category: 'Sans-Serif' }
 ];
 
 export function TypographyControls({ value, onChange }) {
-    return (
-        <div className="space-y-8">
-            {/* Font Families */}
-            <section>
-                <h3 className="text-lg font-bold text-zinc-900 mb-4">Font Families</h3>
+    // Ensure nested objects exist to prevent crashes
+    const typography = {
+        fonts: value.fonts || { heading: {}, body: {}, accent: {} },
+        sizes: value.sizes || { categoryTitle: 32, itemName: 18, itemDescription: 14, price: 18 },
+        lineHeights: value.lineHeights || { tight: 1.2, normal: 1.5, relaxed: 1.8 },
+        letterSpacings: value.letterSpacings || { tight: '-0.02em', normal: '0em', wide: '0.05em' },
+        ...value
+    };
 
-                <div className="space-y-4">
+    return (
+        <div className="space-y-10 animate-in fade-in duration-500">
+            {/* Font Families */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="w-1 h-6 bg-zinc-900 rounded-full" />
+                    <h3 className="text-xl font-black text-zinc-900 tracking-tight">Master Fonts</h3>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <FontSelector
                         label="Heading Font"
-                        description="For titles and category headers"
-                        value={value.fonts.heading}
+                        value={typography.fonts.heading}
                         onChange={(heading) => onChange({
-                            ...value,
-                            fonts: { ...value.fonts, heading }
+                            ...typography,
+                            fonts: { ...typography.fonts, heading }
                         })}
                     />
 
                     <FontSelector
                         label="Body Font"
-                        description="For descriptions and general text"
-                        value={value.fonts.body}
+                        value={typography.fonts.body}
                         onChange={(body) => onChange({
-                            ...value,
-                            fonts: { ...value.fonts, body }
-                        })}
-                    />
-
-                    <FontSelector
-                        label="Accent Font"
-                        description="For special emphasis"
-                        value={value.fonts.accent}
-                        onChange={(accent) => onChange({
-                            ...value,
-                            fonts: { ...value.fonts, accent }
+                            ...typography,
+                            fonts: { ...typography.fonts, body }
                         })}
                     />
                 </div>
             </section>
 
-            {/* Font Sizes */}
-            <section>
-                <h3 className="text-lg font-bold text-zinc-900 mb-4">Font Sizes</h3>
+            {/* Sizes & Scale */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="w-1 h-6 bg-zinc-900 rounded-full" />
+                    <h3 className="text-xl font-black text-zinc-900 tracking-tight">Scale & Sizing</h3>
+                </div>
 
-                <div className="grid gap-4">
+                <div className="bg-zinc-50 p-6 rounded-[2rem] border-2 border-zinc-100 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <SizeControl
-                        label="Category Title"
-                        value={value.sizes.categoryTitle}
+                        label="Category Headers"
+                        value={typography.sizes.categoryTitle}
                         onChange={(categoryTitle) => onChange({
-                            ...value,
-                            sizes: { ...value.sizes, categoryTitle }
+                            ...typography,
+                            sizes: { ...typography.sizes, categoryTitle }
                         })}
                         min={20}
                         max={60}
                     />
 
                     <SizeControl
-                        label="Item Name"
-                        value={value.sizes.itemName}
+                        label="Item Names"
+                        value={typography.sizes.itemName}
                         onChange={(itemName) => onChange({
-                            ...value,
-                            sizes: { ...value.sizes, itemName }
+                            ...typography,
+                            sizes: { ...typography.sizes, itemName }
                         })}
                         min={14}
                         max={32}
                     />
 
                     <SizeControl
-                        label="Item Description"
-                        value={value.sizes.itemDescription}
+                        label="Descriptions"
+                        value={typography.sizes.itemDescription}
                         onChange={(itemDescription) => onChange({
-                            ...value,
-                            sizes: { ...value.sizes, itemDescription }
+                            ...typography,
+                            sizes: { ...typography.sizes, itemDescription }
                         })}
-                        min={12}
+                        min={10}
                         max={20}
                     />
 
                     <SizeControl
-                        label="Price"
-                        value={value.sizes.price}
+                        label="Price Labels"
+                        value={typography.sizes.price}
                         onChange={(price) => onChange({
-                            ...value,
-                            sizes: { ...value.sizes, price }
+                            ...typography,
+                            sizes: { ...typography.sizes, price }
                         })}
                         min={14}
                         max={32}
@@ -113,115 +115,135 @@ export function TypographyControls({ value, onChange }) {
                 </div>
             </section>
 
-            {/* Line Heights */}
-            <section>
-                <h3 className="text-lg font-bold text-zinc-900 mb-4">Line Heights</h3>
+            {/* Advanced Spacing */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <div className="w-1 h-6 bg-zinc-900 rounded-full" />
+                    <h3 className="text-xl font-black text-zinc-900 tracking-tight">Refined Spacing</h3>
+                </div>
 
-                <div className="grid gap-4">
-                    <SliderControl
-                        label="Tight"
-                        description="For compact text"
-                        value={value.lineHeights.tight}
-                        onChange={(tight) => onChange({
-                            ...value,
-                            lineHeights: { ...value.lineHeights, tight }
-                        })}
-                        min={1.0}
-                        max={2.0}
-                        step={0.05}
-                    />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-white p-8 rounded-[2rem] border-2 border-zinc-100 shadow-sm">
+                    {/* Line Heights */}
+                    <div className="space-y-6">
+                        <h4 className="text-sm font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+                            <AlignLeft className="w-4 h-4" /> Line Height
+                        </h4>
+                        <SliderControl
+                            label="Tight (Headings)"
+                            value={typography.lineHeights.tight}
+                            onChange={(tight) => onChange({
+                                ...typography,
+                                lineHeights: { ...typography.lineHeights, tight }
+                            })}
+                            min={0.8}
+                            max={1.5}
+                            step={0.05}
+                        />
+                        <SliderControl
+                            label="Reading (Body)"
+                            value={typography.lineHeights.normal}
+                            onChange={(normal) => onChange({
+                                ...typography,
+                                lineHeights: { ...typography.lineHeights, normal }
+                            })}
+                            min={1.2}
+                            max={2.0}
+                            step={0.05}
+                        />
+                    </div>
 
-                    <SliderControl
-                        label="Normal"
-                        description="Standard line spacing"
-                        value={value.lineHeights.normal}
-                        onChange={(normal) => onChange({
-                            ...value,
-                            lineHeights: { ...value.lineHeights, normal }
-                        })}
-                        min={1.0}
-                        max={2.0}
-                        step={0.05}
-                    />
-
-                    <SliderControl
-                        label="Relaxed"
-                        description="For better readability"
-                        value={value.lineHeights.relaxed}
-                        onChange={(relaxed) => onChange({
-                            ...value,
-                            lineHeights: { ...value.lineHeights, relaxed }
-                        })}
-                        min={1.0}
-                        max={2.5}
-                        step={0.05}
-                    />
+                    {/* Letter Spacing */}
+                    <div className="space-y-6">
+                        <h4 className="text-sm font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+                            <ArrowRightLeft className="w-4 h-4" /> Letter Spacing
+                        </h4>
+                        <SpacingButtons
+                            label="Heading Spacing"
+                            value={typography.letterSpacings.tight}
+                            onChange={(tight) => onChange({
+                                ...typography,
+                                letterSpacings: { ...typography.letterSpacings, tight }
+                            })}
+                            options={[
+                                { value: '-0.05em', label: 'Tight' },
+                                { value: '0em', label: 'Normal' },
+                                { value: '0.05em', label: 'Wide' }
+                            ]}
+                        />
+                         <SpacingButtons
+                            label="Body Spacing"
+                            value={typography.letterSpacings.normal}
+                            onChange={(normal) => onChange({
+                                ...typography,
+                                letterSpacings: { ...typography.letterSpacings, normal }
+                            })}
+                            options={[
+                                { value: '-0.02em', label: 'Compact' },
+                                { value: '0em', label: 'Standard' },
+                                { value: '0.04em', label: 'Airy' }
+                            ]}
+                        />
+                    </div>
                 </div>
             </section>
 
-            {/* Live Preview */}
-            <TypographyPreview typography={value} />
+            {/* Preview Section */}
+            <TypographyPreview typography={typography} />
         </div>
     );
 }
 
-function FontSelector({ label, description, value, onChange }) {
+function FontSelector({ label, value, onChange }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div>
-            <label className="block text-sm font-semibold text-zinc-900 mb-2">
-                {label}
-            </label>
-            <p className="text-xs text-zinc-500 mb-3">{description}</p>
-
+        <div className="space-y-3">
+            <label className="text-sm font-bold text-zinc-700">{label}</label>
             <div className="relative">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 border-zinc-200 hover:border-zinc-300 transition-colors"
-                    style={{ fontFamily: value.family }}
+                    className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 border-zinc-200 bg-white hover:border-zinc-900 transition-all shadow-sm group"
                 >
-                    <span className="font-medium">{value.family}</span>
-                    <Type className="w-4 h-4 text-zinc-400" />
+                    <span className="font-bold text-lg" style={{ fontFamily: value.family }}>{value.family}</span>
+                    <Type className="w-5 h-5 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
                 </button>
 
                 {isOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-white border-2 border-zinc-200 rounded-xl shadow-xl z-10">
+                    <div className="absolute top-full left-0 right-0 mt-3 max-h-72 overflow-y-auto bg-white border-2 border-zinc-900 rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-200">
                         {GOOGLE_FONTS.map((font) => (
                             <button
                                 key={font.family}
                                 onClick={() => {
-                                    onChange({ family: font.family, weight: value.weight });
+                                    onChange({ ...value, family: font.family });
                                     setIsOpen(false);
                                 }}
                                 className={cn(
-                                    "w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors",
+                                    "w-full px-4 py-3 text-left rounded-xl hover:bg-zinc-50 transition-colors flex items-center justify-between group",
                                     value.family === font.family && "bg-zinc-100"
                                 )}
-                                style={{ fontFamily: font.family }}
                             >
-                                <div className="font-medium">{font.family}</div>
-                                <div className="text-xs text-zinc-500">{font.category}</div>
+                                <span className="text-lg" style={{ fontFamily: font.family }}>{font.family}</span>
+                                <span className="text-[10px] font-black uppercase text-zinc-400 group-hover:text-zinc-600">{font.category}</span>
                             </button>
                         ))}
                     </div>
                 )}
             </div>
 
-            {/* Font Weight */}
-            <div className="mt-3 grid grid-cols-3 gap-2">
-                {[400, 600, 700].map((weight) => (
+            {/* Weight Chips */}
+            <div className="flex gap-2">
+                {[300, 400, 500, 600, 700, 800, 900].filter(w => label.includes('Heading') || w <= 700).map((weight) => (
                     <button
                         key={weight}
-                        onClick={() => onChange({ family: value.family, weight })}
+                        onClick={() => onChange({ ...value, weight })}
                         className={cn(
-                            "px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all",
+                            "flex-1 py-2 rounded-lg text-[10px] font-bold border-2 transition-all",
                             value.weight === weight
-                                ? "border-zinc-900 bg-zinc-50"
-                                : "border-zinc-200 hover:border-zinc-300"
+                                ? "bg-zinc-900 border-zinc-900 text-white"
+                                : "bg-white border-zinc-100 text-zinc-500 hover:border-zinc-200"
                         )}
                     >
-                        {weight === 400 ? 'Regular' : weight === 600 ? 'Semibold' : 'Bold'}
+                        {weight}
                     </button>
                 ))}
             </div>
@@ -231,53 +253,44 @@ function FontSelector({ label, description, value, onChange }) {
 
 function SizeControl({ label, value, onChange, min, max }) {
     return (
-        <div className="flex items-center gap-4">
-            <div className="flex-1">
-                <label className="block text-sm font-semibold text-zinc-900 mb-2">
-                    {label}
-                </label>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => onChange(Math.max(min, value - 2))}
-                        className="w-10 h-10 rounded-lg border-2 border-zinc-200 hover:border-zinc-300 flex items-center justify-center transition-colors"
-                    >
-                        <Minus className="w-4 h-4" />
-                    </button>
-
-                    <input
-                        type="number"
-                        value={value}
-                        onChange={(e) => onChange(Number(e.target.value))}
-                        min={min}
-                        max={max}
-                        className="flex-1 px-4 py-2 rounded-lg border-2 border-zinc-200 text-center font-mono focus:border-zinc-900 focus:outline-none"
-                    />
-
-                    <button
-                        onClick={() => onChange(Math.min(max, value + 2))}
-                        className="w-10 h-10 rounded-lg border-2 border-zinc-200 hover:border-zinc-300 flex items-center justify-center transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                    </button>
-
-                    <span className="text-sm text-zinc-600 w-8">px</span>
-                </div>
+        <div className="space-y-3">
+            <div className="flex justify-between items-center">
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-400">{label}</label>
+                <span className="text-sm font-mono font-bold text-zinc-900">{value}px</span>
+            </div>
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={() => onChange(Math.max(min, value - 1))}
+                    className="w-10 h-10 rounded-xl bg-white border-2 border-zinc-200 hover:border-zinc-900 flex items-center justify-center transition-all active:scale-90"
+                >
+                    <Minus className="w-4 h-4" />
+                </button>
+                <input
+                    type="range"
+                    min={min}
+                    max={max}
+                    value={value}
+                    onChange={(e) => onChange(Number(e.target.value))}
+                    className="flex-1 h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-zinc-900"
+                />
+                <button
+                    onClick={() => onChange(Math.min(max, value + 1))}
+                    className="w-10 h-10 rounded-xl bg-white border-2 border-zinc-200 hover:border-zinc-900 flex items-center justify-center transition-all active:scale-90"
+                >
+                    <Plus className="w-4 h-4" />
+                </button>
             </div>
         </div>
     );
 }
 
-function SliderControl({ label, description, value, onChange, min, max, step }) {
+function SliderControl({ label, value, onChange, min, max, step }) {
     return (
-        <div>
-            <div className="flex items-baseline justify-between mb-2">
-                <label className="text-sm font-semibold text-zinc-900">
-                    {label}
-                </label>
-                <span className="text-xs text-zinc-600">{value.toFixed(2)}</span>
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-zinc-600">{label}</label>
+                <span className="text-xs font-mono bg-zinc-100 px-2 py-1 rounded text-zinc-900 font-bold">{value.toFixed(2)}x</span>
             </div>
-            <p className="text-xs text-zinc-500 mb-3">{description}</p>
-
             <input
                 type="range"
                 min={min}
@@ -285,52 +298,95 @@ function SliderControl({ label, description, value, onChange, min, max, step }) 
                 step={step}
                 value={value}
                 onChange={(e) => onChange(Number(e.target.value))}
-                className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1.5 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-zinc-900"
             />
+        </div>
+    );
+}
+
+function SpacingButtons({ label, value, onChange, options }) {
+    return (
+        <div className="space-y-3">
+            <label className="text-xs font-bold text-zinc-600">{label}</label>
+            <div className="flex gap-2">
+                {options.map((opt) => (
+                    <button
+                        key={opt.value}
+                        onClick={() => onChange(opt.value)}
+                        className={cn(
+                            "flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all",
+                            value === opt.value
+                                ? "bg-zinc-900 border-zinc-900 text-white"
+                                : "bg-white border-zinc-100 text-zinc-500 hover:border-zinc-200"
+                        )}
+                    >
+                        {opt.label}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }
 
 function TypographyPreview({ typography }) {
     return (
-        <div className="p-6 rounded-2xl border-2 border-zinc-200 bg-white">
-            <h3 className="font-semibold text-zinc-900 mb-4">Live Preview</h3>
+        <div className="bg-zinc-900 rounded-[2.5rem] p-10 text-white overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Type className="w-32 h-32" />
+            </div>
+            
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 mb-8">Artistic Preview</h3>
 
-            <div className="space-y-4">
-                <div>
+            <div className="space-y-10 relative z-10">
+                <div className="space-y-2">
                     <h4
                         style={{
                             fontFamily: typography.fonts.heading.family,
                             fontSize: `${typography.sizes.categoryTitle}px`,
-                            lineHeight: typography.lineHeights.tight
+                            fontWeight: typography.fonts.heading.weight,
+                            lineHeight: typography.lineHeights.tight,
+                            letterSpacing: typography.letterSpacings.tight
                         }}
-                        className="font-bold text-zinc-900"
                     >
-                        Category Title
+                        Signature Cocktails
                     </h4>
+                    <div className="w-12 h-1 bg-white/20 rounded-full" />
                 </div>
 
-                <div>
-                    <h5
+                <div className="flex justify-between items-start border-l-2 border-white/10 pl-6">
+                    <div className="space-y-2">
+                        <h5
+                            style={{
+                                fontFamily: typography.fonts.body.family,
+                                fontSize: `${typography.sizes.itemName}px`,
+                                fontWeight: typography.fonts.body.weight,
+                                lineHeight: typography.lineHeights.normal,
+                                letterSpacing: typography.letterSpacings.normal
+                            }}
+                        >
+                            Old Fashioned
+                        </h5>
+                        <p
+                            className="text-white/50 max-w-xs"
+                            style={{
+                                fontFamily: typography.fonts.body.family,
+                                fontSize: `${typography.sizes.itemDescription}px`,
+                                lineHeight: typography.lineHeights.relaxed,
+                                letterSpacing: typography.letterSpacings.normal
+                            }}
+                        >
+                            Bourbon, bitters, sugar, and a twist of citrus peel. A timeless classic served over clear ice.
+                        </p>
+                    </div>
+                    <div 
+                        className="font-mono text-xl"
                         style={{
-                            fontFamily: typography.fonts.body.family,
-                            fontSize: `${typography.sizes.itemName}px`,
-                            lineHeight: typography.lineHeights.normal
+                            fontFamily: typography.fonts.heading.family,
+                            fontSize: `${typography.sizes.price}px`
                         }}
-                        className="font-semibold text-zinc-900"
                     >
-                        Menu Item Name
-                    </h5>
-                    <p
-                        style={{
-                            fontFamily: typography.fonts.body.family,
-                            fontSize: `${typography.sizes.itemDescription}px`,
-                            lineHeight: typography.lineHeights.relaxed
-                        }}
-                        className="text-zinc-600 mt-1"
-                    >
-                        This is a sample description to preview how your text will look with the selected typography settings.
-                    </p>
+                        $14
+                    </div>
                 </div>
             </div>
         </div>

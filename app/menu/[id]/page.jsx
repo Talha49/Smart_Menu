@@ -69,10 +69,13 @@ export default function PublicMenuPage() {
     }, [isPreview]);
 
     const getScheduledVibe = (restaurant) => {
-        if (!restaurant?.experienceConfig?.seasonalAtmosphere?.autoSchedule) return null;
+        const config = restaurant?.experienceConfig?.designSystem?.config || restaurant?.experienceConfig?.themeConfig;
+        const seasonal = config?.seasonal || restaurant?.experienceConfig?.seasonalAtmosphere;
+        
+        if (!seasonal?.autoSchedule && !seasonal?.enabled) return null;
 
         const currentMonth = new Date().getMonth();
-        const schedule = restaurant.experienceConfig.seasonalAtmosphere.schedule || [];
+        const schedule = seasonal.schedule || [];
 
         const matchingSchedule = schedule.find(s => {
             if (s.startMonth <= s.endMonth) {
@@ -117,6 +120,11 @@ export default function PublicMenuPage() {
                 ...(data?.restaurant?.experienceConfig?.themeConfig || {}),
                 ...(previewOverride?.experienceConfig?.themeConfig || {})
             },
+            // Properly merge new designSystem
+            designSystem: {
+                ...(data?.restaurant?.experienceConfig?.designSystem || {}),
+                ...(previewOverride?.experienceConfig?.designSystem || {})
+            },
             // Ensure layoutConfig and other nested fields are also merged if they exist in override
             layoutConfig: {
                 ...(data?.restaurant?.experienceConfig?.layoutConfig || {}),
@@ -147,23 +155,39 @@ export default function PublicMenuPage() {
     // 2. Menu Item Entry Animation (Fires AFTER splash is gone)
     useEffect(() => {
         if (!showSplash && !isLoading && data) {
+            const entranceConfig = activeRestaurant?.experienceConfig?.designSystem?.config?.animations?.itemEntrance || 
+                                 activeRestaurant?.experienceConfig?.themeConfig?.animations?.itemEntrance || 
+                                 { type: 'stagger', duration: 1200, delay: 80 };
+
+            if (entranceConfig.type === 'none') return;
+
             // Give React a tiny slice of time to render the list before GSAP targets it
             const timer = setTimeout(() => {
                 const items = document.querySelectorAll(".menu-item");
                 if (items.length > 0) {
-                    gsap.from(items, {
-                        duration: 1.2,
-                        y: 80,
+                    const animationProps = {
+                        duration: (entranceConfig.duration || 1200) / 1000,
                         opacity: 0,
-                        stagger: 0.08,
+                        stagger: (entranceConfig.delay || 80) / 1000,
                         ease: "power4.out",
-                        clearProps: "all" // Important: clear GSAP styles after intro
-                    });
+                        clearProps: "all"
+                    };
+
+                    if (entranceConfig.type === 'scale') {
+                        animationProps.scale = 0.8;
+                    } else if (entranceConfig.type === 'fade') {
+                        animationProps.y = 0;
+                    } else {
+                        // Default 'stagger' is slide up
+                        animationProps.y = 80;
+                    }
+
+                    gsap.from(items, animationProps);
                 }
             }, 100);
             return () => clearTimeout(timer);
         }
-    }, [showSplash, isLoading, data]);
+    }, [showSplash, isLoading, data, activeRestaurant]);
 
     // TV Mode Scrolling Logic
     useEffect(() => {
@@ -183,31 +207,19 @@ export default function PublicMenuPage() {
         return () => clearInterval(scrollInterval.current);
     }, [isTVMode]);
 
-    // 3. Category Tracking (Intersection Observer)
+    // 3. Dynamic Font Loading
     useEffect(() => {
-        if (isLoading || !data || isTVMode || isPreview) return;
+        const fontName = activeRestaurant?.fontFamily || activeRestaurant?.experienceConfig?.themeConfig?.typography?.fonts?.heading?.family;
+        if (fontName && fontName !== 'Inter') {
+            const link = document.createElement('link');
+            link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}:wght@400;700;900&display=swap`;
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+            return () => document.head.removeChild(link);
+        }
+    }, [activeRestaurant?.fontFamily, activeRestaurant?.experienceConfig?.themeConfig?.typography?.fonts?.heading?.family]);
 
-        const observerOptions = {
-            root: null,
-            rootMargin: '-20% 0px -70% 0px', // Smaller window for activation
-            threshold: 0
-        };
-
-        const handleIntersect = (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    const categoryName = entry.target.id.replace('category-', '');
-                    setActiveCategory(categoryName);
-                }
-            });
-        };
-
-        const observer = new IntersectionObserver(handleIntersect, observerOptions);
-        const sections = document.querySelectorAll('[id^="category-"]');
-        sections.forEach(section => observer.observe(section));
-
-        return () => observer.disconnect();
-    }, [isLoading, data, isTVMode, isPreview]);
+    // 4. Category Tracking (Intersection Observer)
 
     const handleShare = async () => {
         try {
@@ -288,11 +300,21 @@ export default function PublicMenuPage() {
 
     return (
         <ThemeProvider experienceConfig={restaurant.experienceConfig}>
-            <div key="menu-main" className={cn(
-                "relative min-h-screen transition-all duration-1000 overflow-x-hidden",
-                isTVMode ? "text-white" : "text-zinc-950 font-medium",
-                isPreview && "scrollbar-hide"
-            )} style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}>
+            <div 
+                key="menu-main" 
+                className={cn(
+                    "relative min-h-screen transition-all duration-1000 overflow-x-hidden",
+                    isTVMode ? "text-white" : "text-zinc-950 font-medium",
+                    isPreview && "scrollbar-hide"
+                )} 
+                style={{ fontFamily: restaurant.fontFamily, transform: 'none' }}
+                data-shadow={restaurant.experienceConfig?.designSystem?.config?.visual?.shadow || 'md'}
+            >
+                {/* Surface Texture Overlay */}
+                {restaurant.experienceConfig?.designSystem?.config?.visual?.texture && 
+                 restaurant.experienceConfig?.designSystem?.config?.visual?.texture !== 'none' && (
+                    <div className={cn("texture-overlay", `texture-${restaurant.experienceConfig.designSystem.config.visual.texture}`)} />
+                )}
 
                 {/* Premium Liquid Aura Background */}
                 {!isTVMode && !isPreview && (

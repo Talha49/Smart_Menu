@@ -277,11 +277,11 @@ function ImageSettings({ value, onChange }) {
                                     key={fit.value}
                                     onClick={() => onChange({
                                         ...value,
-                                        image: { ...value.image, objectFit: `object-${fit.value}` }
+                                        image: { ...value.image, objectFit: fit.value }
                                     })}
                                     className={cn(
                                         "px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all text-left",
-                                        value.image?.objectFit === `object-${fit.value}`
+                                        value.image?.objectFit === fit.value
                                             ? "border-zinc-900 bg-zinc-50"
                                             : "border-zinc-200 hover:border-zinc-300"
                                     )}
@@ -523,7 +523,7 @@ function HorizontalPreview({ item, config }) {
                     <img
                         src={item.imageUrl}
                         alt={item.name}
-                        className={cn("w-full h-full", config.image?.objectFit || 'object-cover')}
+                        className={cn("w-full h-full", `object-${config.image?.objectFit || 'cover'}`)}
                     />
                 </div>
             )}
@@ -564,7 +564,7 @@ function VerticalPreview({ item, config }) {
                     <img
                         src={item.imageUrl}
                         alt={item.name}
-                        className={cn("w-full h-full", config.image?.objectFit || 'object-cover')}
+                        className={cn("w-full h-full", `object-${config.image?.objectFit || 'cover'}`)}
                     />
                 </div>
             )}

@@ -32,9 +32,10 @@ const LAYOUT_CONFIG = {
 
 export function OrbitalWheel({ groupedItems, setSelectedItem, isTVMode }) {
     const theme = useTheme();
-    const dna = theme.config?.vibeTokens?.dna || { radius: "24px", glass: 20, motion: "liquid-spring" };
+    const visual = theme.config?.visual || { radius: "24px", glass: 20 };
+    const animations = theme.config?.animations || { interactions: { hover: "liquid-spring" } };
     const palette = theme.config?.colors?.brand || { primary: "#4f46e5", accent: "#f43f5e" };
-    const motionConfig = MOTION_MAPPING[dna.motion] || MOTION_MAPPING["liquid-spring"];
+    const motionConfig = MOTION_MAPPING[animations.interactions?.hover] || MOTION_MAPPING["liquid-spring"];
 
     const [activeIndex, setActiveIndex] = useState(0);
     const [rotation, setRotation] = useState(0);
@@ -97,8 +98,8 @@ export function OrbitalWheel({ groupedItems, setSelectedItem, isTVMode }) {
                         style={{
                             width: config.centerCircle,
                             height: config.centerCircle,
-                            backgroundColor: dna.glass > 0 ? `rgba(255, 255, 255, ${Math.max(0.2, dna.glass / 120)})` : "white",
-                            backdropFilter: dna.glass > 0 ? `blur(${dna.glass / 4}px)` : undefined,
+                            backgroundColor: visual.glass > 0 ? `rgba(255, 255, 255, ${Math.max(0.2, visual.glass / 120)})` : "white",
+                            backdropFilter: visual.glass > 0 ? `blur(${visual.glass / 4}px)` : undefined,
                             border: `1px solid rgba(0,0,0,0.05)`
                         }}
                     >
