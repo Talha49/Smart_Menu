@@ -11,6 +11,7 @@ import { CategoriesTab } from "./CategoriesTab";
 import { Modal } from "@/components/ui/Modal";
 import { LivePreview } from "@/components/settings/LivePreview";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
+import { useTranslation } from "@/store/useTranslation";
 
 // Lazy load the modal for better initial load performance
 const MenuItemModal = lazy(() => import("@/components/dashboard/MenuItemModal").then(module => ({ default: module.MenuItemModal })));
@@ -19,6 +20,7 @@ export default function UnifiedMenuPage() {
     const { fetchItems, items: menuItems, setFocusedItem } = useMenuStore();
     const { fetchCategories, categories } = useCategoryStore();
     const { restaurant: restaurantData } = useRestaurantStore();
+    const { t } = useTranslation();
 
     // Local State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,8 +54,8 @@ export default function UnifiedMenuPage() {
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-display font-bold tracking-tight text-foreground">Menu Management</h1>
-                    <p className="text-muted-foreground mt-1">Organize your menu, categories, and availability.</p>
+                    <h1 className="text-4xl font-display font-bold tracking-tight text-foreground">{t('dashboard.menu.title')}</h1>
+                    <p className="text-muted-foreground mt-1">{t('dashboard.menu.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button
@@ -62,11 +64,11 @@ export default function UnifiedMenuPage() {
                         onClick={() => setIsPreviewOpen(true)}
                         className="shadow-sm border-primary/10 hover:border-primary/30 transition-all font-medium"
                     >
-                        <Eye className="h-5 w-5 mr-2" /> View Live Preview
+                        <Eye className="h-5 w-5 mr-2 rtl:mr-0 rtl:ml-2" /> {t('dashboard.menu.view_preview')}
                     </Button>
                     {activeTab === "items" && (
                         <Button onClick={handleCreateItem} size="lg" className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
-                            <Plus className="h-5 w-5 mr-2" /> Add New Item
+                            <Plus className="h-5 w-5 mr-2 rtl:mr-0 rtl:ml-2" /> {t('dashboard.menu.add_item')}
                         </Button>
                     )}
                 </div>
@@ -74,8 +76,8 @@ export default function UnifiedMenuPage() {
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full sm:w-[400px] grid-cols-2">
-                    <TabsTrigger value="items">Menu Items</TabsTrigger>
-                    <TabsTrigger value="categories">Categories</TabsTrigger>
+                    <TabsTrigger value="items">{t('dashboard.menu.tabs.items')}</TabsTrigger>
+                    <TabsTrigger value="categories">{t('dashboard.menu.tabs.categories')}</TabsTrigger>
                 </TabsList>
 
                 {/* --- MENU ITEMS TAB --- */}
@@ -109,8 +111,8 @@ export default function UnifiedMenuPage() {
                 <Modal
                     isOpen={isPreviewOpen}
                     onClose={() => setIsPreviewOpen(false)}
-                    title="Live Menu Preview"
-                    description="See how your menu looks to your customers. Click any item to find it in your list."
+                    title={t('dashboard.menu.preview_title')}
+                    description={t('dashboard.menu.preview_desc')}
                     size="xl"
                 >
                     <div className="flex flex-col items-center justify-center p-8 bg-muted/30 rounded-xl overflow-hidden min-h-[600px] relative">

@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import { Sparkles, Twitter, Instagram, Github, Mail, MapPin, Phone } from 'lucide-react';
+import { useTranslation } from '@/store/useTranslation';
 
 export function Footer() {
+    const { t } = useTranslation();
+
     return (
         <footer className="bg-zinc-900 text-white pt-24 pb-12 px-4 overflow-hidden relative">
             {/* Background Accent */}
-            <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
+            <div className="absolute rtl:right-0 rtl:-left-auto -left-20 -bottom-20 w-80 h-80 bg-primary/10 rounded-full blur-[120px]" />
             
             <div className="max-w-7xl mx-auto relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
@@ -20,7 +23,7 @@ export function Footer() {
                             <span className="text-xl font-black italic tracking-tighter uppercase text-white">SmartMenu</span>
                         </Link>
                         <p className="text-sm text-white/50 font-medium leading-relaxed max-w-xs">
-                            The intelligent design system for the modern hospitality industry. From boutique cafes to enterprise restaurant groups.
+                            {t('footer.description')}
                         </p>
                         <div className="flex gap-4">
                             <Link href="#" className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
@@ -37,12 +40,12 @@ export function Footer() {
 
                     {/* Links */}
                     <div>
-                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">Platform</h5>
+                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">{t('footer.platform')}</h5>
                         <ul className="space-y-4">
-                            {['Visual DNA', 'Seasonal Engine', 'AI Intelligence', 'Pricing', 'API Docs'].map((item) => (
+                            {['visual_dna', 'seasonal_engine', 'ai_intelligence', 'pricing', 'api_docs'].map((item) => (
                                 <li key={item}>
                                     <Link href="#" className="text-[11px] font-black uppercase tracking-widest text-white/60 hover:text-primary transition-colors">
-                                        {item}
+                                        {t(`footer.links.${item}`)}
                                     </Link>
                                 </li>
                             ))}
@@ -51,15 +54,15 @@ export function Footer() {
 
                     {/* Links */}
                     <div>
-                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">Company</h5>
+                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">{t('footer.company')}</h5>
                         <ul className="space-y-4">
-                            {['About Us', 'Case Studies', 'Partners', 'Contact', 'Terms of Service'].map((item) => (
+                            {['about_us', 'case_studies', 'partners', 'contact', 'terms'].map((item) => (
                                 <li key={item}>
                                     <Link 
-                                        href={item === 'Contact' ? '/contact' : '#'} 
+                                        href={item === 'contact' ? '/contact' : '#'} 
                                         className="text-[11px] font-black uppercase tracking-widest text-white/60 hover:text-primary transition-colors"
                                     >
-                                        {item}
+                                        {t(`footer.links.${item}`)}
                                     </Link>
                                 </li>
                             ))}
@@ -68,7 +71,7 @@ export function Footer() {
 
                     {/* Support */}
                     <div>
-                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">Contact</h5>
+                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8">{t('footer.contact')}</h5>
                         <ul className="space-y-4">
                             <li className="flex items-center gap-3 text-white/60">
                                 <Mail className="w-4 h-4" />
@@ -88,11 +91,11 @@ export function Footer() {
 
                 <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-[10px] font-black uppercase tracking-widest text-white/20">
-                        © 2024 SmartMenu Intelligence. Built for Visionaries.
+                        {t('footer.rights')}
                     </p>
                     <div className="flex gap-8">
-                        <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white">Privacy Policy</Link>
-                        <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white">Security</Link>
+                        <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white">{t('footer.privacy')}</Link>
+                        <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white">{t('footer.security')}</Link>
                     </div>
                 </div>
             </div>

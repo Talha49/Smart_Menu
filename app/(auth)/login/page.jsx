@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import toast from "react-hot-toast";
 import { Lock, Mail, ArrowRight } from "lucide-react";
+import { useTranslation } from "@/store/useTranslation";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export default function LoginPage() {
     const router = useRouter();
     const { login } = useAuth();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
@@ -33,7 +36,6 @@ export default function LoginPage() {
         try {
             const result = await login({
                 email: formData.email,
-                email: formData.email,
                 password: formData.password,
             });
 
@@ -51,39 +53,42 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-muted/20 p-4 relative">
+            <div className="absolute top-4 right-4 rtl:left-4 rtl:right-auto">
+                <LanguageSwitcher />
+            </div>
             <div className="max-w-md w-full animate-fade-in">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold font-display bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block mb-2">
                         SmartMenu
                     </h1>
-                    <p className="text-muted-foreground">Manage your digital menu with ease</p>
+                    <p className="text-muted-foreground">{t('home.hero.subtitle').substring(0, 40)}...</p>
                 </div>
 
                 <Card className="glass border-none shadow-xl">
                     <CardHeader className="space-y-1">
-                        <CardTitle className="text-2xl">Sign in</CardTitle>
+                        <CardTitle className="text-2xl">{t('auth.login.title')}</CardTitle>
                         <CardDescription>
-                            Enter your email and password to access your dashboard
+                            {t('auth.login.subtitle')}
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>
                         <CardContent className="space-y-4">
                             <Input
                                 name="email"
-                                label="Email"
+                                label={t('auth.login.email')}
                                 type="email"
                                 placeholder="name@example.com"
-                                startIcon={<Mail className="h-4 w-4" />}
+                                startIcon={<Mail className="h-4 w-4 rtl:ml-2" />}
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
                             />
                             <Input
                                 name="password"
-                                label="Password"
+                                label={t('auth.login.password')}
                                 type="password"
-                                startIcon={<Lock className="h-4 w-4" />}
+                                startIcon={<Lock className="h-4 w-4 rtl:ml-2" />}
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
@@ -93,7 +98,7 @@ export default function LoginPage() {
                                     href="/forgot-password"
                                     className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
                                 >
-                                    Forgot password?
+                                    {t('auth.login.forgot')}
                                 </Link>
                             </div>
                         </CardContent>
@@ -104,13 +109,13 @@ export default function LoginPage() {
                                 size="lg"
                                 isLoading={loading}
                             >
-                                Sign In
-                                <ArrowRight className="ml-2 h-4 w-4" />
+                                {t('auth.login.submit')}
+                                <ArrowRight className="ml-2 rtl:mr-2 rtl:ml-0 rtl:rotate-180 h-4 w-4" />
                             </Button>
                             <div className="text-center text-sm text-muted-foreground">
-                                Don&apos;t have an account?{" "}
+                                {t('auth.login.no_account')}{" "}
                                 <Link href="/signup" className="text-primary font-medium hover:underline">
-                                    Sign up
+                                    {t('auth.login.signup')}
                                 </Link>
                             </div>
                         </CardFooter>

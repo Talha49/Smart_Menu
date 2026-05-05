@@ -5,10 +5,13 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/Button";
 import { Menu, X, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/store/useTranslation';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function Navbar({ user }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -17,10 +20,10 @@ export function Navbar({ user }) {
     }, []);
 
     const navLinks = [
-        { name: 'Features', href: '#features' },
-        { name: 'Themes', href: '#themes' },
-        { name: 'Pricing', href: '#pricing' },
-        { name: 'Contact', href: '/contact' },
+        { name: t('nav.features'), href: '#features' },
+        { name: t('nav.themes'), href: '#themes' },
+        { name: t('nav.pricing'), href: '#pricing' },
+        { name: t('nav.contact'), href: '/contact' },
     ];
 
     return (
@@ -41,7 +44,7 @@ export function Navbar({ user }) {
                 <div className="hidden md:flex items-center gap-8">
                     {navLinks.map((link) => (
                         <Link 
-                            key={link.name} 
+                            key={link.href} 
                             href={link.href}
                             className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-900 transition-colors"
                         >
@@ -52,20 +55,21 @@ export function Navbar({ user }) {
 
                 {/* Actions */}
                 <div className="hidden md:flex items-center gap-4">
+                    <LanguageSwitcher />
                     {user ? (
                         <Link href="/dashboard">
                             <Button className="rounded-full px-8 text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20">
-                                Dashboard
+                                {t('nav.dashboard')}
                             </Button>
                         </Link>
                     ) : (
                         <>
                             <Link href="/login">
-                                <Button variant="ghost" className="text-[11px] font-black uppercase tracking-widest">Log In</Button>
+                                <Button variant="ghost" className="text-[11px] font-black uppercase tracking-widest">{t('nav.login')}</Button>
                             </Link>
                             <Link href="/signup">
                                 <Button className="rounded-full px-8 text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20">
-                                    Get Started
+                                    {t('nav.signup')}
                                 </Button>
                             </Link>
                         </>
@@ -95,11 +99,12 @@ export function Navbar({ user }) {
                         </Link>
                     ))}
                     <div className="flex flex-col gap-3 pt-4">
+                        <LanguageSwitcher className="mx-auto mb-2" />
                         <Link href="/login" className="w-full">
-                            <Button variant="outline" className="w-full rounded-2xl h-14 font-black uppercase">Log In</Button>
+                            <Button variant="outline" className="w-full rounded-2xl h-14 font-black uppercase">{t('nav.login')}</Button>
                         </Link>
                         <Link href="/signup" className="w-full">
-                            <Button className="w-full rounded-2xl h-14 font-black uppercase shadow-xl shadow-primary/20">Get Started</Button>
+                            <Button className="w-full rounded-2xl h-14 font-black uppercase shadow-xl shadow-primary/20">{t('nav.signup')}</Button>
                         </Link>
                     </div>
                 </div>

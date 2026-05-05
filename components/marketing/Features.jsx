@@ -2,60 +2,30 @@
 
 import { motion } from 'framer-motion';
 import { Zap, Sparkles, Layout, BarChart3, Clock, Smartphone } from 'lucide-react';
+import { useTranslation } from '@/store/useTranslation';
 
 export function Features() {
-    const features = [
-        {
-            title: "Visual Design Studio",
-            desc: "Customizable high-end aesthetics with premium fonts, colors, and layouts that match your brand perfectly.",
-            icon: Layout,
-            color: "indigo"
-        },
-        {
-            title: "AI 'Hot' Badges",
-            desc: "Automatically highlight your top-selling and trending items to help customers make faster, better choices.",
-            icon: BarChart3,
-            color: "emerald"
-        },
-        {
-            title: "Auto-Magic Themes",
-            desc: "Your menu changes with the calendar. Automatic atmosphere effects for Winter, Spring, Summer, and Autumn.",
-            icon: Clock,
-            color: "orange"
-        },
-        {
-            title: "Happy Hour Engine",
-            desc: "Schedule discounts and dynamic pricing rules that update instantly on your customers' phones.",
-            icon: Zap,
-            color: "purple"
-        },
-        {
-            title: "Atmosphere Effects",
-            desc: "Add immersive snowfall, flower petals, or stars to your background to create a unique dining mood.",
-            icon: Sparkles,
-            color: "blue"
-        },
-        {
-            title: "Live Price Sync",
-            desc: "Change a price in your dashboard and see it update across all customer devices in less than a second.",
-            icon: Smartphone,
-            color: "rose"
-        }
-    ];
+    const { t } = useTranslation();
+    const features = [0, 1, 2, 3, 4, 5].map(i => ({
+        title: t(`home.features.items.${i}.title`),
+        desc: t(`home.features.items.${i}.desc`),
+        icon: [Layout, BarChart3, Clock, Zap, Sparkles, Smartphone][i],
+        color: ["indigo", "emerald", "orange", "purple", "blue", "rose"][i]
+    }));
 
     return (
         <section id="features" className="py-24 px-4 bg-white">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col lg:flex-row items-end justify-between gap-8 mb-20">
                     <div className="max-w-2xl space-y-4">
-                        <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Powerful Features</h2>
+                        <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">{t('home.features.tag')}</h2>
                         <h3 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase text-zinc-900 leading-none">
-                            Everything you need to <br />
-                            <span className="text-zinc-400">grow your sales</span>
+                            {t('home.features.title_1')} <br />
+                            <span className="text-zinc-400">{t('home.features.title_2')}</span>
                         </h3>
                     </div>
                     <p className="max-w-md text-lg text-zinc-500 font-medium leading-relaxed pb-2">
-                        We've built a complete set of tools to help you manage your restaurant's digital presence effortlessly.
+                        {t('home.features.desc')}
                     </p>
                 </div>
 

@@ -17,16 +17,18 @@ import { DashboardHero } from "@/components/dashboard/overview/DashboardHero";
 import { MetricCard } from "@/components/dashboard/overview/MetricCard";
 import { SuccessRoadmap } from "@/components/dashboard/overview/SuccessRoadmap";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/store/useTranslation";
 
 export default function DashboardPage() {
     const { restaurant, isLoading } = useRestaurantStore();
+    const { t } = useTranslation();
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-[60vh]">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Loading Intelligence...</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">{t('dashboard.overview.loading')}</span>
                 </div>
             </div>
         );
@@ -52,15 +54,15 @@ export default function DashboardPage() {
             {/* Header / Breadcrumb */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                    <LayoutDashboard className="w-3 h-3" />
-                    <span>Dashboard</span>
+                    <LayoutDashboard className="w-3 h-3 rtl:ml-2" />
+                    <span>{t('dashboard.overview.title')}</span>
                     <span className="opacity-30">/</span>
-                    <span className="text-zinc-900">Overview</span>
+                    <span className="text-zinc-900">{t('dashboard.overview.subtitle')}</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Syncing Live</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse rtl:ml-2" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">{t('dashboard.overview.syncing')}</span>
                     </div>
                 </div>
             </div>
@@ -74,30 +76,30 @@ export default function DashboardPage() {
             {/* Performance Metrics (Wired to Real Data) */}
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <MetricCard 
-                    title="Menu Items" 
+                    title={t('dashboard.overview.metrics.menu_items')} 
                     value={totalItems} 
-                    unit="Active Items"
+                    unit={t('dashboard.overview.metrics.active_items')}
                     icon={Utensils}
                     color="indigo"
                 />
                 <MetricCard 
-                    title="Categories" 
+                    title={t('dashboard.overview.metrics.categories')} 
                     value={totalCategories} 
-                    unit="Sections"
+                    unit={t('dashboard.overview.metrics.sections')}
                     icon={Layers}
                     color="purple"
                 />
                 <MetricCard 
-                    title="Visual DNA" 
-                    value={hasVisuals ? "Active" : "Default"} 
-                    unit={hasVisuals ? "Custom Theme" : "Standard"}
+                    title={t('dashboard.overview.metrics.visual_dna')} 
+                    value={hasVisuals ? t('dashboard.overview.metrics.active') : t('dashboard.overview.metrics.default')} 
+                    unit={hasVisuals ? t('dashboard.overview.metrics.custom_theme') : t('dashboard.overview.metrics.standard')}
                     icon={Sparkles}
                     color="orange"
                 />
                 <MetricCard 
-                    title="RealFlow Scans" 
+                    title={t('dashboard.overview.metrics.scans')} 
                     value="--" 
-                    unit="Analytics Pending"
+                    unit={t('dashboard.overview.metrics.pending')}
                     icon={QrCode}
                     color="emerald"
                 />
@@ -114,14 +116,14 @@ export default function DashboardPage() {
                     {/* Menu Health Card */}
                     <div className="p-8 rounded-[3rem] bg-white border-2 border-zinc-100 shadow-sm">
                         <div className="flex items-center gap-2 mb-6">
-                            <ListChecks className="w-4 h-4 text-primary" />
-                            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Menu Health</h4>
+                            <ListChecks className="w-4 h-4 text-primary rtl:ml-2" />
+                            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-900">{t('dashboard.overview.health.title')}</h4>
                         </div>
                         
                         <div className="space-y-6">
                             <div>
                                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
-                                    <span className="text-zinc-400">Completeness</span>
+                                    <span className="text-zinc-400">{t('dashboard.overview.health.completeness')}</span>
                                     <span className="text-primary">{completionScore}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
@@ -135,10 +137,10 @@ export default function DashboardPage() {
 
                             <div className="space-y-3">
                                 {[
-                                    { label: 'Categories Created', ok: totalCategories > 0 },
-                                    { label: 'Minimum 5 Items', ok: totalItems >= 5 },
-                                    { label: 'Brand Visuals Set', ok: hasVisuals },
-                                    { label: 'Restaurant Logo', ok: hasLogo }
+                                    { label: t('dashboard.overview.health.cat_created'), ok: totalCategories > 0 },
+                                    { label: t('dashboard.overview.health.min_items'), ok: totalItems >= 5 },
+                                    { label: t('dashboard.overview.health.visuals_set'), ok: hasVisuals },
+                                    { label: t('dashboard.overview.health.logo_set'), ok: hasLogo }
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center justify-between">
                                         <span className="text-[10px] font-medium text-zinc-500">{item.label}</span>
@@ -160,12 +162,12 @@ export default function DashboardPage() {
                             whileHover={{ scale: 1.02 }}
                             className="p-8 rounded-[3rem] bg-gradient-to-br from-primary to-indigo-600 text-white shadow-2xl relative overflow-hidden group"
                         >
-                            <Sparkles className="absolute -right-4 -top-4 w-32 h-32 opacity-20 group-hover:rotate-12 transition-transform duration-700" />
+                            <Sparkles className="absolute -right-4 -top-4 w-32 h-32 opacity-20 group-hover:rotate-12 transition-transform duration-700 rtl:-left-4 rtl:-right-auto" />
                             <div className="relative z-10">
-                                <h4 className="text-xl font-black italic tracking-tighter uppercase mb-2">Go Professional</h4>
-                                <p className="text-sm text-white/70 font-medium mb-6">Unlock unlimited menu items, AI-driven heatmaps, and premium themes.</p>
+                                <h4 className="text-xl font-black italic tracking-tighter uppercase mb-2">{t('dashboard.overview.pro.title')}</h4>
+                                <p className="text-sm text-white/70 font-medium mb-6">{t('dashboard.overview.pro.desc')}</p>
                                 <button className="w-full bg-white text-primary text-[10px] font-black uppercase tracking-widest py-4 px-6 rounded-2xl shadow-lg">
-                                    View Pricing
+                                    {t('dashboard.overview.pro.btn')}
                                 </button>
                             </div>
                         </motion.div>

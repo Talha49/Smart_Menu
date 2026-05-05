@@ -5,55 +5,39 @@ import { Check, Sparkles, Zap, Shield } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
 import { cn } from '@/lib/utils';
 
+import { useTranslation } from '@/store/useTranslation';
+
 export function Pricing() {
+    const { t } = useTranslation();
     const plans = [
         {
-            name: "Basic",
-            price: "Free",
-            desc: "The perfect start for small cafes.",
+            name: t('home.pricing.plans.0.name'),
+            price: t('home.pricing.plans.0.price'),
+            desc: t('home.pricing.plans.0.desc'),
             icon: Shield,
-            features: [
-                "Up to 15 Menu Items",
-                "Basic Brand Colors",
-                "Live QR Scanning",
-                "Mobile Friendly Layout",
-                "Community Support"
-            ],
-            cta: "Start for Free",
+            features: [0, 1, 2, 3, 4].map(i => t(`home.pricing.plans.0.features.${i}`)),
+            cta: t('home.pricing.plans.0.cta'),
             popular: false
         },
         {
-            name: "Smart Pro",
-            price: "TBD",
-            period: "/mo",
-            desc: "Everything you need for growth.",
+            name: t('home.pricing.plans.1.name'),
+            price: t('home.pricing.plans.1.price'),
+            period: t('home.pricing.plans.1.period'),
+            desc: t('home.pricing.plans.1.desc'),
             icon: Zap,
-            features: [
-                "Unlimited Menu Items",
-                "Automated Seasonal Themes",
-                "AI-Driven 'Hot' Badges",
-                "Scheduled Happy Hours",
-                "Custom Branding & Fonts",
-                "Email Support"
-            ],
-            cta: "Try 7 Days Free",
-            popular: true
+            features: [0, 1, 2, 3, 4, 5].map(i => t(`home.pricing.plans.1.features.${i}`)),
+            cta: t('home.pricing.plans.1.cta'),
+            popular: true,
+            popularLabel: t('home.pricing.plans.1.popular')
         },
         {
-            name: "Enterprise",
-            price: "TBD",
-            period: "/mo",
-            desc: "For multi-location restaurant groups.",
+            name: t('home.pricing.plans.2.name'),
+            price: t('home.pricing.plans.2.price'),
+            period: t('home.pricing.plans.2.period'),
+            desc: t('home.pricing.plans.2.desc'),
             icon: Sparkles,
-            features: [
-                "Multi-location Dashboard",
-                "Full White-label Options",
-                "Advanced API Access",
-                "Dedicated Account Manager",
-                "Custom Theme Design",
-                "24/7 Phone Support"
-            ],
-            cta: "Contact Sales",
+            features: [0, 1, 2, 3, 4, 5].map(i => t(`home.pricing.plans.2.features.${i}`)),
+            cta: t('home.pricing.plans.2.cta'),
             popular: false
         }
     ];
@@ -62,10 +46,10 @@ export function Pricing() {
         <section id="pricing" className="py-24 px-4 bg-zinc-50 overflow-hidden">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16 space-y-4">
-                    <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Simple Pricing</h2>
+                    <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">{t('home.pricing.tag')}</h2>
                     <h3 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase text-zinc-900 leading-none">
-                        Grow your business <br />
-                        <span className="text-zinc-400">at your own pace</span>
+                        {t('home.pricing.title_1')} <br />
+                        <span className="text-zinc-400">{t('home.pricing.title_2')}</span>
                     </h3>
                 </div>
 
@@ -84,8 +68,8 @@ export function Pricing() {
                             )}
                         >
                             {plan.popular && (
-                                <div className="absolute top-0 right-10 -translate-y-1/2 bg-primary text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
-                                    Most Popular
+                                <div className="absolute top-0 right-10 rtl:left-10 rtl:right-auto -translate-y-1/2 bg-primary text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
+                                    {plan.popularLabel}
                                 </div>
                             )}
 

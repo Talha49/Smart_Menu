@@ -10,6 +10,7 @@ import { DesignStudio } from "@/components/dashboard/design-studio/DesignStudio"
 import { deepMerge } from "@/lib/object-utils";
 import { Store, Sparkles, Monitor, ZoomIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/store/useTranslation";
 
 const DEVICES = [
     { id: 'iPhone X', label: 'iPhone X' },
@@ -30,6 +31,7 @@ export default function SettingsPage() {
     const { restaurant, previewData } = useRestaurantStore();
     const { items: menuItems } = useMenuStore();
     const { categories } = useCategoryStore();
+    const { t } = useTranslation();
     const [activeView, setActiveView] = useState("studio");
     const [selectedDevice, setSelectedDevice] = useState("iPhone X");
     const [previewScale, setPreviewScale] = useState(60);
@@ -52,7 +54,7 @@ export default function SettingsPage() {
                         )}
                     >
                         <Sparkles className="w-4 h-4" />
-                        Design Studio
+                        {t('dashboard.settings.studio')}
                     </button>
                     <button
                         onClick={() => setActiveView("profile")}
@@ -64,7 +66,7 @@ export default function SettingsPage() {
                         )}
                     >
                         <Store className="w-4 h-4" />
-                        Business Profile
+                        {t('dashboard.settings.profile')}
                     </button>
                 </div>
 
@@ -86,7 +88,7 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Size slider */}
-                        <div className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-lg">
+                        <div className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-lg hidden sm:flex">
                             <ZoomIn className="w-3.5 h-3.5 text-zinc-400" />
                             <input
                                 type="range"
@@ -102,7 +104,7 @@ export default function SettingsPage() {
                         {/* Live indicator */}
                         <div className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-xs text-zinc-400 font-medium">Live</span>
+                            <span className="text-xs text-zinc-400 font-medium">{t('dashboard.settings.live')}</span>
                         </div>
                     </div>
                 )}
@@ -113,12 +115,12 @@ export default function SettingsPage() {
                 {activeView === "studio" ? (
                     <div className="h-full flex">
                         {/* Design Studio - left */}
-                        <div className="flex-1 min-w-0 h-full overflow-hidden">
+                        <div className="flex-1 min-w-0 h-full overflow-hidden border-r rtl:border-r-0 rtl:border-l">
                             <DesignStudio />
                         </div>
 
                         {/* Live Preview - right */}
-                        <div className="w-[420px] shrink-0 border-l bg-zinc-50 flex items-center justify-center overflow-auto">
+                        <div className="w-[420px] shrink-0 bg-zinc-50 flex items-center justify-center overflow-auto hidden lg:flex">
                             <div
                                 className="origin-center"
                                 style={{ transform: `scale(${previewScale / 100})` }}

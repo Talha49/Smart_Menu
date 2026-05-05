@@ -18,18 +18,14 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
 import { useEffect, useState } from "react";
-
-const sidebarLinks = [
-    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Menu Management", href: "/dashboard/menu", icon: UtensilsCrossed },
-    { name: "QR Code", href: "/dashboard/qr", icon: QrCode },
-    { name: "Shop Settings", href: "/dashboard/settings", icon: Settings },
-];
+import { useTranslation } from "@/store/useTranslation";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export function Sidebar({ className, onClose, isMobile }) {
     const pathname = usePathname();
     const { restaurant } = useRestaurantStore();
     const { logout } = useAuth();
+    const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -39,17 +35,24 @@ export function Sidebar({ className, onClose, isMobile }) {
     const liveMenuUrl = restaurant?.restaurantId ? `/menu/${restaurant.restaurantId}` : "/";
     const tvMenuUrl = restaurant?.restaurantId ? `/tv/${restaurant.restaurantId}` : "/";
 
+    const sidebarLinks = [
+        { name: t('dashboard.sidebar.overview'), href: "/dashboard", icon: LayoutDashboard },
+        { name: t('dashboard.sidebar.menu_management'), href: "/dashboard/menu", icon: UtensilsCrossed },
+        { name: t('dashboard.sidebar.qr_code'), href: "/dashboard/qr", icon: QrCode },
+        { name: t('dashboard.sidebar.shop_settings'), href: "/dashboard/settings", icon: Settings },
+    ];
+
     return (
-        <aside className={cn("flex h-full flex-col bg-card border-r", className)}>
+        <aside className={cn("flex h-full flex-col bg-card border-r rtl:border-r-0 rtl:border-l", className)}>
             {/* Header / Logo */}
-            <div className="flex h-16 items-center px-6 border-b">
+            <div className="flex h-16 items-center px-6 border-b justify-between">
                 <Link href="/dashboard" className="flex items-center gap-2 font-display font-bold text-xl tracking-tight">
                     <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                         SmartMenu
                     </span>
                 </Link>
                 {isMobile && (
-                    <Button variant="ghost" size="icon" className="ml-auto md:hidden" onClick={onClose}>
+                    <Button variant="ghost" size="icon" className="md:hidden" onClick={onClose}>
                         <X className="h-5 w-5" />
                     </Button>
                 )}
@@ -80,6 +83,11 @@ export function Sidebar({ className, onClose, isMobile }) {
                 </nav>
             </div>
 
+            {/* Language Switcher in Sidebar (Desktop & Mobile) */}
+            <div className="px-4 py-2">
+                <LanguageSwitcher className="w-full justify-start" position="top" />
+            </div>
+
             {/* Footer */}
             <div className="border-t p-4 space-y-2">
                 {mounted && (
@@ -95,7 +103,7 @@ export function Sidebar({ className, onClose, isMobile }) {
                             )}
                         >
                             <ExternalLink className="h-4 w-4" />
-                            View Live Menu
+                            {t('dashboard.sidebar.view_live')}
                         </Link>
                         <Link
                             href={tvMenuUrl}
@@ -108,7 +116,7 @@ export function Sidebar({ className, onClose, isMobile }) {
                             )}
                         >
                             <Tv className="h-4 w-4" />
-                            Launch TV Mode
+                            {t('dashboard.sidebar.launch_tv')}
                         </Link>
                     </>
                 )}
@@ -117,7 +125,7 @@ export function Sidebar({ className, onClose, isMobile }) {
                     className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                 >
                     <LogOut className="h-4 w-4" />
-                    Sign Out
+                    {t('dashboard.sidebar.sign_out')}
                 </button>
             </div>
         </aside>

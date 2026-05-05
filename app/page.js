@@ -8,8 +8,11 @@ import { Navbar } from "@/components/marketing/Navbar";
 import { Features } from "@/components/marketing/Features";
 import { Pricing } from "@/components/marketing/Pricing";
 import { Footer } from "@/components/marketing/Footer";
+import { useTranslation } from "@/store/useTranslation";
 
 export default function Home({ user }) {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-white selection:bg-primary selection:text-white overflow-x-hidden">
       <Navbar user={user} />
@@ -17,8 +20,8 @@ export default function Home({ user }) {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4">
         {/* Background Decorative Blurs */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute rtl:left-0 rtl:right-auto rtl:-translate-x-1/2 top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute rtl:right-0 rtl:left-auto rtl:translate-x-1/2 bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div
@@ -27,7 +30,7 @@ export default function Home({ user }) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-50 border border-zinc-100 mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">v2.0 Intelligence Platform Live</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t('home.hero.badge')}</span>
           </motion.div>
 
           <motion.h1
@@ -36,8 +39,8 @@ export default function Home({ user }) {
             transition={{ delay: 0.1 }}
             className="text-5xl md:text-8xl font-black italic tracking-tighter uppercase text-zinc-900 leading-[0.9] mb-8"
           >
-            The Smarter Way to <br />
-            <span className="text-zinc-300">Run Your Menu</span>
+            {t('home.hero.title_1')} <br />
+            <span className="text-zinc-300">{t('home.hero.title_2')}</span>
           </motion.h1>
 
           <motion.p
@@ -46,7 +49,7 @@ export default function Home({ user }) {
             transition={{ delay: 0.2 }}
             className="max-w-2xl mx-auto text-lg md:text-xl text-zinc-500 font-medium leading-relaxed mb-12"
           >
-            Create stunning digital menus that increase sales and save you time. From real-time price updates to AI-driven popularity tracking, SmartMenu is the ultimate tool for modern restaurants.
+            {t('home.hero.subtitle')}
           </motion.p>
 
           <motion.div
@@ -57,14 +60,14 @@ export default function Home({ user }) {
           >
             <Link href="/signup">
               <Button size="lg" className="h-16 px-10 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/40 group">
-                Build Your Experience <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                {t('home.hero.cta_primary')} <ArrowRight className="ml-3 rtl:mr-3 rtl:ml-0 rtl:rotate-180 w-5 h-5 group-hover:translate-x-2 rtl:group-hover:-translate-x-2 transition-transform" />
               </Button>
             </Link>
             <button className="h-16 px-10 rounded-2xl bg-zinc-50 border-2 border-zinc-100 text-[12px] font-black uppercase tracking-[0.2em] text-zinc-900 flex items-center gap-3 hover:bg-zinc-100 transition-all">
               <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center">
-                <Play className="w-3 h-3 text-white ml-0.5" />
+                <Play className="w-3 h-3 text-white ml-0.5 rtl:mr-0.5 rtl:ml-0 rtl:rotate-180" />
               </div>
-              Watch Showreel
+              {t('home.hero.cta_secondary')}
             </button>
           </motion.div>
 
@@ -94,10 +97,10 @@ export default function Home({ user }) {
       <section className="py-24 px-4 bg-zinc-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Simple Workflow</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">{t('home.workflow.tag')}</h2>
             <h3 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase text-zinc-900 leading-none">
-              How SmartMenu <br />
-              <span className="text-zinc-400">works for you</span>
+              {t('home.workflow.title_1')} <br />
+              <span className="text-zinc-400">{t('home.workflow.title_2')}</span>
             </h3>
           </div>
 
@@ -105,32 +108,32 @@ export default function Home({ user }) {
             {[
               {
                 step: "01",
-                title: "Create Categories",
-                desc: "Organize your menu into logical sections like Starters, Mains, and Drinks. Simply name them and set their order.",
+                title: t('home.workflow.steps.0.title'),
+                desc: t('home.workflow.steps.0.desc'),
                 icon: "📋"
               },
               {
                 step: "02",
-                title: "Add Menu Items",
-                desc: "Upload photos, set prices, and add descriptions. You can update these instantly whenever your kitchen makes a change.",
+                title: t('home.workflow.steps.1.title'),
+                desc: t('home.workflow.steps.1.desc'),
                 icon: "🍔"
               },
               {
                 step: "03",
-                title: "Design Your Brand",
-                desc: "Use our Design Studio to pick colors, fonts, and layouts that match your restaurant's unique personality.",
+                title: t('home.workflow.steps.2.title'),
+                desc: t('home.workflow.steps.2.desc'),
                 icon: "🎨"
               },
               {
                 step: "04",
-                title: "Optimize with AI",
-                desc: "Activate AI heatmaps to highlight popular items and set 'Happy Hour' rules to automatically adjust prices.",
+                title: t('home.workflow.steps.3.title'),
+                desc: t('home.workflow.steps.3.desc'),
                 icon: "⚡"
               }
             ].map((item, i) => (
               <div key={i} className="bg-white p-8 rounded-[3rem] border-2 border-zinc-100 relative group hover:border-primary/20 transition-all">
                 <div className="text-4xl mb-6">{item.icon}</div>
-                <div className="absolute top-8 right-8 text-[10px] font-black uppercase tracking-widest text-primary/30">{item.step}</div>
+                <div className="absolute top-8 right-8 rtl:left-8 rtl:right-auto text-[10px] font-black uppercase tracking-widest text-primary/30">{item.step}</div>
                 <h4 className="text-xl font-black uppercase tracking-tight mb-3 text-zinc-900">{item.title}</h4>
                 <p className="text-sm font-medium text-zinc-500 leading-relaxed">
                   {item.desc}
@@ -142,37 +145,37 @@ export default function Home({ user }) {
           <div className="mt-16 p-10 rounded-[3rem] bg-zinc-900 text-white relative overflow-hidden">
              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="space-y-6">
-                   <h4 className="text-2xl font-black italic tracking-tighter uppercase">Why Optimize Your Menu?</h4>
+                   <h4 className="text-2xl font-black italic tracking-tighter uppercase">{t('home.workflow.why_optimize')}</h4>
                    <p className="text-sm text-white/60 font-medium leading-relaxed">
-                     A well-organized digital menu doesn't just look good—it sells more. By using our **AI Heatmap** and **Category Optimization**, you can guide your customers toward your highest-margin items automatically.
+                     {t('home.workflow.why_desc')}
                    </p>
                    <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Real-time Dashboard Control</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{t('home.workflow.benefits.0')}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Instant QR Code Generation</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{t('home.workflow.benefits.1')}</span>
                       </div>
                    </div>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8 space-y-4">
                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Feature</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Status</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('home.workflow.table.feature')}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('home.workflow.table.status')}</span>
                    </div>
                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold">Category Management</span>
-                      <span className="text-[9px] font-black uppercase px-2 py-1 bg-primary text-white rounded-md">Live</span>
+                      <span className="text-[11px] font-bold">{t('home.workflow.table.rows.0')}</span>
+                      <span className="text-[9px] font-black uppercase px-2 py-1 bg-primary text-white rounded-md">{t('home.workflow.table.live')}</span>
                    </div>
                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold">AI Item Highlighting</span>
-                      <span className="text-[9px] font-black uppercase px-2 py-1 bg-primary text-white rounded-md">Live</span>
+                      <span className="text-[11px] font-bold">{t('home.workflow.table.rows.1')}</span>
+                      <span className="text-[9px] font-black uppercase px-2 py-1 bg-primary text-white rounded-md">{t('home.workflow.table.live')}</span>
                    </div>
                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold">Dynamic Price Rules</span>
-                      <span className="text-[9px] font-black uppercase px-2 py-1 bg-primary text-white rounded-md">Live</span>
+                      <span className="text-[11px] font-bold">{t('home.workflow.table.rows.2')}</span>
+                      <span className="text-[9px] font-black uppercase px-2 py-1 bg-primary text-white rounded-md">{t('home.workflow.table.live')}</span>
                    </div>
                 </div>
              </div>
@@ -195,28 +198,23 @@ export default function Home({ user }) {
 
       {/* Visual DNA Showcase */}
       <section className="py-24 px-4 bg-zinc-900 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-primary/20 rounded-full blur-[150px] translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 right-0 rtl:left-0 rtl:right-auto w-[1000px] h-[1000px] bg-primary/20 rounded-full blur-[150px] translate-x-1/2 rtl:-translate-x-1/2 -translate-y-1/2" />
         
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
           <div className="space-y-8">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">Intelligent Automation</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">{t('home.automation.tag')}</h2>
             <h3 className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase text-white leading-[0.9]">
-              Automatic Seasonal <br />
-              <span className="text-white/20">Themes & Pricing</span>
+              {t('home.automation.title_1')} <br />
+              <span className="text-white/20">{t('home.automation.title_2')}</span>
             </h3>
             <p className="text-lg text-white/50 font-medium leading-relaxed">
-              Stop worrying about updating your menu for every holiday. SmartMenu automatically changes your themes and atmosphere effects to match the season, and optimizes your prices for Happy Hour.
+              {t('home.automation.desc')}
             </p>
             <ul className="space-y-4">
-              {[
-                "12 Pre-configured Monthly Overlays",
-                "Automated Lighting & Color Transitions",
-                "Dynamic Background Particle Engines",
-                "Manual Preview Dashboard Toggles"
-              ].map((item, i) => (
+              {[0, 1, 2, 3].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-white/70">
                   <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-black uppercase tracking-widest">{item}</span>
+                  <span className="text-sm font-black uppercase tracking-widest">{t(`home.automation.features.${i}`)}</span>
                 </li>
               ))}
             </ul>
@@ -238,7 +236,7 @@ export default function Home({ user }) {
             <motion.div 
               animate={{ y: [0, -20, 0] }}
               transition={{ duration: 4, repeat: Infinity }}
-              className="absolute -right-10 top-20 p-6 bg-white rounded-3xl shadow-2xl z-20"
+              className="absolute -right-10 rtl:-left-10 rtl:-right-auto top-20 p-6 bg-white rounded-3xl shadow-2xl z-20"
             >
               <Sparkles className="w-8 h-8 text-primary" />
             </motion.div>
@@ -255,13 +253,13 @@ export default function Home({ user }) {
             {[1,2,3,4,5].map(i => <Star key={i} className="w-6 h-6 text-primary fill-primary" />)}
           </div>
           <h3 className="text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-zinc-900">
-            "The design studio is a game-changer. We've seen a 22% increase in average order value through AI heatmaps."
+            {t('home.testimonial.quote')}
           </h3>
           <div className="flex items-center justify-center gap-4">
             <div className="w-12 h-12 rounded-full bg-zinc-100 overflow-hidden" />
-            <div className="text-left">
-                <p className="font-black uppercase tracking-widest text-sm">Marcus Sterling</p>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Director, Gastronomy Group</p>
+            <div className="text-left rtl:text-right">
+                <p className="font-black uppercase tracking-widest text-sm">{t('home.testimonial.author')}</p>
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('home.testimonial.role')}</p>
             </div>
           </div>
         </div>
@@ -273,24 +271,24 @@ export default function Home({ user }) {
            <div className="absolute inset-0 bg-primary/5 blur-[100px]" />
            <div className="relative z-10 space-y-8">
               <h2 className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase text-white">
-                Ready to elevate <br /> your experience?
+                {t('home.cta.title_1')} <br /> {t('home.cta.title_2')}
               </h2>
               <p className="max-w-xl mx-auto text-white/50 text-lg font-medium">
-                Join thousands of world-class restaurants transforming their digital presence today.
+                {t('home.cta.subtitle')}
               </p>
               <div className="flex justify-center gap-4">
                  <Link href="/signup">
                    <Button size="lg" className="h-16 px-12 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/20">
-                     Get Started Now
+                     {t('home.cta.btn')}
                    </Button>
                  </Link>
               </div>
               <div className="flex items-center justify-center gap-8 pt-8">
                   <div className="flex items-center gap-2 text-white/30 text-[10px] font-black uppercase tracking-widest">
-                    <ShieldCheck className="w-4 h-4" /> 14-Day Free Trial
+                    <ShieldCheck className="w-4 h-4 rtl:ml-2" /> {t('home.cta.trial')}
                   </div>
                   <div className="flex items-center gap-2 text-white/30 text-[10px] font-black uppercase tracking-widest">
-                    <CheckCircle2 className="w-4 h-4" /> No Credit Card Required
+                    <CheckCircle2 className="w-4 h-4 rtl:ml-2" /> {t('home.cta.no_card')}
                   </div>
               </div>
            </div>

@@ -9,8 +9,10 @@ import { useEffect } from "react";
 import { X, ChevronLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/store/useTranslation";
 
 export function MenuItemDetail({ item, isOpen, onClose, themeColors }) {
+    const { t } = useTranslation();
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
@@ -125,7 +127,7 @@ export function MenuItemDetail({ item, isOpen, onClose, themeColors }) {
                                     }}
                                 >
                                     <Sparkles className="w-3.5 h-3.5" />
-                                    OUR SIGNATURE
+                                    {t('live_menu.our_signature')}
                                 </div>
                             )}
                         </div>
@@ -174,7 +176,7 @@ export function MenuItemDetail({ item, isOpen, onClose, themeColors }) {
                                         }}
                                     >
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                                        In Stock & Ready
+                                        {t('live_menu.in_stock')}
                                     </div>
                                 </div>
                             </div>
@@ -192,7 +194,7 @@ export function MenuItemDetail({ item, isOpen, onClose, themeColors }) {
                                             color: colors.text?.tertiary || '#9ca3af'
                                         }}
                                     >
-                                        Price Value
+                                        {t('live_menu.price_value')}
                                     </span>
                                     <div
                                         className="text-3xl md:text-5xl font-black tracking-tighter whitespace-nowrap"
@@ -212,7 +214,7 @@ export function MenuItemDetail({ item, isOpen, onClose, themeColors }) {
                                     }}
                                     onClick={onClose}
                                 >
-                                    Dismiss
+                                    {t('live_menu.dismiss')}
                                 </Button>
                             </div>
                         </div>

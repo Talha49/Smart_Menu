@@ -5,8 +5,10 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { X, Plus, Minus, DollarSign, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/store/useTranslation";
 
 export function ItemCustomizationModal({ item, isOpen, onClose }) {
+    const { t } = useTranslation();
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [selectedModifiers, setSelectedModifiers] = useState([]);
 
@@ -104,7 +106,7 @@ export function ItemCustomizationModal({ item, isOpen, onClose }) {
                 {hasVariants && (
                     <div className="space-y-3">
                         <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-700">
-                            Choose Size
+                            {t('live_menu.choose_size')}
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {item.variants.map((variant) => (
@@ -194,7 +196,7 @@ export function ItemCustomizationModal({ item, isOpen, onClose }) {
                     <div className="pt-6 border-t">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-bold uppercase tracking-wider text-zinc-700">
-                                Total Price
+                                {t('live_menu.total_price')}
                             </span>
                             <div className="text-3xl font-black tracking-tighter">
                                 ${calculateTotal().toFixed(2)}
@@ -228,7 +230,7 @@ export function ItemCustomizationModal({ item, isOpen, onClose }) {
                         onClick={onClose}
                         className="w-full h-14 rounded-2xl font-bold uppercase tracking-wider"
                     >
-                        Got it
+                        {t('live_menu.got_it')}
                     </Button>
                 </div>
             </div>
