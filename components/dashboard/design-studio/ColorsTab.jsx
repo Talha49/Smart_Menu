@@ -7,7 +7,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Palette, Droplet, FileText, Square, RefreshCcw, ShieldCheck, AlertTriangle, Zap } from 'lucide-react';
+import { Palette, Droplet, FileText, Square, RefreshCcw, ShieldCheck, AlertTriangle, Zap, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DEFAULT_CONFIG } from './config-defaults';
 
@@ -15,148 +15,75 @@ export function ColorsTab({ config, onChange }) {
     if (!config) return <NoPresetMessage />;
 
     const colors = config.colors || DEFAULT_CONFIG.colors;
-    const [activeSection, setActiveSection] = useState('brand');
 
-    const handleColorChange = (section, key, value) => {
-        const updatedColors = {
-            ...colors,
-            [section]: { ...colors[section], [key]: value }
-        };
-        onChange({ ...config, colors: updatedColors });
+    const handleCoreColorChange = (key, value) => {
+        let newColors = JSON.parse(JSON.stringify(colors)); // Deep clone to avoid mutation
+
+        if (key === 'brand.primary') {
+            newColors.brand.primary = value;
+            newColors.brand.secondary = adjustColor(value, -20);
+            newColors.brand.tertiary = adjustColor(value, 40);
+        }
+
+        if (key === 'backgrounds.card') {
+            newColors.backgrounds.card = value;
+            const isDark = getLuminance(value) < 0.5;
+            newColors.backgrounds.elevated = isDark ? adjustColor(value, 10) : adjustColor(value, 5);
+            
+            // Auto-generate all borders and lines based on the Menu Item Background
+            newColors.borders.light = isDark ? adjustColor(value, 15) : adjustColor(value, -10);
+            newColors.borders.medium = isDark ? adjustColor(value, 30) : adjustColor(value, -20);
+            newColors.borders.dark = isDark ? adjustColor(value, 50) : adjustColor(value, -40);
+            
+            // Sync page background just in case, though Visual Tab usually handles it
+            newColors.backgrounds.page = value;
+        }
+
+        if (key === 'text.primary') {
+            newColors.text.primary = value;
+            const isDark = getLuminance(value) < 0.5;
+            newColors.text.secondary = isDark ? adjustColor(value, 40) : adjustColor(value, -40);
+            newColors.text.tertiary = isDark ? adjustColor(value, 70) : adjustColor(value, -70);
+            newColors.text.inverse = isDark ? '#FFFFFF' : '#111827';
+        }
+
+        onChange({ ...config, colors: newColors });
     };
-
-    // Auto-generate secondary/tertiary colors based on primary
-    const generatePalette = () => {
-        const primary = colors.brand.primary;
-        // Simple logic: tertiary is a lighter/different hue version
-        const secondary = adjustColor(primary, -20); // Darker
-        const tertiary = adjustColor(primary, 40);  // Lighter
-        
-        onChange({
-            ...config,
-            colors: {
-                ...colors,
-                brand: { ...colors.brand, secondary, tertiary }
-            }
-        });
-    };
-
-    const sections = [
-        { id: 'brand', label: 'Identity', icon: Palette, emoji: '🎨' },
-        { id: 'backgrounds', label: 'Surfaces', icon: Square, emoji: '⬜' },
-        { id: 'text', label: 'Content', icon: FileText, emoji: '✍️' },
-        { id: 'borders', label: 'Lines', icon: Droplet, emoji: '🔲' }
-    ];
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-            {/* Header with Auto-Gen Action */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-50 p-6 rounded-[2.5rem] border-2 border-zinc-100">
-                <div className="space-y-1">
-                    <h3 className="text-2xl font-black tracking-tight text-zinc-900">Color Architecture</h3>
-                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Professional Palette System</p>
-                </div>
-                <button 
-                    onClick={generatePalette}
-                    className="flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-zinc-200 rounded-2xl text-xs font-black hover:border-zinc-900 transition-all shadow-sm active:scale-95 group"
-                >
-                    <Zap className="w-4 h-4 text-amber-500 fill-amber-500 group-hover:scale-110 transition-transform" />
-                    AUTO-GENERATE PALETTE
-                </button>
+            {/* Header */}
+            <div className="flex flex-col gap-2 bg-zinc-50 p-6 rounded-[2.5rem] border-2 border-zinc-100">
+                <h3 className="text-2xl font-black tracking-tight text-zinc-900">Essential Colors</h3>
+                <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
+                    Note: To change the Page Background, please use the Visual Tab. Set these 3 core colors below and we'll calculate everything else.
+                </p>
             </div>
 
-            {/* Navigation */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-                {sections.map((section) => (
-                    <button
-                        key={section.id}
-                        onClick={() => setActiveSection(section.id)}
-                        className={cn(
-                            "flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap border-2",
-                            activeSection === section.id
-                                ? "bg-zinc-900 border-zinc-900 text-white shadow-xl scale-105 z-10"
-                                : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200"
-                        )}
-                    >
-                        <span>{section.emoji}</span>
-                        {section.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Active Content */}
-            <div className="grid grid-cols-1 gap-6">
-                {activeSection === 'brand' && (
-                    <ColorGroup
-                        colors={colors.brand}
-                        definitions={[
-                            { key: 'primary', label: 'Primary', desc: 'Main brand identification' },
-                            { key: 'secondary', label: 'Secondary', desc: 'Accent & emphasis' },
-                            { key: 'tertiary', label: 'Tertiary', desc: 'Supporting details' }
-                        ]}
-                        onChange={(key, val) => handleColorChange('brand', key, val)}
-                        bgContext={colors.backgrounds.page}
-                    />
-                )}
-
-                {activeSection === 'backgrounds' && (
-                    <ColorGroup
-                        colors={colors.backgrounds}
-                        definitions={[
-                            { key: 'page', label: 'Canvas', desc: 'Primary application surface' },
-                            { key: 'card', label: 'Component', desc: 'Default card background' },
-                            { key: 'elevated', label: 'Elevated', desc: 'Modals & overlays' }
-                        ]}
-                        onChange={(key, val) => handleColorChange('backgrounds', key, val)}
-                        textContext={colors.text.primary}
-                    />
-                )}
-
-                {activeSection === 'text' && (
-                    <ColorGroup
-                        colors={colors.text}
-                        definitions={[
-                            { key: 'primary', label: 'High Priority', desc: 'Headings & primary copy' },
-                            { key: 'secondary', label: 'Medium Priority', desc: 'Descriptions & meta' },
-                            { key: 'tertiary', label: 'Low Priority', desc: 'Hints & disabled states' },
-                            { key: 'inverse', label: 'Inverse', desc: 'Text on dark backgrounds' }
-                        ]}
-                        onChange={(key, val) => handleColorChange('text', key, val)}
-                        bgContext={colors.backgrounds.card}
-                    />
-                )}
-
-                {activeSection === 'borders' && (
-                    <ColorGroup
-                        colors={colors.borders}
-                        definitions={[
-                            { key: 'light', label: 'Subtle', desc: 'Soft separators' },
-                            { key: 'medium', label: 'Standard', desc: 'Default UI borders' },
-                            { key: 'dark', label: 'Defined', desc: 'High-contrast lines' }
-                        ]}
-                        onChange={(key, val) => handleColorChange('borders', key, val)}
-                        bgContext={colors.backgrounds.page}
-                    />
-                )}
-            </div>
-        </div>
-    );
-}
-
-function ColorGroup({ colors, definitions, onChange, bgContext, textContext }) {
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {definitions.map((def) => (
+            {/* Core 3 Colors */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ColorCard
-                    key={def.key}
-                    label={def.label}
-                    desc={def.desc}
-                    value={colors[def.key]}
-                    onChange={(val) => onChange(def.key, val)}
-                    contrastBg={bgContext}
-                    contrastText={textContext}
+                    label="Brand Accent Color"
+                    desc="Used for Price Tags, Active Category Tabs, and Buttons."
+                    value={colors.brand.primary}
+                    onChange={(val) => handleCoreColorChange('brand.primary', val)}
+                    contrastBg={colors.backgrounds.card}
                 />
-            ))}
+                <ColorCard
+                    label="Menu Item Background"
+                    desc="The background color of the food item boxes and inactive Category Tabs."
+                    value={colors.backgrounds.card}
+                    onChange={(val) => handleCoreColorChange('backgrounds.card', val)}
+                    contrastText={colors.text.primary}
+                />
+                <ColorCard
+                    label="Primary Text"
+                    desc="Used for Food Item Names and Category Titles."
+                    value={colors.text.primary}
+                    onChange={(val) => handleCoreColorChange('text.primary', val)}
+                    contrastBg={colors.backgrounds.card}
+                />
+            </div>
         </div>
     );
 }
@@ -172,11 +99,17 @@ function ColorCard({ label, desc, value, onChange, contrastBg, contrastText }) {
     const isAccessible = contrastRatio >= 4.5;
 
     return (
-        <div className="bg-white p-6 rounded-[2rem] border-2 border-zinc-100 shadow-sm hover:shadow-md transition-all flex flex-col gap-4">
+        <div className="bg-white p-6 rounded-[2rem] border-2 border-zinc-100 shadow-sm hover:shadow-md transition-all flex flex-col gap-4 overflow-visible">
             <div className="flex items-start justify-between">
-                <div className="space-y-0.5">
+                <div className="relative group flex items-center gap-2">
                     <h4 className="font-black text-zinc-900 leading-tight">{label}</h4>
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">{desc}</p>
+                    <div className="cursor-help">
+                        <Info className="w-4 h-4 text-zinc-300 hover:text-zinc-600 transition-colors" />
+                    </div>
+                    <div className="absolute bottom-full left-0 mb-2 w-48 p-3 bg-zinc-900 text-white text-[11px] font-bold tracking-wide rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                        {desc}
+                        <div className="absolute top-full left-4 -mt-1 border-[6px] border-transparent border-t-zinc-900" />
+                    </div>
                 </div>
                 
                 {contrastRatio && (

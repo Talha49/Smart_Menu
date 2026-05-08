@@ -20,7 +20,8 @@ import { Sparkles } from 'lucide-react';
  * Selects card variant based on themeConfig
  */
 export function MenuItem({ item, theme, onClick, variant }) {
-    const layout = variant || theme?.config?.menuItem?.layout || 'horizontal';
+    const tConfig = theme?.config || theme;
+    const layout = variant || tConfig?.menuItem?.layout || 'horizontal';
 
     const CardComponent = {
         horizontal: HorizontalCard,
@@ -39,15 +40,16 @@ export function MenuItem({ item, theme, onClick, variant }) {
  * Image left, content right - classic restaurant menu style
  */
 export function HorizontalCard({ item, theme, onClick }) {
+    const tConfig = theme?.config || theme;
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 16;
-    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 2px 4px rgba(0,0,0,0.05)';
-    const cardBg = theme?.config?.colors?.backgrounds?.card || '#FFFFFF';
-    const imageEnabled = theme?.config?.menuItem?.image?.enabled !== false && item.imageUrl;
+    const cardRadius = tConfig?.borders?.radius?.[tConfig?.menuItem?.card?.borderRadius] || 16;
+    const cardShadow = tConfig?.shadows?.[tConfig?.menuItem?.card?.shadow] || '0 2px 4px rgba(0,0,0,0.05)';
+    const cardBg = tConfig?.colors?.backgrounds?.card || '#FFFFFF';
+    const imageEnabled = tConfig?.menuItem?.image?.enabled !== false && item.imageUrl;
 
     // AI Intelligence - Heatmap
-    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const showHeatmap = tConfig?.intelligence?.heatmap?.showPreview;
     const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.8);
 
     return (
@@ -61,15 +63,15 @@ export function HorizontalCard({ item, theme, onClick }) {
                 backgroundColor: cardBg,
                 borderRadius: `var(--theme-radius, ${cardRadius}px)`,
                 boxShadow: `var(--theme-shadow, ${cardShadow})`,
-                padding: `${theme?.config?.menuItem?.card?.padding || 16}px`,
+                padding: `${tConfig?.menuItem?.card?.padding || 16}px`,
                 backdropFilter: `blur(var(--theme-glass-blur, 0px))`,
                 opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{
-                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
-                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0,
-                boxShadow: (theme?.config?.animations?.interactions?.hover === 'glow' || theme?.config?.menuItem?.card?.hoverEffect === 'glow')
-                    ? `0 8px 20px ${theme?.config?.colors?.brand?.primary}40`
+                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
+                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0,
+                boxShadow: (tConfig?.animations?.interactions?.hover === 'glow' || tConfig?.menuItem?.card?.hoverEffect === 'glow')
+                    ? `0 8px 20px ${tConfig?.colors?.brand?.primary}40`
                     : cardShadow
             }}
             whileTap={{ scale: 0.98 }}
@@ -79,9 +81,9 @@ export function HorizontalCard({ item, theme, onClick }) {
                 <div
                     className="flex-shrink-0 overflow-hidden"
                     style={{
-                        width: theme?.config?.menuItem?.image?.position === 'left' ? '120px' : '80px',
-                        height: theme?.config?.menuItem?.image?.position === 'left' ? '120px' : '80px',
-                        borderRadius: `${theme?.config?.borders?.radius?.[theme?.config?.menuItem?.image?.borderRadius] || 12}px`
+                        width: tConfig?.menuItem?.image?.position === 'left' ? '120px' : '80px',
+                        height: tConfig?.menuItem?.image?.position === 'left' ? '120px' : '80px',
+                        borderRadius: `${tConfig?.borders?.radius?.[tConfig?.menuItem?.image?.borderRadius] || 12}px`
                     }}
                 >
                     <img
@@ -89,7 +91,7 @@ export function HorizontalCard({ item, theme, onClick }) {
                         alt={item.name}
                         className={cn(
                             "w-full h-full transition-all duration-500",
-                            theme?.config?.menuItem?.image?.objectFit || 'object-cover',
+                            tConfig?.menuItem?.image?.objectFit || 'object-cover',
                             imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                             "group-hover:scale-110"
                         )}
@@ -105,8 +107,8 @@ export function HorizontalCard({ item, theme, onClick }) {
                     <h3
                         className="font-bold line-clamp-2"
                         style={{
-                            fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 18}px)`,
-                            color: theme?.config?.colors?.text?.primary,
+                            fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 18}px)`,
+                            color: tConfig?.colors?.text?.primary,
                             fontFamily: 'var(--font-heading)',
                             fontWeight: 'var(--font-heading-weight)'
                         }}
@@ -125,8 +127,8 @@ export function HorizontalCard({ item, theme, onClick }) {
                     <p
                         className="line-clamp-2"
                         style={{
-                            fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 14}px)`,
-                            color: theme?.config?.colors?.text?.secondary,
+                            fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 14}px)`,
+                            color: tConfig?.colors?.text?.secondary,
                             fontFamily: 'var(--font-body)'
                         }}
                     >
@@ -139,8 +141,8 @@ export function HorizontalCard({ item, theme, onClick }) {
             <div
                 className="flex-shrink-0"
                 style={{
-                    fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 18}px)`,
-                    color: theme?.config?.colors?.brand?.primary,
+                    fontSize: `var(--text-price, ${tConfig?.typography?.sizes?.price || 18}px)`,
+                    color: tConfig?.colors?.brand?.primary,
                     fontWeight: 'var(--font-heading-weight)',
                     fontFamily: 'var(--font-heading)'
                 }}
@@ -156,15 +158,16 @@ export function HorizontalCard({ item, theme, onClick }) {
  * Image top, content bottom - Instagram/Pinterest style
  */
 export function VerticalCard({ item, theme, onClick }) {
+    const tConfig = theme?.config || theme;
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 16;
-    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 4px 6px rgba(0,0,0,0.1)';
-    const cardBg = theme?.config?.colors?.backgrounds?.card || '#FFFFFF';
-    const imageEnabled = theme?.config?.menuItem?.image?.enabled !== false && item.imageUrl;
+    const cardRadius = tConfig?.borders?.radius?.[tConfig?.menuItem?.card?.borderRadius] || 16;
+    const cardShadow = tConfig?.shadows?.[tConfig?.menuItem?.card?.shadow] || '0 4px 6px rgba(0,0,0,0.1)';
+    const cardBg = tConfig?.colors?.backgrounds?.card || '#FFFFFF';
+    const imageEnabled = tConfig?.menuItem?.image?.enabled !== false && item.imageUrl;
 
     // AI Intelligence - Heatmap
-    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const showHeatmap = tConfig?.intelligence?.heatmap?.showPreview;
     const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.85);
 
     return (
@@ -182,10 +185,10 @@ export function VerticalCard({ item, theme, onClick }) {
                 opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{
-                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.03 : 1,
-                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -6 : 0,
-                boxShadow: (theme?.config?.animations?.interactions?.hover === 'glow' || theme?.config?.menuItem?.card?.hoverEffect === 'glow')
-                    ? `0 8px 20px ${theme?.config?.colors?.brand?.primary}40`
+                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.03 : 1,
+                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -6 : 0,
+                boxShadow: (tConfig?.animations?.interactions?.hover === 'glow' || tConfig?.menuItem?.card?.hoverEffect === 'glow')
+                    ? `0 8px 20px ${tConfig?.colors?.brand?.primary}40`
                     : cardShadow
             }}
             whileTap={{ scale: 0.97 }}
@@ -198,7 +201,7 @@ export function VerticalCard({ item, theme, onClick }) {
                         alt={item.name}
                         className={cn(
                             "w-full h-full transition-all duration-500",
-                            theme?.config?.menuItem?.image?.objectFit || 'object-cover',
+                            tConfig?.menuItem?.image?.objectFit || 'object-cover',
                             imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                             "group-hover:scale-105"
                         )}
@@ -213,8 +216,8 @@ export function VerticalCard({ item, theme, onClick }) {
                 <h3
                     className="font-bold line-clamp-2 mb-2"
                     style={{
-                        fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 20}px)`,
-                        color: theme?.config?.colors?.text?.primary,
+                        fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 20}px)`,
+                        color: tConfig?.colors?.text?.primary,
                         fontFamily: 'var(--font-heading)',
                         fontWeight: 'var(--font-heading-weight)'
                     }}
@@ -226,8 +229,8 @@ export function VerticalCard({ item, theme, onClick }) {
                     <p
                         className="line-clamp-3 mb-3"
                         style={{
-                            fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 14}px)`,
-                            color: theme?.config?.colors?.text?.secondary,
+                            fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 14}px)`,
+                            color: tConfig?.colors?.text?.secondary,
                             fontFamily: 'var(--font-body)'
                         }}
                     >
@@ -239,8 +242,8 @@ export function VerticalCard({ item, theme, onClick }) {
                 <div
                     className="font-bold"
                     style={{
-                        fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 20}px)`,
-                        color: theme?.config?.colors?.brand?.primary,
+                        fontSize: `var(--text-price, ${tConfig?.typography?.sizes?.price || 20}px)`,
+                        color: tConfig?.colors?.brand?.primary,
                         fontWeight: 'var(--font-heading-weight)',
                         fontFamily: 'var(--font-heading)'
                     }}
@@ -257,14 +260,15 @@ export function VerticalCard({ item, theme, onClick }) {
  * Image background with content overlay - dramatic presentation
  */
 export function OverlayCard({ item, theme, onClick }) {
+    const tConfig = theme?.config || theme;
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 16;
-    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 8px 16px rgba(0,0,0,0.2)';
-    const imageEnabled = theme?.config?.menuItem?.image?.enabled !== false && item.imageUrl;
+    const cardRadius = tConfig?.borders?.radius?.[tConfig?.menuItem?.card?.borderRadius] || 16;
+    const cardShadow = tConfig?.shadows?.[tConfig?.menuItem?.card?.shadow] || '0 8px 16px rgba(0,0,0,0.2)';
+    const imageEnabled = tConfig?.menuItem?.image?.enabled !== false && item.imageUrl;
 
     // AI Intelligence - Heatmap
-    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const showHeatmap = tConfig?.intelligence?.heatmap?.showPreview;
     const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.9);
 
     return (
@@ -281,8 +285,8 @@ export function OverlayCard({ item, theme, onClick }) {
                 minHeight: '250px'
             }}
             whileHover={{ 
-                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
-                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0
+                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
+                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0
             }}
             whileTap={{ scale: 0.98 }}
         >
@@ -293,7 +297,7 @@ export function OverlayCard({ item, theme, onClick }) {
                     alt={item.name}
                     className={cn(
                         "absolute inset-0 w-full h-full transition-all duration-700",
-                        theme?.config?.menuItem?.image?.objectFit || 'object-cover',
+                        tConfig?.menuItem?.image?.objectFit || 'object-cover',
                         imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                         "group-hover:scale-110"
                     )}
@@ -303,7 +307,7 @@ export function OverlayCard({ item, theme, onClick }) {
             ) : (
                 <div
                     className="absolute inset-0"
-                    style={{ backgroundColor: theme?.config?.colors?.brand?.primary }}
+                    style={{ backgroundColor: tConfig?.colors?.brand?.primary }}
                 />
             )}
 
@@ -315,7 +319,7 @@ export function OverlayCard({ item, theme, onClick }) {
                 <h3
                     className="font-bold line-clamp-2 mb-2"
                     style={{
-                        fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 22}px)`,
+                        fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 22}px)`,
                         fontFamily: 'var(--font-heading)',
                         fontWeight: 'var(--font-heading-weight)'
                     }}
@@ -327,7 +331,7 @@ export function OverlayCard({ item, theme, onClick }) {
                     <p
                         className="line-clamp-2 mb-3 text-white/90"
                         style={{
-                            fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 14}px)`,
+                            fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 14}px)`,
                             fontFamily: 'var(--font-body)'
                         }}
                     >
@@ -339,8 +343,8 @@ export function OverlayCard({ item, theme, onClick }) {
                 <div
                     className="inline-flex items-center justify-center px-4 py-2 rounded-full font-bold self-start"
                     style={{
-                        fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 18}px)`,
-                        backgroundColor: theme?.config?.colors?.brand?.primary,
+                        fontSize: `var(--text-price, ${tConfig?.typography?.sizes?.price || 18}px)`,
+                        backgroundColor: tConfig?.colors?.brand?.primary,
                         color: 'white',
                         fontWeight: 'var(--font-heading-weight)'
                     }}
@@ -357,15 +361,16 @@ export function OverlayCard({ item, theme, onClick }) {
  * Text-only, compact - for high-density menus
  */
 export function MinimalCard({ item, theme, onClick }) {
+    const tConfig = theme?.config || theme;
     return (
         <motion.div
             onClick={onClick}
             className="group cursor-pointer border-b transition-all duration-200 py-4"
             style={{
-                borderColor: theme?.config?.colors?.borders?.light || '#E5E7EB'
+                borderColor: tConfig?.colors?.borders?.light || '#E5E7EB'
             }}
             whileHover={{
-                backgroundColor: theme?.config?.colors?.backgrounds?.card || '#F9FAFB',
+                backgroundColor: tConfig?.colors?.backgrounds?.card || '#F9FAFB',
                 paddingLeft: '8px'
             }}
         >
@@ -374,8 +379,8 @@ export function MinimalCard({ item, theme, onClick }) {
                     <h3
                         className="font-semibold line-clamp-1"
                         style={{
-                            fontSize: `var(--text-item-name, ${theme?.config?.typography?.sizes?.itemName || 16}px)`,
-                            color: theme?.config?.colors?.text?.primary,
+                            fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 16}px)`,
+                            color: tConfig?.colors?.text?.primary,
                             fontFamily: 'var(--font-heading)',
                             fontWeight: 'var(--font-heading-weight)'
                         }}
@@ -387,8 +392,8 @@ export function MinimalCard({ item, theme, onClick }) {
                         <p
                             className="line-clamp-1 mt-1"
                             style={{
-                                fontSize: `var(--text-item-desc, ${theme?.config?.typography?.sizes?.itemDescription || 13}px)`,
-                                color: theme?.config?.colors?.text?.secondary,
+                                fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 13}px)`,
+                                color: tConfig?.colors?.text?.secondary,
                                 fontFamily: 'var(--font-body)'
                             }}
                         >
@@ -401,8 +406,8 @@ export function MinimalCard({ item, theme, onClick }) {
                 <div
                     className="flex-shrink-0 font-bold"
                     style={{
-                        fontSize: `var(--text-price, ${theme?.config?.typography?.sizes?.price || 16}px)`,
-                        color: theme?.config?.colors?.brand?.primary,
+                        fontSize: `var(--text-price, ${tConfig?.typography?.sizes?.price || 16}px)`,
+                        color: tConfig?.colors?.brand?.primary,
                         fontWeight: 'var(--font-heading-weight)',
                         fontFamily: 'var(--font-heading)'
                     }}
@@ -419,14 +424,15 @@ export function MinimalCard({ item, theme, onClick }) {
  * High-end editorial style for featured items
  */
 export function MagazineCard({ item, theme, onClick }) {
+    const tConfig = theme?.config || theme;
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const cardRadius = theme?.config?.borders?.radius?.[theme?.config?.menuItem?.card?.borderRadius] || 32;
-    const cardShadow = theme?.config?.shadows?.[theme?.config?.menuItem?.card?.shadow] || '0 20px 40px rgba(0,0,0,0.1)';
-    const cardBg = theme?.config?.colors?.backgrounds?.card || '#FFFFFF';
+    const cardRadius = tConfig?.borders?.radius?.[tConfig?.menuItem?.card?.borderRadius] || 32;
+    const cardShadow = tConfig?.shadows?.[tConfig?.menuItem?.card?.shadow] || '0 20px 40px rgba(0,0,0,0.1)';
+    const cardBg = tConfig?.colors?.backgrounds?.card || '#FFFFFF';
 
     // AI Intelligence - Heatmap
-    const showHeatmap = theme?.config?.intelligence?.heatmap?.showPreview;
+    const showHeatmap = tConfig?.intelligence?.heatmap?.showPreview;
     const isPopular = showHeatmap && (item.name.toLowerCase().includes('signature') || item.name.toLowerCase().includes('special') || Math.random() > 0.7);
 
     return (
@@ -444,8 +450,8 @@ export function MagazineCard({ item, theme, onClick }) {
                 opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{ 
-                y: (theme?.config?.animations?.interactions?.hover === 'lift' || theme?.config?.menuItem?.card?.hoverEffect === 'lift') ? -8 : 0,
-                scale: (theme?.config?.animations?.interactions?.hover === 'scale' || theme?.config?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1
+                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -8 : 0,
+                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1
             }}
             whileTap={{ scale: 0.98 }}
         >
@@ -473,13 +479,13 @@ export function MagazineCard({ item, theme, onClick }) {
                 <div 
                     className="absolute top-6 left-6 px-6 py-2 rounded-2xl text-white font-black italic text-lg shadow-2xl flex flex-col"
                     style={{ 
-                        backgroundColor: theme?.config?.colors?.brand?.primary,
+                        backgroundColor: tConfig?.colors?.brand?.primary,
                         fontWeight: 'var(--font-heading-weight)',
                         fontFamily: 'var(--font-heading)'
                     }}
                 >
                     <span className="leading-none">${item.price}</span>
-                    {theme?.config?.intelligence?.dynamicPricing?.enabled && (
+                    {tConfig?.intelligence?.dynamicPricing?.enabled && (
                         <span className="text-[10px] opacity-60 line-through decoration-white/40">${(item.price * 1.2).toFixed(2)}</span>
                     )}
                 </div>
@@ -491,7 +497,7 @@ export function MagazineCard({ item, theme, onClick }) {
                     className="font-black italic tracking-tighter uppercase leading-none"
                     style={{
                         fontSize: `var(--text-item-name, 32px)`,
-                        color: theme?.config?.colors?.text?.primary,
+                        color: tConfig?.colors?.text?.primary,
                         fontFamily: 'var(--font-heading)',
                         fontWeight: 'var(--font-heading-weight)'
                     }}

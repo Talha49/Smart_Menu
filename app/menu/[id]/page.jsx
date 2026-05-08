@@ -35,7 +35,11 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useTranslation } from "@/store/useTranslation";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
+const fetcher = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("API Error");
+    return res.json();
+};
 
 export default function PublicMenuPage() {
     const { id } = useParams();
@@ -240,9 +244,23 @@ export default function PublicMenuPage() {
     };
 
     if (error) return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-zinc-950 text-white font-black italic tracking-tighter">
-            <h1 className="text-4xl">SYSTEM ERROR</h1>
-            <p className="text-zinc-600 mt-2 uppercase tracking-widest text-xs">RESTAURANT_ID_NOT_FOUND</p>
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-zinc-950 text-white">
+            <div className="w-24 h-24 mb-8 bg-zinc-900 rounded-[2.5rem] flex items-center justify-center border-2 border-white/5 shadow-2xl relative overflow-hidden">
+                <Search className="w-8 h-8 text-white/30 z-10 relative" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none" />
+            </div>
+            
+            <h1 className="text-6xl md:text-8xl mb-4 text-transparent bg-clip-text bg-gradient-to-br from-white to-zinc-500 font-black italic tracking-tighter select-none">
+                404
+            </h1>
+            
+            <h2 className="text-xl md:text-2xl mb-4 font-bold tracking-tight">
+                {t('live_menu.not_found_title') || "Menu Not Found"}
+            </h2>
+            
+            <p className="text-zinc-500 mt-2 max-w-sm mx-auto leading-relaxed font-medium text-sm md:text-base">
+                {t('live_menu.not_found_desc') || "The restaurant you are looking for does not exist or has been removed from our platform."}
+            </p>
         </div>
     );
 

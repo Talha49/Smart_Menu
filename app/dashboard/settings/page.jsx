@@ -8,7 +8,8 @@ import { LivePreview } from "@/components/settings/LivePreview";
 import { BusinessProfileTab } from "./BusinessProfileTab";
 import { DesignStudio } from "@/components/dashboard/design-studio/DesignStudio";
 import { deepMerge } from "@/lib/object-utils";
-import { Store, Sparkles, Monitor, ZoomIn } from "lucide-react";
+import { Store, Sparkles, Monitor, ZoomIn, Lock } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/store/useTranslation";
 
@@ -37,6 +38,7 @@ export default function SettingsPage() {
     const [previewScale, setPreviewScale] = useState(60);
 
     const activeData = previewData ? deepMerge(restaurant, previewData) : restaurant;
+    const isPro = restaurant?.plan === "pro";
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
@@ -71,7 +73,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Right: Device selector + size slider + sync */}
-                {activeView === "studio" && (
+                {activeView === "studio" && isPro && (
                     <div className="flex items-center gap-4">
                         {/* Device picker */}
                         <div className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-lg">
@@ -142,7 +144,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full overflow-y-auto p-8">
+                    <div className="h-full overflow-y-auto p-8 bg-zinc-50/30">
                         <div className="max-w-3xl mx-auto">
                             <BusinessProfileTab />
                         </div>

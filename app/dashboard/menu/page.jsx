@@ -49,6 +49,21 @@ export default function UnifiedMenuPage() {
         fetchItems(true);
     };
 
+    if (!restaurantData) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[70vh] text-center animate-fade-in">
+                <div className="w-24 h-24 bg-muted/30 rounded-[2rem] flex items-center justify-center mb-6">
+                    <Search className="w-10 h-10 text-muted-foreground/50" />
+                </div>
+                <h1 className="text-4xl font-display font-bold tracking-tight text-foreground mb-3">{t('dashboard.menu.not_found_title') || "Restaurant Not Found (404)"}</h1>
+                <p className="text-muted-foreground mb-8 max-w-md">{t('dashboard.menu.not_found_desc') || "Your restaurant data could not be found or has been deleted. Please complete onboarding to create a new restaurant profile."}</p>
+                <Button size="lg" onClick={() => window.location.href = '/onboarding'} className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold">
+                    {t('dashboard.menu.go_onboarding') || "Create Restaurant Profile"}
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 animate-fade-in">
             {/* Page Header */}

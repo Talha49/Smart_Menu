@@ -11,8 +11,10 @@ import {
     Wind,
     Calendar,
     ShieldCheck,
-    Eye
+    Eye,
+    Lock
 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
 import { DEFAULT_CONFIG, validatePresetConfig } from './config-defaults';
@@ -40,6 +42,8 @@ export function DesignStudio() {
     const { restaurant, updateBranding, isLoading, setPreviewData } = useRestaurantStore();
     const [activeTab, setActiveTab] = useState('themes');
     const [isSaving, setIsSaving] = useState(false);
+
+    const isPro = restaurant?.plan === 'pro';
 
     const [config, setConfig] = useState(null);
     const [appliedPresetId, setAppliedPresetId] = useState(null);
@@ -203,23 +207,47 @@ export function DesignStudio() {
                             currentPresetId={appliedPresetId}
                         />
                     )}
-                    {activeTab === 'identity' && (
-                        <IdentityTab config={config} restaurant={restaurant} onChange={handleConfigChange} />
-                    )}
-                    {activeTab === 'visuals' && (
-                        <VisualTab config={config} onChange={handleConfigChange} />
-                    )}
-                    {activeTab === 'colors' && (
-                        <ColorsTab config={config} onChange={handleConfigChange} />
-                    )}
-                    {activeTab === 'layout' && (
-                        <LayoutTab config={config} onChange={handleConfigChange} />
-                    )}
-                    {activeTab === 'motion' && (
-                        <MotionTab config={config} onChange={handleConfigChange} />
-                    )}
-                    {activeTab === 'schedule' && (
-                        <AutomationsTab config={config} onChange={handleConfigChange} />
+                    
+                    {activeTab !== 'themes' && !isPro ? (
+                        <div className="flex items-center justify-center pt-20">
+                            <div className="max-w-md w-full text-center space-y-6 bg-white p-10 rounded-[2.5rem] border-2 border-zinc-100 shadow-xl shadow-zinc-200/20 animate-in fade-in zoom-in duration-500">
+                                <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                    <Lock className="w-10 h-10 text-primary" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-black tracking-tight text-zinc-900">Pro Feature</h2>
+                                    <p className="text-zinc-500 font-medium leading-relaxed">
+                                        Upgrade to SmartMenu Pro to unlock full customization. Design custom layouts, advanced colors, and create a unique visual DNA for your brand.
+                                    </p>
+                                </div>
+                                <div className="pt-4">
+                                    <Button className="bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 w-full py-6 text-base font-bold uppercase tracking-wider rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                                        Upgrade to Pro
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {activeTab === 'identity' && (
+                                <IdentityTab config={config} restaurant={restaurant} onChange={handleConfigChange} />
+                            )}
+                            {activeTab === 'visuals' && (
+                                <VisualTab config={config} onChange={handleConfigChange} />
+                            )}
+                            {activeTab === 'colors' && (
+                                <ColorsTab config={config} onChange={handleConfigChange} />
+                            )}
+                            {activeTab === 'layout' && (
+                                <LayoutTab config={config} onChange={handleConfigChange} />
+                            )}
+                            {activeTab === 'motion' && (
+                                <MotionTab config={config} onChange={handleConfigChange} />
+                            )}
+                            {activeTab === 'schedule' && (
+                                <AutomationsTab config={config} onChange={handleConfigChange} />
+                            )}
+                        </>
                     )}
                 </div>
             </main>
