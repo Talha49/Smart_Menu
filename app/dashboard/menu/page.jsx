@@ -5,7 +5,7 @@ import { useMenuStore } from "@/hooks/use-menu-store";
 import { useCategoryStore } from "@/hooks/use-category-store";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Search } from "lucide-react";
 import { MenuItemsTab } from "./MenuItemsTab";
 import { CategoriesTab } from "./CategoriesTab";
 import { Modal } from "@/components/ui/Modal";
