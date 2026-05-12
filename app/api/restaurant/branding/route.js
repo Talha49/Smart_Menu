@@ -23,11 +23,6 @@ export async function PUT(req) {
         return NextResponse.json({ message: "Restaurant not found" }, { status: 404 });
     }
 
-    // 2. Check Plan (Pro Only)
-    if (restaurant.plan !== 'pro') {
-        return NextResponse.json({ message: "Branding customization is a Pro feature. Please upgrade." }, { status: 403 });
-    }
-
     const body = await req.json();
     
     // 3. Validate Input
