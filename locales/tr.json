@@ -18,7 +18,7 @@
     "platform": "Platform",
     "company": "Şirket",
     "contact": "İletişim",
-    "rights": "© 2024 SmartMenu. Vizyonerler için tasarlandı.",
+    "rights": "© 2024 Davoriq. Vizyonerler için tasarlandı.",
     "privacy": "Gizlilik Politikası",
     "security": "Güvenlik",
     "links": {
@@ -44,7 +44,7 @@
     },
     "workflow": {
       "tag": "Basit İş Akışı",
-      "title_1": "SmartMenu Sizin İçin",
+      "title_1": "Davoriq Sizin İçin",
       "title_2": "Nasıl Çalışır",
       "steps": [
         {
@@ -85,7 +85,7 @@
       "tag": "Akıllı Otomasyon",
       "title_1": "Otomatik Mevsimsel",
       "title_2": "Temalar ve Fiyatlandırma",
-      "desc": "SmartMenu temalarınızı mevsime göre otomatik değiştirir.",
+      "desc": "Davoriq temalarınızı mevsime göre otomatik değiştirir.",
       "features": [
         "12 aylık ön ayar",
         "Otomatik renk geçişleri",

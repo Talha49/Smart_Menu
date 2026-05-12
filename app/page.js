@@ -97,11 +97,11 @@ export default function Home({ user }) {
       <section className="py-24 px-4 bg-zinc-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">{t('home.workflow.tag')}</h2>
-            <h3 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase text-zinc-900 leading-none">
+            <span className="block text-[11px] font-black uppercase tracking-[0.4em] text-primary" role="doc-subtitle">{t('home.workflow.tag')}</span>
+            <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase text-zinc-900 leading-none">
               {t('home.workflow.title_1')} <br />
               <span className="text-zinc-400">{t('home.workflow.title_2')}</span>
-            </h3>
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -202,11 +202,11 @@ export default function Home({ user }) {
         
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
           <div className="space-y-8">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-primary">{t('home.automation.tag')}</h2>
-            <h3 className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase text-white leading-[0.9]">
+            <span className="block text-[11px] font-black uppercase tracking-[0.4em] text-primary" role="doc-subtitle">{t('home.automation.tag')}</span>
+            <h2 className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase text-white leading-[0.9]">
               {t('home.automation.title_1')} <br />
               <span className="text-white/20">{t('home.automation.title_2')}</span>
-            </h3>
+            </h2>
             <p className="text-lg text-white/50 font-medium leading-relaxed">
               {t('home.automation.desc')}
             </p>
@@ -228,7 +228,7 @@ export default function Home({ user }) {
             >
               <img 
                 src="/seasonal-showcase.png" 
-                alt="Seasonal Engine Showcase" 
+                alt="Davoriq Digital QR Menu Software Interface Showcase" 
                 className="w-full h-full object-cover"
               />
             </motion.div>

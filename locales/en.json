@@ -18,7 +18,7 @@
     "platform": "Platform",
     "company": "Company",
     "contact": "Contact",
-    "rights": "© 2024 SmartMenu Intelligence. Built for Visionaries.",
+    "rights": "© 2024 Davoriq Intelligence. Built for Visionaries.",
     "privacy": "Privacy Policy",
     "security": "Security",
     "links": {
@@ -35,16 +35,16 @@
   },
   "home": {
     "hero": {
-      "badge": "v2.0 Intelligence Platform Live",
-      "title_1": "The Smarter Way to",
-      "title_2": "Run Your Menu",
-      "subtitle": "Create stunning digital menus that increase sales and save you time. From real-time price updates to AI-driven popularity tracking, SmartMenu is the ultimate tool for modern restaurants.",
-      "cta_primary": "Build Your Experience",
-      "cta_secondary": "Watch Showreel"
+      "badge": "Enterprise Digital Menu Platform Live",
+      "title_1": "The Best Digital",
+      "title_2": "QR Menu Maker",
+      "subtitle": "Davoriq is the ultimate digital QR menu software for restaurants. Create stunning contactless menus that increase sales, streamline dine-in ordering, and elevate your customer experience.",
+      "cta_primary": "Start Free Trial",
+      "cta_secondary": "See How It Works"
     },
     "workflow": {
       "tag": "Simple Workflow",
-      "title_1": "How SmartMenu",
+      "title_1": "How Davoriq",
       "title_2": "works for you",
       "steps": [
         {
@@ -85,7 +85,7 @@
       "tag": "Intelligent Automation",
       "title_1": "Automatic Seasonal",
       "title_2": "Themes & Pricing",
-      "desc": "Stop worrying about updating your menu for every holiday. SmartMenu automatically changes your themes and atmosphere effects to match the season, and optimizes your prices for Happy Hour.",
+      "desc": "Stop worrying about updating your menu for every holiday. Davoriq automatically changes your themes and atmosphere effects to match the season, and optimizes your prices for Happy Hour.",
       "features": [
         "12 Pre-configured Monthly Overlays",
         "Automated Lighting & Color Transitions",

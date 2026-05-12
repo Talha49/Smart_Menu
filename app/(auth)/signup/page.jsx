@@ -89,7 +89,7 @@ export default function SignupPage() {
             <div className="max-w-md w-full animate-fade-in">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold font-display bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block mb-2">
-                        SmartMenu
+                        Davoriq
                     </h1>
                     <p className="text-muted-foreground">Start your 14-day free trial</p>
                 </div>
@@ -98,7 +98,7 @@ export default function SignupPage() {
                     <CardHeader className="space-y-1">
                         <CardTitle className="text-2xl">Create an account</CardTitle>
                         <CardDescription>
-                            Join thousands of restaurants growing with SmartMenu
+                            Join thousands of restaurants growing with Davoriq
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>

@@ -20,7 +20,7 @@ export function Footer() {
                             <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-zinc-900 shadow-xl">
                                 <Sparkles className="w-5 h-5" />
                             </div>
-                            <span className="text-xl font-black italic tracking-tighter uppercase text-white">SmartMenu</span>
+                            <span className="text-xl font-black italic tracking-tighter uppercase text-white">Davoriq</span>
                         </Link>
                         <p className="text-sm text-white/50 font-medium leading-relaxed max-w-xs">
                             {t('footer.description')}

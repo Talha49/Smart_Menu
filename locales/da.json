@@ -18,7 +18,7 @@
     "platform": "Platform",
     "company": "Virksomhed",
     "contact": "Kontakt",
-    "rights": "© 2024 SmartMenu. Bygget til visionære.",
+    "rights": "© 2024 Davoriq. Bygget til visionære.",
     "privacy": "Privatlivspolitik",
     "security": "Sikkerhed",
     "links": {
@@ -44,7 +44,7 @@
     },
     "workflow": {
       "tag": "Simpel arbejdsgang",
-      "title_1": "Hvordan SmartMenu",
+      "title_1": "Hvordan Davoriq",
       "title_2": "fungerer for dig",
       "steps": [
         {
@@ -85,7 +85,7 @@
       "tag": "Intelligent Automation",
       "title_1": "Automatisk Sæsonbaseret",
       "title_2": "Temaer & Priser",
-      "desc": "SmartMenu ændrer automatisk dine temaer for at matche sæsonen.",
+      "desc": "Davoriq ændrer automatisk dine temaer for at matche sæsonen.",
       "features": [
         "12 forudkonfigurerede månedlige overlays",
         "Automatiske farveovergange",

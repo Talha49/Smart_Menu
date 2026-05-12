@@ -160,7 +160,7 @@ export default function OnboardingPage() {
                 colors: [formData.brandColor, '#ffffff']
             });
 
-            toast.success("Welcome to SmartMenu!");
+            toast.success("Welcome to Davoriq!");
 
             // Refresh user state to get the new restaurantId
             await refresh();
