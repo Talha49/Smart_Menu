@@ -79,6 +79,10 @@ export const metadata = {
   verification: {
     google: "YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_ID", // TODO: Replace this with actual Google Console ID
   },
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {
