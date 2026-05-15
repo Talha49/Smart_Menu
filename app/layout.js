@@ -77,11 +77,7 @@ export const metadata = {
     },
   },
   verification: {
-    google: "YOUR_GOOGLE_SEARCH_CONSOLE_VERIFICATION_ID", // TODO: Replace this with actual Google Console ID
-  },
-  icons: {
-    icon: "/icon.png",
-    apple: "/apple-icon.png",
+    google: "google-site-verification=F7dWTD5auE9UbBI1vaiJfzIpZ9Fw0PhUL30enmTYfqM", // TODO: Replace this with actual Google Console ID
   },
 };
 
