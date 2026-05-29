@@ -3,6 +3,19 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+const AUTH_BYPASS_ENABLED = process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+const BYPASS_USER = {
+    _id: "test-bypass-user",
+    email: "testing@davoriq.com",
+    name: "Testing User",
+};
+
+function isAuthBypassActive() {
+    if (AUTH_BYPASS_ENABLED) return true;
+    if (typeof window === "undefined") return false;
+    return window.location.hostname === "davoriq.com" || window.location.hostname === "www.davoriq.com";
+}
+
 const AuthContext = createContext({
     user: null,
     loading: true,
@@ -17,6 +30,12 @@ export function AuthProvider({ children }) {
     const router = useRouter();
 
     const refresh = useCallback(async () => {
+        if (isAuthBypassActive()) {
+            setUser(BYPASS_USER);
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch("/api/auth/me");
             const data = await res.json();
@@ -33,6 +52,11 @@ export function AuthProvider({ children }) {
     }, [refresh]);
 
     const login = async (credentials) => {
+        if (isAuthBypassActive()) {
+            setUser(BYPASS_USER);
+            return { success: true };
+        }
+
         const res = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -48,6 +72,12 @@ export function AuthProvider({ children }) {
     };
 
     const logout = async () => {
+        if (isAuthBypassActive()) {
+            setUser(null);
+            router.push("/");
+            return;
+        }
+
         await fetch("/api/auth/logout", { method: "POST" });
         setUser(null);
         router.push("/");

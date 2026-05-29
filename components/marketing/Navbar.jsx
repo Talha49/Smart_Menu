@@ -7,11 +7,14 @@ import { Menu, X, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/store/useTranslation';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export function Navbar({ user }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { t } = useTranslation();
+    const { user: authUser } = useAuth();
+    const effectiveUser = user || authUser;
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -56,7 +59,7 @@ export function Navbar({ user }) {
                 {/* Actions */}
                 <div className="hidden md:flex items-center gap-4">
                     <LanguageSwitcher />
-                    {user ? (
+                    {effectiveUser ? (
                         <Link href="/dashboard">
                             <Button className="rounded-full px-8 text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20">
                                 {t('nav.dashboard')}
@@ -100,12 +103,20 @@ export function Navbar({ user }) {
                     ))}
                     <div className="flex flex-col gap-3 pt-4">
                         <LanguageSwitcher className="mx-auto mb-2" />
-                        <Link href="/login" className="w-full">
-                            <Button variant="outline" className="w-full rounded-2xl h-14 font-black uppercase">{t('nav.login')}</Button>
-                        </Link>
-                        <Link href="/signup" className="w-full">
-                            <Button className="w-full rounded-2xl h-14 font-black uppercase shadow-xl shadow-primary/20">{t('nav.signup')}</Button>
-                        </Link>
+                        {effectiveUser ? (
+                            <Link href="/dashboard" className="w-full">
+                                <Button className="w-full rounded-2xl h-14 font-black uppercase shadow-xl shadow-primary/20">{t('nav.dashboard')}</Button>
+                            </Link>
+                        ) : (
+                            <>
+                                <Link href="/login" className="w-full">
+                                    <Button variant="outline" className="w-full rounded-2xl h-14 font-black uppercase">{t('nav.login')}</Button>
+                                </Link>
+                                <Link href="/signup" className="w-full">
+                                    <Button className="w-full rounded-2xl h-14 font-black uppercase shadow-xl shadow-primary/20">{t('nav.signup')}</Button>
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

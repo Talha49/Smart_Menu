@@ -9,9 +9,13 @@ import { Features } from "@/components/marketing/Features";
 import { Pricing } from "@/components/marketing/Pricing";
 import { Footer } from "@/components/marketing/Footer";
 import { useTranslation } from "@/store/useTranslation";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function Home({ user }) {
   const { t } = useTranslation();
+  const { user: authUser } = useAuth();
+  const effectiveUser = user || authUser;
+  const primaryCtaHref = effectiveUser ? "/dashboard" : "/signup";
 
   return (
     <div className="min-h-screen bg-white selection:bg-primary selection:text-white overflow-x-hidden">
@@ -58,7 +62,7 @@ export default function Home({ user }) {
             transition={{ delay: 0.3 }}
             className="flex flex-wrap justify-center gap-4"
           >
-            <Link href="/signup">
+            <Link href={primaryCtaHref}>
               <Button size="lg" className="h-16 px-10 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/40 group">
                 {t('home.hero.cta_primary')} <ArrowRight className="ml-3 rtl:mr-3 rtl:ml-0 rtl:rotate-180 w-5 h-5 group-hover:translate-x-2 rtl:group-hover:-translate-x-2 transition-transform" />
               </Button>
@@ -277,7 +281,7 @@ export default function Home({ user }) {
                 {t('home.cta.subtitle')}
               </p>
               <div className="flex justify-center gap-4">
-                 <Link href="/signup">
+                 <Link href={primaryCtaHref}>
                    <Button size="lg" className="h-16 px-12 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/20">
                      {t('home.cta.btn')}
                    </Button>
