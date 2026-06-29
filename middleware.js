@@ -12,8 +12,19 @@ export async function middleware(req) {
   const isTestingHost = req.nextUrl.hostname === "davoriq.com" || req.nextUrl.hostname === "www.davoriq.com";
 
   if (isAuthBypassed || isTestingHost) {
+    if (!token) {
+      const redirectUrl = pathname.startsWith("/login") || pathname.startsWith("/signup") ? "/dashboard" : pathname;
+      const response = NextResponse.redirect(new URL(redirectUrl, req.url));
+      response.cookies.set("auth-token", "mock-bypass-token", {
+        path: "/",
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      });
+      return response;
+    }
+
     if (pathname.startsWith("/login") || pathname.startsWith("/signup")) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
     return NextResponse.next();
   }

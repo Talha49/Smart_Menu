@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 const AUTH_BYPASS_ENABLED = process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
 const BYPASS_USER = {
     _id: "test-bypass-user",
-    email: "testing@davoriq.com",
+    email: "Testing@gmail.com",
     name: "Testing User",
 };
 
@@ -30,18 +30,29 @@ export function AuthProvider({ children }) {
     const router = useRouter();
 
     const refresh = useCallback(async () => {
-        if (isAuthBypassActive()) {
-            setUser(BYPASS_USER);
-            setLoading(false);
-            return;
-        }
-
         try {
             const res = await fetch("/api/auth/me");
             const data = await res.json();
-            setUser(data.user);
+            
+            if (data.user) {
+                setUser(data.user);
+            } else if (isAuthBypassActive()) {
+                setUser({
+                    ...BYPASS_USER,
+                    restaurantId: "testing-restaurant"
+                });
+            } else {
+                setUser(null);
+            }
         } catch (error) {
-            setUser(null);
+            if (isAuthBypassActive()) {
+                setUser({
+                    ...BYPASS_USER,
+                    restaurantId: "testing-restaurant"
+                });
+            } else {
+                setUser(null);
+            }
         } finally {
             setLoading(false);
         }
