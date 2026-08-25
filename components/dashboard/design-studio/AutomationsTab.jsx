@@ -8,8 +8,9 @@
 
 import { Calendar, Bot, Zap, Clock } from 'lucide-react';
 import { SeasonalManager } from '../theme-studio/SeasonalManager';
+import { ResponsiveGrid } from '@/components/ui/ResponsiveGrid';
 
-export function AutomationsTab({ config, onChange }) {
+export function AutomationsTab({ config, contentWidth = 600, onChange }) {
     const handleSeasonalChange = (partialUpdate) => {
         onChange({
             ...config,
@@ -48,7 +49,7 @@ export function AutomationsTab({ config, onChange }) {
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Intelligence (BETA)</label>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ResponsiveGrid width={contentWidth} cols={{ base: 1, 448: 2 }} className="gap-4">
                     {/* Heatmap Optimization */}
                     <div className={cn(
                         "p-8 rounded-[2rem] flex flex-col justify-between relative overflow-hidden transition-all duration-500",
@@ -188,7 +189,7 @@ export function AutomationsTab({ config, onChange }) {
                             )}
                         </div>
                     </div>
-                </div>
+                </ResponsiveGrid>
 
                 {/* Pricing Editor Overlay */}
                 {config?.intelligence?.dynamicPricing?.enabled && (

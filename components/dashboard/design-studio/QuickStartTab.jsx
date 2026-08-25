@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { Sparkles, Check, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DESIGN_PRESETS, getCategories } from './presets';
+import { ResponsiveGrid } from '@/components/ui/ResponsiveGrid';
 
-export function QuickStartTab({ onApplyPreset, onReset, currentPresetId }) {
+export function QuickStartTab({ onApplyPreset, onReset, currentPresetId, contentWidth = 600 }) {
     const categories = ['All', ...getCategories()];
     const [activeCategory, setActiveCategory] = useState('All');
 
@@ -44,7 +45,7 @@ export function QuickStartTab({ onApplyPreset, onReset, currentPresetId }) {
             </div>
 
             {/* Presets Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ResponsiveGrid width={contentWidth} cols={{ base: 1, 448: 2, 672: 3 }} className="gap-6">
                 {/* Reset Action Card */}
                 <button
                     onClick={() => {
@@ -107,7 +108,7 @@ export function QuickStartTab({ onApplyPreset, onReset, currentPresetId }) {
                         )}
                     </button>
                 ))}
-            </div>
+            </ResponsiveGrid>
         </div>
     );
 }

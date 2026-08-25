@@ -9,6 +9,8 @@
  * @author Davoriq Design Team
  */
 
+import { deepMerge } from '@/lib/object-utils';
+
 /**
  * Complete default configuration object
  * Used as fallback when preset data is incomplete or during initial setup
@@ -140,38 +142,19 @@ export const DEFAULT_CONFIG = {
 /**
  * Deep merge utility for combining preset config with defaults
  * Ensures no undefined values in the final configuration
- * 
+ *
+ * Delegates to the one canonical deep-merge implementation (lib/object-utils.js)
+ * instead of hand-rolling another one here - this used to be a separate,
+ * subtly different merge from the one used server-side, which was exactly the
+ * kind of inconsistency that caused config fields to survive resets/removals
+ * incorrectly.
+ *
  * @param {Object} target - Target object (defaults)
  * @param {Object} source - Source object (preset config)
  * @returns {Object} Deeply merged configuration
  */
 export function deepMergeConfig(target, source) {
-    const output = { ...target };
-    
-    if (isObject(target) && isObject(source)) {
-        Object.keys(source).forEach(key => {
-            if (isObject(source[key])) {
-                if (!(key in target)) {
-                    Object.assign(output, { [key]: source[key] });
-                } else {
-                    output[key] = deepMergeConfig(target[key], source[key]);
-                }
-            } else {
-                Object.assign(output, { [key]: source[key] });
-            }
-        });
-    }
-    
-    return output;
-}
-
-/**
- * Check if value is a plain object
- * @param {*} item - Value to check
- * @returns {boolean}
- */
-function isObject(item) {
-    return item && typeof item === 'object' && !Array.isArray(item);
+    return deepMerge(target, source);
 }
 
 /**

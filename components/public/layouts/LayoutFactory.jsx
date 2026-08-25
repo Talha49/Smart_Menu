@@ -6,7 +6,7 @@ import { LiquidCarousel } from "./LiquidCarousel";
 import { MasonryLayout } from "./MasonryLayout";
 import { ListLayout } from "./ListLayout";
 import { BentoMagazine } from "./BentoMagazine";
-import { PerspectiveDeck } from "./PerspectiveDeck";
+import { SignatureShowcase } from "./SignatureShowcase";
 
 export function LayoutFactory({ layoutID, ...props }) {
     // If layoutID is not provided or explicitly classic, show the grid
@@ -17,11 +17,12 @@ export function LayoutFactory({ layoutID, ...props }) {
     // Dynamic layout selection based on layoutID
     switch (layoutID) {
         case "classic-grid":
+        case "grid":
             return <ClassicGrid {...props} />;
         case "orbital-wheel":
             return <OrbitalWheel {...props} />;
-        case "perspective-deck":
-            return <PerspectiveDeck {...props} />;
+        case "signature-showcase":
+            return <SignatureShowcase {...props} />;
         case "bento-magazine":
             return <BentoMagazine {...props} />;
         case "liquid-carousel":

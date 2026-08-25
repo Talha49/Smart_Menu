@@ -1,13 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
+import { useCategoryStore } from "@/hooks/use-category-store";
+import { useMenuStore } from "@/hooks/use-menu-store";
+import { useAnalyticsStore } from "@/hooks/use-analytics-store";
 import { motion } from "framer-motion";
-import { 
-    Utensils, 
-    QrCode, 
-    Eye, 
-    TrendingUp, 
-    MousePointer2, 
+import {
+    Utensils,
+    QrCode,
     Layers,
     Sparkles,
     LayoutDashboard,
@@ -18,10 +19,20 @@ import { MetricCard } from "@/components/dashboard/overview/MetricCard";
 import { SuccessRoadmap } from "@/components/dashboard/overview/SuccessRoadmap";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/store/useTranslation";
+import toast from "react-hot-toast";
 
 export default function DashboardPage() {
     const { restaurant, isLoading } = useRestaurantStore();
+    const { categories, fetchCategories } = useCategoryStore();
+    const { items: menuItems, fetchItems } = useMenuStore();
+    const { summary, fetchSummary } = useAnalyticsStore();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        fetchCategories();
+        fetchItems();
+        fetchSummary();
+    }, [fetchCategories, fetchItems, fetchSummary]);
 
     if (isLoading) {
         return (
@@ -34,13 +45,17 @@ export default function DashboardPage() {
         );
     }
 
-    // REAL DATA CALCULATIONS
-    const categories = restaurant?.menu?.categories || [];
-    const totalItems = categories.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
+    // REAL DATA - from the actual category/item stores (the same ones
+    // /dashboard/menu uses), not a `restaurant.menu` field that doesn't
+    // exist on the Restaurant model and was silently always empty.
+    const totalItems = menuItems.length;
     const totalCategories = categories.length;
     const hasVisuals = !!restaurant?.experienceConfig?.designSystem?.config;
     const hasLogo = !!restaurant?.logoUrl;
-    
+
+    const totalVisits = summary ? summary.totalViews + summary.totalScans : null;
+    const visitSparkline = summary?.last7Days?.map((d) => d.count) || null;
+
     // Calculate Completeness %
     const completionScore = [
         totalCategories > 0,
@@ -96,19 +111,26 @@ export default function DashboardPage() {
                     icon={Sparkles}
                     color="orange"
                 />
-                <MetricCard 
-                    title={t('dashboard.overview.metrics.scans')} 
-                    value="--" 
-                    unit={t('dashboard.overview.metrics.pending')}
+                <MetricCard
+                    title="Menu Visits"
+                    value={totalVisits ?? "—"}
+                    unit={summary ? `${summary.todayCount} today` : "Loading..."}
                     icon={QrCode}
                     color="emerald"
+                    sparkline={visitSparkline}
                 />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* Main Content Area */}
                 <div className="lg:col-span-2 space-y-10">
-                    <SuccessRoadmap progress={completionScore} restaurant={restaurant} />
+                    <SuccessRoadmap
+                        restaurant={restaurant}
+                        totalCategories={totalCategories}
+                        totalItems={totalItems}
+                        totalScans={summary?.totalScans || 0}
+                        totalVisits={totalVisits || 0}
+                    />
                 </div>
 
                 {/* Sidebar Side-panel */}
@@ -166,7 +188,15 @@ export default function DashboardPage() {
                             <div className="relative z-10">
                                 <h4 className="text-xl font-black italic tracking-tighter uppercase mb-2">{t('dashboard.overview.pro.title')}</h4>
                                 <p className="text-sm text-white/70 font-medium mb-6">{t('dashboard.overview.pro.desc')}</p>
-                                <button className="w-full bg-white text-primary text-[10px] font-black uppercase tracking-widest py-4 px-6 rounded-2xl shadow-lg">
+                                <button
+                                    onClick={() => {
+                                        const subject = encodeURIComponent("Davoriq Pro - early access");
+                                        const body = encodeURIComponent(`Hi,\n\nI'd like to upgrade "${restaurant?.name || 'my restaurant'}" (${restaurant?.restaurantId || ''}) to Pro.\n\nThanks!`);
+                                        window.location.href = `mailto:hello@davoriq.com?subject=${subject}&body=${body}`;
+                                        toast.success("Opening your email client...");
+                                    }}
+                                    className="w-full bg-white text-primary text-[10px] font-black uppercase tracking-widest py-4 px-6 rounded-2xl shadow-lg hover:opacity-90 transition-opacity"
+                                >
                                     {t('dashboard.overview.pro.btn')}
                                 </button>
                             </div>

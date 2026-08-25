@@ -39,17 +39,17 @@ export function DashboardHero({ restaurantName, restaurantId }) {
                         <span className="text-primary">{restaurantName}</span>
                     </motion.h1>
 
-                    <motion.p 
+                    <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                         className="text-lg text-white/50 font-medium max-w-md leading-relaxed"
                     >
-                        Your digital dining experience is performing at its peak. Your latest menu update is live and optimized by AI.
+                        Manage your menu, customize your brand, and share your digital experience with customers.
                     </motion.p>
 
                     <div className="flex flex-wrap gap-4 pt-4">
-                        <Link href={`/${restaurantId}`} target="_blank">
+                        <Link href={`/menu/${restaurantId}`} target="_blank">
                             <button className="flex items-center gap-3 bg-white text-zinc-900 text-[10px] font-black uppercase tracking-widest py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl">
                                 <ExternalLink className="w-4 h-4" />
                                 Launch Live Menu

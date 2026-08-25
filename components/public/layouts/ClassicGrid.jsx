@@ -33,10 +33,15 @@ export function ClassicGrid({ isTVMode, groupedItems, setSelectedItem }) {
                 <div key={group._id} id={`category-${group.name}`} className="scroll-mt-32">
                     <div className="flex items-center gap-4 mb-8 md:mb-16">
                         <h2 className={cn(
-                            "font-black tracking-tighter uppercase italic",
-                            isTVMode ? "text-4xl md:text-8xl text-white" : "text-3xl md:text-5xl text-zinc-900"
+                            "font-black uppercase italic",
+                            isTVMode ? "text-4xl md:text-8xl text-white" : "text-zinc-900"
                         )}
-                            style={{ color: !isTVMode ? theme.config?.colors?.text?.primary : undefined }}
+                            style={{
+                                color: !isTVMode ? theme.config?.colors?.text?.primary : undefined,
+                                fontSize: isTVMode ? undefined : 'var(--text-category-title, 40px)',
+                                lineHeight: 'var(--line-height-tight)',
+                                letterSpacing: 'var(--letter-spacing-tight)'
+                            }}
                         >
                             {group.name}
                         </h2>

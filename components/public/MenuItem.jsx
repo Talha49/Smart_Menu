@@ -68,9 +68,9 @@ export function HorizontalCard({ item, theme, onClick }) {
                 opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{
-                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
-                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0,
-                boxShadow: (tConfig?.animations?.interactions?.hover === 'glow' || tConfig?.menuItem?.card?.hoverEffect === 'glow')
+                scale: tConfig?.menuItem?.card?.hoverEffect === 'scale' ? 1.02 : 1,
+                y: tConfig?.menuItem?.card?.hoverEffect === 'lift' ? -4 : 0,
+                boxShadow: tConfig?.menuItem?.card?.hoverEffect === 'glow'
                     ? `0 8px 20px ${tConfig?.colors?.brand?.primary}40`
                     : cardShadow
             }}
@@ -91,7 +91,7 @@ export function HorizontalCard({ item, theme, onClick }) {
                         alt={item.name}
                         className={cn(
                             "w-full h-full transition-all duration-500",
-                            tConfig?.menuItem?.image?.objectFit || 'object-cover',
+                            `object-${tConfig?.menuItem?.image?.objectFit || 'cover'}`,
                             imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                             "group-hover:scale-110"
                         )}
@@ -110,7 +110,9 @@ export function HorizontalCard({ item, theme, onClick }) {
                             fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 18}px)`,
                             color: tConfig?.colors?.text?.primary,
                             fontFamily: 'var(--font-heading)',
-                            fontWeight: 'var(--font-heading-weight)'
+                            fontWeight: 'var(--font-heading-weight)',
+                            lineHeight: 'var(--line-height-tight)',
+                            letterSpacing: 'var(--letter-spacing-tight)'
                         }}
                     >
                         {item.name}
@@ -129,7 +131,9 @@ export function HorizontalCard({ item, theme, onClick }) {
                         style={{
                             fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 14}px)`,
                             color: tConfig?.colors?.text?.secondary,
-                            fontFamily: 'var(--font-body)'
+                            fontFamily: 'var(--font-body)',
+                            lineHeight: 'var(--line-height-relaxed)',
+                            letterSpacing: 'var(--letter-spacing-normal)'
                         }}
                     >
                         {item.description}
@@ -185,9 +189,9 @@ export function VerticalCard({ item, theme, onClick }) {
                 opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{
-                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.03 : 1,
-                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -6 : 0,
-                boxShadow: (tConfig?.animations?.interactions?.hover === 'glow' || tConfig?.menuItem?.card?.hoverEffect === 'glow')
+                scale: tConfig?.menuItem?.card?.hoverEffect === 'scale' ? 1.03 : 1,
+                y: tConfig?.menuItem?.card?.hoverEffect === 'lift' ? -6 : 0,
+                boxShadow: tConfig?.menuItem?.card?.hoverEffect === 'glow'
                     ? `0 8px 20px ${tConfig?.colors?.brand?.primary}40`
                     : cardShadow
             }}
@@ -195,13 +199,16 @@ export function VerticalCard({ item, theme, onClick }) {
         >
             {/* Image */}
             {imageEnabled && (
-                <div className="aspect-[4/3] overflow-hidden">
+                <div
+                    className="overflow-hidden"
+                    style={{ aspectRatio: tConfig?.menuItem?.image?.aspectRatio || '4/3' }}
+                >
                     <img
                         src={item.imageUrl}
                         alt={item.name}
                         className={cn(
                             "w-full h-full transition-all duration-500",
-                            tConfig?.menuItem?.image?.objectFit || 'object-cover',
+                            `object-${tConfig?.menuItem?.image?.objectFit || 'cover'}`,
                             imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                             "group-hover:scale-105"
                         )}
@@ -212,14 +219,16 @@ export function VerticalCard({ item, theme, onClick }) {
             )}
 
             {/* Content */}
-            <div className="p-5">
+            <div style={{ padding: `${tConfig?.menuItem?.card?.padding ?? 20}px` }}>
                 <h3
                     className="font-bold line-clamp-2 mb-2"
                     style={{
                         fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 20}px)`,
                         color: tConfig?.colors?.text?.primary,
                         fontFamily: 'var(--font-heading)',
-                        fontWeight: 'var(--font-heading-weight)'
+                        fontWeight: 'var(--font-heading-weight)',
+                        lineHeight: 'var(--line-height-tight)',
+                        letterSpacing: 'var(--letter-spacing-tight)'
                     }}
                 >
                     {item.name}
@@ -231,7 +240,9 @@ export function VerticalCard({ item, theme, onClick }) {
                         style={{
                             fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 14}px)`,
                             color: tConfig?.colors?.text?.secondary,
-                            fontFamily: 'var(--font-body)'
+                            fontFamily: 'var(--font-body)',
+                            lineHeight: 'var(--line-height-relaxed)',
+                            letterSpacing: 'var(--letter-spacing-normal)'
                         }}
                     >
                         {item.description}
@@ -281,12 +292,12 @@ export function OverlayCard({ item, theme, onClick }) {
             style={{
                 borderRadius: `var(--theme-radius, ${cardRadius}px)`,
                 boxShadow: `var(--theme-shadow, ${cardShadow})`,
-                aspectRatio: '4/3',
+                aspectRatio: tConfig?.menuItem?.image?.aspectRatio || '4/3',
                 minHeight: '250px'
             }}
-            whileHover={{ 
-                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1,
-                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -4 : 0
+            whileHover={{
+                scale: tConfig?.menuItem?.card?.hoverEffect === 'scale' ? 1.02 : 1,
+                y: tConfig?.menuItem?.card?.hoverEffect === 'lift' ? -4 : 0
             }}
             whileTap={{ scale: 0.98 }}
         >
@@ -297,7 +308,7 @@ export function OverlayCard({ item, theme, onClick }) {
                     alt={item.name}
                     className={cn(
                         "absolute inset-0 w-full h-full transition-all duration-700",
-                        tConfig?.menuItem?.image?.objectFit || 'object-cover',
+                        `object-${tConfig?.menuItem?.image?.objectFit || 'cover'}`,
                         imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                         "group-hover:scale-110"
                     )}
@@ -315,13 +326,18 @@ export function OverlayCard({ item, theme, onClick }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
             {/* Content */}
-            <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
+            <div
+                className="absolute inset-0 flex flex-col justify-end text-white"
+                style={{ padding: `${tConfig?.menuItem?.card?.padding ?? 24}px` }}
+            >
                 <h3
                     className="font-bold line-clamp-2 mb-2"
                     style={{
                         fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 22}px)`,
                         fontFamily: 'var(--font-heading)',
-                        fontWeight: 'var(--font-heading-weight)'
+                        fontWeight: 'var(--font-heading-weight)',
+                        lineHeight: 'var(--line-height-tight)',
+                        letterSpacing: 'var(--letter-spacing-tight)'
                     }}
                 >
                     {item.name}
@@ -332,7 +348,9 @@ export function OverlayCard({ item, theme, onClick }) {
                         className="line-clamp-2 mb-3 text-white/90"
                         style={{
                             fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 14}px)`,
-                            fontFamily: 'var(--font-body)'
+                            fontFamily: 'var(--font-body)',
+                            lineHeight: 'var(--line-height-relaxed)',
+                            letterSpacing: 'var(--letter-spacing-normal)'
                         }}
                     >
                         {item.description}
@@ -382,7 +400,9 @@ export function MinimalCard({ item, theme, onClick }) {
                             fontSize: `var(--text-item-name, ${tConfig?.typography?.sizes?.itemName || 16}px)`,
                             color: tConfig?.colors?.text?.primary,
                             fontFamily: 'var(--font-heading)',
-                            fontWeight: 'var(--font-heading-weight)'
+                            fontWeight: 'var(--font-heading-weight)',
+                            lineHeight: 'var(--line-height-tight)',
+                            letterSpacing: 'var(--letter-spacing-tight)'
                         }}
                     >
                         {item.name}
@@ -394,7 +414,9 @@ export function MinimalCard({ item, theme, onClick }) {
                             style={{
                                 fontSize: `var(--text-item-desc, ${tConfig?.typography?.sizes?.itemDescription || 13}px)`,
                                 color: tConfig?.colors?.text?.secondary,
-                                fontFamily: 'var(--font-body)'
+                                fontFamily: 'var(--font-body)',
+                                lineHeight: 'var(--line-height-relaxed)',
+                                letterSpacing: 'var(--letter-spacing-normal)'
                             }}
                         >
                             {item.description}
@@ -450,8 +472,8 @@ export function MagazineCard({ item, theme, onClick }) {
                 opacity: `var(--theme-glass-opacity, 1)`
             }}
             whileHover={{ 
-                y: (tConfig?.animations?.interactions?.hover === 'lift' || tConfig?.menuItem?.card?.hoverEffect === 'lift') ? -8 : 0,
-                scale: (tConfig?.animations?.interactions?.hover === 'scale' || tConfig?.menuItem?.card?.hoverEffect === 'scale') ? 1.02 : 1
+                y: tConfig?.menuItem?.card?.hoverEffect === 'lift' ? -8 : 0,
+                scale: tConfig?.menuItem?.card?.hoverEffect === 'scale' ? 1.02 : 1
             }}
             whileTap={{ scale: 0.98 }}
         >
@@ -469,7 +491,8 @@ export function MagazineCard({ item, theme, onClick }) {
                     src={item.imageUrl}
                     alt={item.name}
                     className={cn(
-                        "w-full h-full object-cover transition-all duration-1000",
+                        "w-full h-full transition-all duration-1000",
+                        `object-${tConfig?.menuItem?.image?.objectFit || 'cover'}`,
                         imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110",
                         "group-hover:scale-110"
                     )}
@@ -492,23 +515,27 @@ export function MagazineCard({ item, theme, onClick }) {
             </div>
 
             {/* Editorial Content */}
-            <div className="p-8 space-y-3">
+            <div className="space-y-3" style={{ padding: `${tConfig?.menuItem?.card?.padding ?? 32}px` }}>
                 <h3
-                    className="font-black italic tracking-tighter uppercase leading-none"
+                    className="font-black italic uppercase"
                     style={{
                         fontSize: `var(--text-item-name, 32px)`,
                         color: tConfig?.colors?.text?.primary,
                         fontFamily: 'var(--font-heading)',
-                        fontWeight: 'var(--font-heading-weight)'
+                        fontWeight: 'var(--font-heading-weight)',
+                        lineHeight: 'var(--line-height-tight)',
+                        letterSpacing: 'var(--letter-spacing-tight)'
                     }}
                 >
                     {item.name}
                 </h3>
                 <p
-                    className="line-clamp-2 text-zinc-500 font-medium leading-relaxed"
+                    className="line-clamp-2 text-zinc-500 font-medium"
                     style={{
                         fontSize: `var(--text-item-desc, 14px)`,
-                        fontFamily: 'var(--font-body)'
+                        fontFamily: 'var(--font-body)',
+                        lineHeight: 'var(--line-height-relaxed)',
+                        letterSpacing: 'var(--letter-spacing-normal)'
                     }}
                 >
                     {item.description}

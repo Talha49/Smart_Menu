@@ -32,11 +32,11 @@ describe('LayoutTab', () => {
     test('shows all layout modes including new ones', () => {
         render(<LayoutTab config={baseConfig} onChange={mockOnChange} />);
 
-        expect(screen.getByText('Classic Grid')).toBeInTheDocument();
+        expect(screen.getByText('Standard / None')).toBeInTheDocument();
         expect(screen.getByText('Minimal List')).toBeInTheDocument();
         expect(screen.getByText('Luxury Masonry')).toBeInTheDocument();
         expect(screen.getByText('Orbital Wheel')).toBeInTheDocument();
-        expect(screen.getByText('3D Perspective Deck')).toBeInTheDocument();
+        expect(screen.getByText('Signature Showcase')).toBeInTheDocument();
         expect(screen.getByText('Editorial Bento')).toBeInTheDocument();
     });
 
@@ -50,13 +50,13 @@ describe('LayoutTab', () => {
         expect(newConfig.layoutID).toBe('list');
     });
 
-    test('clicking 3D Perspective Deck sets layoutID to "perspective-deck"', () => {
+    test('clicking Signature Showcase sets layoutID to "signature-showcase"', () => {
         render(<LayoutTab config={baseConfig} onChange={mockOnChange} />);
 
-        fireEvent.click(screen.getByText('3D Perspective Deck'));
+        fireEvent.click(screen.getByText('Signature Showcase'));
 
         const newConfig = mockOnChange.mock.calls[0][0];
-        expect(newConfig.layoutID).toBe('perspective-deck');
+        expect(newConfig.layoutID).toBe('signature-showcase');
     });
 
     test('switching to Item Surface tab shows CardDesigner', () => {

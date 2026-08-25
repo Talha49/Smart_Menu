@@ -9,6 +9,7 @@
 import { cn } from "@/lib/utils";
 import { Sparkles, MousePointer2, Wind, Zap } from "lucide-react";
 import { Slider } from "@/components/ui/Slider";
+import { ResponsiveGrid } from "@/components/ui/ResponsiveGrid";
 
 const ENTRANCE_OPTIONS = [
     { id: 'stagger', name: 'Cascading Flow', desc: 'Items slide up one by one', icon: '🌊' },
@@ -32,11 +33,16 @@ const ATMOSPHERE_OPTIONS = [
     { id: 'rain', name: 'Rainfall', desc: 'Subtle vertical lines', icon: '🌧️' }
 ];
 
-export function MotionTab({ config, onChange }) {
+export function MotionTab({ config, contentWidth = 600, onChange }) {
     const animations = config?.animations || {};
     const entranceType = animations?.itemEntrance?.type || 'stagger';
-    const hoverType = animations?.interactions?.hover || 'lift';
-    
+    // Single source of truth for hover effect is menuItem.card.hoverEffect -
+    // this used to also be writable/readable via animations.interactions.hover,
+    // a second control (in Item Surface's now-removed Effects tab) writing a
+    // second field for the exact same behavior. Whichever one you touched
+    // last silently won, which read as "the hover effect setting doesn't work."
+    const hoverType = config?.menuItem?.card?.hoverEffect || 'lift';
+
     // Atmosphere is often stored in effects.atmosphere
     const effects = config?.effects || { atmosphere: { active: 'none', intensity: 0 } };
     const atmosphere = effects.atmosphere || { active: 'none', intensity: 0 };
@@ -51,9 +57,9 @@ export function MotionTab({ config, onChange }) {
 
     const setHover = (type) => onChange({
         ...config,
-        animations: {
-            ...(animations),
-            interactions: { hover: type, tap: 'shrink' }
+        menuItem: {
+            ...(config?.menuItem),
+            card: { ...(config?.menuItem?.card), hoverEffect: type }
         }
     });
 
@@ -87,7 +93,7 @@ export function MotionTab({ config, onChange }) {
                     <Zap className="w-4 h-4 text-zinc-400" />
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Page Entrance</label>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ResponsiveGrid width={contentWidth} cols={{ base: 1, 384: 2 }} className="gap-4">
                     {ENTRANCE_OPTIONS.map((opt) => (
                         <button
                             key={opt.id}
@@ -106,7 +112,7 @@ export function MotionTab({ config, onChange }) {
                             </div>
                         </button>
                     ))}
-                </div>
+                </ResponsiveGrid>
             </section>
 
             {/* Interaction State */}
@@ -115,7 +121,7 @@ export function MotionTab({ config, onChange }) {
                     <MousePointer2 className="w-4 h-4 text-zinc-400" />
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Interaction Feedback</label>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <ResponsiveGrid width={contentWidth} cols={{ base: 2, 512: 4 }} className="gap-3">
                     {HOVER_OPTIONS.map((opt) => (
                         <button
                             key={opt.id}
@@ -133,7 +139,7 @@ export function MotionTab({ config, onChange }) {
                             </div>
                         </button>
                     ))}
-                </div>
+                </ResponsiveGrid>
             </section>
 
             {/* Environmental Atmosphere */}
@@ -142,8 +148,8 @@ export function MotionTab({ config, onChange }) {
                     <Wind className="w-4 h-4 text-zinc-400" />
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Atmosphere Engine</label>
                 </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+
+                <ResponsiveGrid width={contentWidth} cols={{ base: 2, 384: 3, 672: 5 }} className="gap-3">
                     {ATMOSPHERE_OPTIONS.map((opt) => (
                         <button
                             key={opt.id}
@@ -159,7 +165,7 @@ export function MotionTab({ config, onChange }) {
                             <p className="text-[10px] font-black uppercase text-center">{opt.name}</p>
                         </button>
                     ))}
-                </div>
+                </ResponsiveGrid>
 
                 {atmosphere.active !== 'none' && (
                     <div className="bg-zinc-50 p-8 rounded-[2rem] border-2 border-zinc-100 animate-in slide-in-from-top-2 duration-300">

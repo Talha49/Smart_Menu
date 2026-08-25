@@ -22,13 +22,20 @@ const GOOGLE_FONTS = [
 ];
 
 export function TypographyControls({ value, onChange }) {
-    // Ensure nested objects exist to prevent crashes
+    // Guard each nested field individually - `value.fonts` can exist but be
+    // missing `body`/`accent` (e.g. an older saved config), and spreading
+    // `...value` last used to silently reintroduce that incomplete object,
+    // which crashed FontSelector on `value.family` of undefined.
     const typography = {
-        fonts: value.fonts || { heading: {}, body: {}, accent: {} },
-        sizes: value.sizes || { categoryTitle: 32, itemName: 18, itemDescription: 14, price: 18 },
-        lineHeights: value.lineHeights || { tight: 1.2, normal: 1.5, relaxed: 1.8 },
-        letterSpacings: value.letterSpacings || { tight: '-0.02em', normal: '0em', wide: '0.05em' },
-        ...value
+        ...value,
+        fonts: {
+            heading: { family: 'Inter', weight: 700, ...value.fonts?.heading },
+            body: { family: 'Inter', weight: 400, ...value.fonts?.body },
+            accent: { family: 'Inter', weight: 600, ...value.fonts?.accent },
+        },
+        sizes: { categoryTitle: 32, itemName: 18, itemDescription: 14, price: 18, ...value.sizes },
+        lineHeights: { tight: 1.2, normal: 1.5, relaxed: 1.8, ...value.lineHeights },
+        letterSpacings: { tight: '-0.02em', normal: '0em', wide: '0.05em', ...value.letterSpacings },
     };
 
     return (

@@ -1,17 +1,24 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "fallback-secret-for-development-only"
-);
-const isAuthBypassed = process.env.BYPASS_AUTH === "true" || process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+if (!process.env.AUTH_SECRET) {
+  throw new Error("AUTH_SECRET environment variable is required");
+}
+const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
+
+// Bypass is a local-dev-only convenience (skip repeated logins while building
+// UI). It must never be reachable in a deployed build - this used to also
+// trigger for the literal production hostname, which meant the live app was
+// silently issuing sessions to anyone who hit it. `next build`/Vercel always
+// set NODE_ENV=production (for previews too), so this check can't leak out.
+const isAuthBypassed = process.env.NODE_ENV !== "production" &&
+  (process.env.BYPASS_AUTH === "true" || process.env.NEXT_PUBLIC_BYPASS_AUTH === "true");
 
 export async function middleware(req) {
   const token = req.cookies.get("auth-token")?.value;
   const { pathname } = req.nextUrl;
-  const isTestingHost = req.nextUrl.hostname === "davoriq.com" || req.nextUrl.hostname === "www.davoriq.com";
 
-  if (isAuthBypassed || isTestingHost) {
+  if (isAuthBypassed) {
     if (!token) {
       const redirectUrl = pathname.startsWith("/login") || pathname.startsWith("/signup") ? "/dashboard" : pathname;
       const response = NextResponse.redirect(new URL(redirectUrl, req.url));

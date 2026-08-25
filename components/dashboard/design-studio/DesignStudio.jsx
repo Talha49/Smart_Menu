@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRestaurantStore } from '@/hooks/use-restaurant-store';
+import { useElementWidth } from '@/hooks/use-element-width';
 import {
     Save,
     Loader2,
@@ -48,6 +49,14 @@ export function DesignStudio() {
     const [config, setConfig] = useState(null);
     const [appliedPresetId, setAppliedPresetId] = useState(null);
 
+    // Measured, not guessed from the viewport - see hooks/use-element-width.js
+    // for why (short version: this needs to know its OWN available width,
+    // e.g. whether the app sidebar just ate 256px of it, and the browser
+    // viewport has no idea that happened).
+    const [panelRef, panelWidth] = useElementWidth(900);
+    const isRailVertical = panelWidth >= 576;
+    const [contentRef, contentWidth] = useElementWidth(600);
+
     // Initial sync - merge with defaults so nothing is ever null
     useEffect(() => {
         if (restaurant && !config) {
@@ -89,33 +98,40 @@ export function DesignStudio() {
         }
     }, [config, appliedPresetId, setPreviewData]);
 
-    const handleSave = async () => {
+    // Accepts explicit overrides so callers (like Reset) can persist a value
+    // immediately without waiting on React state to catch up to setConfig().
+    const handleSave = async (configOverride, presetOverride, loadingMessage = 'Saving design...', successMessage = 'Design saved!') => {
+        const configToSave = configOverride || config;
+        const presetToSave = presetOverride !== undefined ? presetOverride : appliedPresetId;
+
         setIsSaving(true);
-        const loadingToast = toast.loading('Saving design...');
+        const loadingToast = toast.loading(loadingMessage);
         try {
             const payload = {
-                brandColor: config.colors?.brand?.primary,
-                fontFamily: config.typography?.fonts?.heading?.family,
-                logoUrl: config.logoUrl || undefined,
+                brandColor: configToSave.colors?.brand?.primary,
+                fontFamily: configToSave.typography?.fonts?.heading?.family,
+                logoUrl: configToSave.logoUrl || undefined,
                 experienceConfig: {
                     designSystem: {
-                        config,
-                        appliedPreset: appliedPresetId,
+                        config: configToSave,
+                        appliedPreset: presetToSave,
                         lastEdited: new Date().toISOString(),
                         version: '2.0',
                     },
-                    themeConfig: config,
-                    layoutID: config.layoutID || 'grid'
+                    themeConfig: configToSave,
+                    layoutID: configToSave.layoutID || 'grid'
                 }
             };
             const result = await updateBranding(payload);
             if (result.success) {
-                toast.success("Design saved!", { id: loadingToast });
+                toast.success(successMessage, { id: loadingToast });
             } else {
                 toast.error(`Error: ${result.error}`, { id: loadingToast });
             }
+            return result.success;
         } catch (error) {
             toast.error("Failed to save", { id: loadingToast });
+            return false;
         } finally {
             setIsSaving(false);
         }
@@ -127,16 +143,15 @@ export function DesignStudio() {
         setAppliedPresetId(null);
     };
 
-    const handleReset = () => {
-        console.log("Resetting Design Studio...");
-        try {
-            setConfig({ ...DEFAULT_CONFIG });
-            setAppliedPresetId(null);
-            toast.success("Design Studio reset to factory defaults");
-        } catch (err) {
-            console.error("Reset failed:", err);
-            toast.error("Reset failed");
-        }
+    const handleReset = async () => {
+        const freshConfig = { ...DEFAULT_CONFIG };
+        setConfig(freshConfig);
+        setAppliedPresetId(null);
+        // Reset reads as a final "clear everything" action, so it persists
+        // immediately rather than leaving a draft the user has to remember
+        // to Save separately - that gap was exactly why Reset used to look
+        // like it "did nothing" after leaving the page.
+        await handleSave(freshConfig, null, 'Resetting design...', 'Design Studio reset to factory defaults');
     };
 
     // Loading
@@ -150,34 +165,45 @@ export function DesignStudio() {
     }
 
     return (
-        <div className="h-full flex">
-            {/* Sidebar Nav */}
-            <nav className="w-[72px] shrink-0 border-r bg-zinc-50 flex flex-col items-center py-4 gap-1 overflow-y-auto">
-                {NAV_ITEMS.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            title={item.label}
-                            className={cn(
-                                "w-14 h-14 flex flex-col items-center justify-center gap-1 rounded-xl transition-all",
-                                isActive
-                                    ? "bg-white shadow-sm text-zinc-900 border border-zinc-200"
-                                    : "text-zinc-400 hover:text-zinc-600 hover:bg-white/60"
-                            )}
-                        >
-                            <Icon className="w-[18px] h-[18px]" />
-                            <span className="text-[9px] font-semibold leading-none">{item.label}</span>
-                        </button>
-                    );
-                })}
+        <div ref={panelRef} className={cn("h-full flex", isRailVertical ? "flex-row" : "flex-col")}>
+            {/* Nav - a horizontal strip when the panel is narrow, a vertical rail once there's real room */}
+            <nav className={cn(
+                "shrink-0 bg-zinc-50 flex",
+                isRailVertical ? "flex-col border-r w-[72px]" : "flex-row border-b"
+            )}>
+                <div className={cn(
+                    "flex-1 min-w-0 flex items-center gap-1 scrollbar-hide",
+                    isRailVertical ? "flex-col overflow-y-auto px-0 py-4" : "flex-row overflow-x-auto px-2 py-2"
+                )}>
+                    {NAV_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
+                                title={item.label}
+                                className={cn(
+                                    "shrink-0 w-14 h-14 flex flex-col items-center justify-center gap-1 rounded-xl transition-all",
+                                    isActive
+                                        ? "bg-white shadow-sm text-zinc-900 border border-zinc-200"
+                                        : "text-zinc-400 hover:text-zinc-600 hover:bg-white/60"
+                                )}
+                            >
+                                <Icon className="w-[18px] h-[18px]" />
+                                <span className="text-[9px] font-semibold leading-none">{item.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
 
-                {/* Save at bottom */}
-                <div className="mt-auto pt-4 border-t border-zinc-200 w-full flex justify-center">
+                {/* Save - pinned to the trailing edge of the strip (bottom when vertical, right when horizontal) */}
+                <div className={cn(
+                    "shrink-0 border-zinc-200 flex items-center justify-center",
+                    isRailVertical ? "border-t px-0 py-4" : "px-2"
+                )}>
                     <button
-                        onClick={handleSave}
+                        onClick={() => handleSave()}
                         disabled={isSaving}
                         title="Save Design"
                         className="w-14 h-14 flex flex-col items-center justify-center gap-1 rounded-xl bg-zinc-900 text-white hover:bg-black transition-all active:scale-95"
@@ -193,11 +219,13 @@ export function DesignStudio() {
                 </div>
             </nav>
 
-            {/* Content area - scrollable */}
-            <main className="flex-1 min-w-0 overflow-y-auto p-8">
+            {/* Content area - measured so each tab's internal grids can respond to the
+                real space left after the nav, instead of guessing from the browser viewport */}
+            <main ref={contentRef} className={cn("flex-1 min-w-0 min-h-0 overflow-y-auto", isRailVertical ? "p-8" : "p-4")}>
                 <div className="max-w-2xl mx-auto">
                     {activeTab === 'themes' && (
                         <QuickStartTab
+                            contentWidth={contentWidth}
                             onApplyPreset={(preset) => {
                                 setAppliedPresetId(preset?.id);
                                 setConfig(validatePresetConfig(preset?.config));
@@ -207,7 +235,7 @@ export function DesignStudio() {
                             currentPresetId={appliedPresetId}
                         />
                     )}
-                    
+
                     {activeTab !== 'themes' && !isPro ? (
                         <div className="flex items-center justify-center pt-20">
                             <div className="max-w-md w-full text-center space-y-6 bg-white p-10 rounded-[2.5rem] border-2 border-zinc-100 shadow-xl shadow-zinc-200/20 animate-in fade-in zoom-in duration-500">
@@ -233,19 +261,19 @@ export function DesignStudio() {
                                 <IdentityTab config={config} restaurant={restaurant} onChange={handleConfigChange} />
                             )}
                             {activeTab === 'visuals' && (
-                                <VisualTab config={config} onChange={handleConfigChange} />
+                                <VisualTab config={config} contentWidth={contentWidth} onChange={handleConfigChange} />
                             )}
                             {activeTab === 'colors' && (
-                                <ColorsTab config={config} onChange={handleConfigChange} />
+                                <ColorsTab config={config} contentWidth={contentWidth} onChange={handleConfigChange} />
                             )}
                             {activeTab === 'layout' && (
-                                <LayoutTab config={config} onChange={handleConfigChange} />
+                                <LayoutTab config={config} contentWidth={contentWidth} onChange={handleConfigChange} />
                             )}
                             {activeTab === 'motion' && (
-                                <MotionTab config={config} onChange={handleConfigChange} />
+                                <MotionTab config={config} contentWidth={contentWidth} onChange={handleConfigChange} />
                             )}
                             {activeTab === 'schedule' && (
-                                <AutomationsTab config={config} onChange={handleConfigChange} />
+                                <AutomationsTab config={config} contentWidth={contentWidth} onChange={handleConfigChange} />
                             )}
                         </>
                     )}

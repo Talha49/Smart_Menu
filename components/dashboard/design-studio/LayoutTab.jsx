@@ -9,33 +9,33 @@
 import { useState } from 'react';
 import { CardDesigner } from '../theme-studio/CardDesigner';
 import { TypographyControls } from '../theme-studio/TypographyControls';
+import { ResponsiveGrid } from '@/components/ui/ResponsiveGrid';
 import { cn } from '@/lib/utils';
-import { 
-    LayoutGrid, 
-    List, 
-    Layers, 
-    Circle, 
-    Check, 
-    BookOpen, 
-    Library, 
+import {
+    LayoutGrid,
+    List,
+    Layers,
+    Check,
+    BookOpen,
     Compass,
     Settings2,
     Palette,
-    PenTool
+    PenTool,
+    Sparkles
 } from 'lucide-react';
 
 const LAYOUT_MODES = [
-    { 
-        id: 'grid', 
-        name: 'Standard / None', 
+    {
+        id: 'grid',
+        name: 'Standard / None',
         desc: 'Clean, classic grid layout',
-        icon: LayoutGrid 
+        icon: LayoutGrid
     },
-    { 
-        id: 'perspective-deck', 
-        name: '3D Perspective Deck', 
-        desc: 'Interactive card stack with 3D depth',
-        icon: Library,
+    {
+        id: 'signature-showcase',
+        name: 'Signature Showcase',
+        desc: 'Featured dishes spotlight, then the full menu',
+        icon: Sparkles,
         premium: true
     },
     { 
@@ -66,7 +66,7 @@ const LAYOUT_MODES = [
     },
 ];
 
-export function LayoutTab({ config, onChange }) {
+export function LayoutTab({ config, contentWidth = 600, onChange }) {
     const [activeSection, setActiveSection] = useState('mode');
     const currentLayout = config?.layoutID || 'grid';
     const menuItem = config?.menuItem || {};
@@ -107,7 +107,7 @@ export function LayoutTab({ config, onChange }) {
 
             {/* Layout Mode Selector */}
             {activeSection === 'mode' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ResponsiveGrid width={contentWidth} cols={{ base: 1, 448: 2 }} className="gap-4">
                     {LAYOUT_MODES.map((layout) => {
                         const Icon = layout.icon;
                         const isActive = currentLayout === layout.id;
@@ -146,7 +146,7 @@ export function LayoutTab({ config, onChange }) {
                             </button>
                         );
                     })}
-                </div>
+                </ResponsiveGrid>
             )}
 
             {/* Card Design */}

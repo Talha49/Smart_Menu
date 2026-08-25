@@ -77,11 +77,16 @@ export async function PUT(req) {
             }
         }
         
-        // Update themeConfig if provided - CLEAN BOTH EXISTING AND NEW DATA
+        // Update themeConfig if provided - FULL REPLACE.
+        // The Design Studio always sends a complete, self-contained config
+        // (every field is filled in via validatePresetConfig on the client), so
+        // deep-merging it onto the previous saved value is wrong: deepMerge can
+        // only add/overwrite keys, never remove one that's missing from the new
+        // payload. That silently left stale fields (e.g. an old background image
+        // URL) stuck in the DB forever, even after switching background type or
+        // hitting "Reset Studio". A full replace is what a config editor needs.
         if (experienceConfig.themeConfig) {
-            const clean = removeUndefined(experienceConfig.themeConfig);
-            const existing = removeUndefined(restaurant.experienceConfig.themeConfig || {});
-            restaurant.experienceConfig.themeConfig = deepMerge(existing, clean);
+            restaurant.experienceConfig.themeConfig = removeUndefined(experienceConfig.themeConfig);
         }
         
         // Update layoutConfig if provided - CLEAN BOTH EXISTING AND NEW DATA
@@ -105,11 +110,11 @@ export async function PUT(req) {
             restaurant.experienceConfig.visualDNA = deepMerge(existing, clean);
         }
         
-        // Update designSystem if provided - CLEAN BOTH EXISTING AND NEW DATA
+        // Update designSystem if provided - FULL REPLACE (see themeConfig note above;
+        // Design Studio always sends the complete {config, appliedPreset, lastEdited,
+        // version} object, so merging onto the old one only reintroduces stale data).
         if (experienceConfig.designSystem) {
-            const clean = removeUndefined(experienceConfig.designSystem);
-            const existing = removeUndefined(restaurant.experienceConfig.designSystem || {});
-            restaurant.experienceConfig.designSystem = deepMerge(existing, clean);
+            restaurant.experienceConfig.designSystem = removeUndefined(experienceConfig.designSystem);
         }
         
         // Mark experienceConfig as modified to ensure Mongoose saves it

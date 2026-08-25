@@ -4,7 +4,16 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, color = 'indigo' }) {
+export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, color = 'indigo', sparkline }) {
+    // Normalize real daily counts to 0-100 bar heights - no sparkline is
+    // rendered at all unless real numbers are passed in (see dashboard/page.jsx).
+    const bars = sparkline?.length
+        ? (() => {
+            const max = Math.max(...sparkline, 1);
+            return sparkline.map((v) => Math.max(8, Math.round((v / max) * 100)));
+        })()
+        : null;
+
     const colorClasses = {
         indigo: "from-indigo-500/20 to-blue-500/20 text-indigo-600",
         purple: "from-purple-500/20 to-pink-500/20 text-purple-600",
@@ -52,21 +61,23 @@ export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, 
                     </div>
                 </div>
 
-                {/* Simulated Sparkline Placeholder */}
-                <div className="mt-4 flex items-end gap-1 h-8">
-                    {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ height: 0 }}
-                            animate={{ height: `${h}%` }}
-                            transition={{ delay: i * 0.1, duration: 1 }}
-                            className={cn(
-                                "flex-1 rounded-full transition-colors",
-                                i === 6 ? "bg-zinc-900" : "bg-zinc-100 group-hover:bg-zinc-200"
-                            )}
-                        />
-                    ))}
-                </div>
+                {/* Last 7 days, real counts only - no data in, no bars shown */}
+                {bars && (
+                    <div className="mt-4 flex items-end gap-1 h-8">
+                        {bars.map((h, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ height: 0 }}
+                                animate={{ height: `${h}%` }}
+                                transition={{ delay: i * 0.1, duration: 0.6 }}
+                                className={cn(
+                                    "flex-1 rounded-full transition-colors",
+                                    i === bars.length - 1 ? "bg-zinc-900" : "bg-zinc-100 group-hover:bg-zinc-200"
+                                )}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </motion.div>
     );

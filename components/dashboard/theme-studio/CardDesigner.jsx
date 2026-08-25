@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Image, Layout, Palette, Sparkles, Settings } from 'lucide-react';
+import { Image, Layout, Palette, Wind } from 'lucide-react';
 
 export function CardDesigner({ value, onChange }) {
     const [activeTab, setActiveTab] = useState('layout');
@@ -19,8 +19,7 @@ export function CardDesigner({ value, onChange }) {
                 {[
                     { id: 'layout', label: 'Layout', icon: Layout },
                     { id: 'image', label: 'Image', icon: Image },
-                    { id: 'styling', label: 'Styling', icon: Palette },
-                    { id: 'effects', label: 'Effects', icon: Sparkles }
+                    { id: 'styling', label: 'Styling', icon: Palette }
                 ].map((tab) => {
                     const Icon = tab.icon;
                     return (
@@ -54,12 +53,18 @@ export function CardDesigner({ value, onChange }) {
                 <StylingSettings value={value} onChange={onChange} />
             )}
 
-            {activeTab === 'effects' && (
-                <EffectsSettings value={value} onChange={onChange} />
-            )}
+            {/* Hover effect lives in the Motion tab now (Interaction Feedback) -
+                it used to be duplicated here with its own separate field, which
+                meant whichever control you touched last silently overrode the
+                other one. One field, one place to set it. */}
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-100 text-xs text-zinc-500">
+                <Wind className="w-3.5 h-3.5 shrink-0" />
+                Hover animation is set in the <span className="font-semibold text-zinc-700">Motion</span> tab, under Interaction Feedback.
+            </div>
 
-            {/* Live Preview */}
-            <CardPreview config={value} />
+            <p className="text-xs text-zinc-400 text-center">
+                Changes appear instantly in the live preview.
+            </p>
         </div>
     );
 }
@@ -423,225 +428,4 @@ function StylingSettings({ value, onChange }) {
             </div>
         </div>
     );
-}
-
-/**
- * Effects Settings Tab
- */
-function EffectsSettings({ value, onChange }) {
-    return (
-        <div className="space-y-6">
-            <div>
-                <h3 className="font-semibold text-zinc-900 mb-2">Hover Effects</h3>
-                <p className="text-sm text-zinc-600 mb-4">Animation when hovering over cards</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                    { value: 'lift', label: 'Lift', emoji: '⬆️', desc: 'Moves up' },
-                    { value: 'scale', label: 'Scale', emoji: '🔍', desc: 'Grows larger' },
-                    { value: 'glow', label: 'Glow', emoji: '✨', desc: 'Shadow glow' },
-                    { value: 'none', label: 'None', emoji: '—', desc: 'No effect' }
-                ].map((effect) => (
-                    <button
-                        key={effect.value}
-                        onClick={() => onChange({
-                            ...value,
-                            card: { ...value.card, hoverEffect: effect.value }
-                        })}
-                        className={cn(
-                            "flex items-start gap-3 p-4 rounded-xl border-2 transition-all text-left",
-                            value.card?.hoverEffect === effect.value
-                                ? "border-zinc-900 bg-zinc-50 shadow-lg"
-                                : "border-zinc-200 hover:border-zinc-300"
-                        )}
-                    >
-                        <div className="text-2xl">{effect.emoji}</div>
-                        <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-zinc-900">{effect.label}</div>
-                            <p className="text-xs text-zinc-500 mt-1">{effect.desc}</p>
-                        </div>
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-/**
- * Live Card Preview
- */
-function CardPreview({ config }) {
-    const sampleItem = {
-        name: "Classic Burger",
-        description: "Juicy beef patty with lettuce, tomato, and our special sauce",
-        price: 12.99,
-        imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"
-    };
-
-    return (
-        <div className="mt-8 p-6 rounded-2xl border-2 border-zinc-200 bg-gradient-to-br from-zinc-50 to-white">
-            <h3 className="font-semibold text-zinc-900 mb-4 flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Live Preview
-            </h3>
-
-            <div className="max-w-md mx-auto">
-                {config.layout === 'horizontal' && <HorizontalPreview item={sampleItem} config={config} />}
-                {config.layout === 'vertical' && <VerticalPreview item={sampleItem} config={config} />}
-                {config.layout === 'overlay' && <OverlayPreview item={sampleItem} config={config} />}
-                {config.layout === 'minimal' && <MinimalPreview item={sampleItem} config={config} />}
-            </div>
-        </div>
-    );
-}
-
-function HorizontalPreview({ item, config }) {
-    const showImage = config.image?.enabled !== false;
-
-    return (
-        <div
-            className="flex items-center gap-4 transition-all duration-300 hover:scale-105"
-            style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: config.card?.borderRadius === 'full' ? '9999px' : `${getBorderRadiusPx(config.card?.borderRadius)}px`,
-                boxShadow: getShadow(config.card?.shadow),
-                padding: `${config.card?.padding || 20}px`,
-                borderWidth: `${getBorderWidth(config.card?.border?.width)}px`,
-                borderColor: '#E5E7EB'
-            }}
-        >
-            {showImage && (
-                <div
-                    className="flex-shrink-0 overflow-hidden"
-                    style={{
-                        width: '100px',
-                        height: '100px',
-                        borderRadius: getBorderRadiusPx(config.image?.borderRadius) + 'px'
-                    }}
-                >
-                    <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className={cn("w-full h-full", `object-${config.image?.objectFit || 'cover'}`)}
-                    />
-                </div>
-            )}
-
-            <div className="flex-1 min-w-0" style={{ textAlign: config.content?.alignment || 'left' }}>
-                <h3 className="font-bold text-zinc-900">{item.name}</h3>
-                <p className="text-sm text-zinc-600 mt-1">{item.description}</p>
-            </div>
-
-            <div className="flex-shrink-0 font-bold text-zinc-900">
-                ${item.price}
-            </div>
-        </div>
-    );
-}
-
-function VerticalPreview({ item, config }) {
-    const showImage = config.image?.enabled !== false;
-
-    return (
-        <div
-            className="overflow-hidden transition-all duration-300 hover:scale-105"
-            style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: `${getBorderRadiusPx(config.card?.borderRadius)}px`,
-                boxShadow: getShadow(config.card?.shadow),
-                borderWidth: `${getBorderWidth(config.card?.border?.width)}px`,
-                borderColor: '#E5E7EB'
-            }}
-        >
-            {showImage && (
-                <div
-                    className="overflow-hidden"
-                    style={{
-                        aspectRatio: config.image?.aspectRatio || '4/3'
-                    }}
-                >
-                    <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className={cn("w-full h-full", `object-${config.image?.objectFit || 'cover'}`)}
-                    />
-                </div>
-            )}
-
-            <div style={{ padding: `${config.card?.padding || 20}px`, textAlign: config.content?.alignment || 'left' }}>
-                <h3 className="font-bold text-zinc-900">{item.name}</h3>
-                <p className="text-sm text-zinc-600 mt-2">{item.description}</p>
-                <div className="font-bold text-zinc-900 mt-3">${item.price}</div>
-            </div>
-        </div>
-    );
-}
-
-function OverlayPreview({ item, config }) {
-    return (
-        <div
-            className="relative overflow-hidden transition-all duration-300 hover:scale-105"
-            style={{
-                borderRadius: `${getBorderRadiusPx(config.card?.borderRadius)}px`,
-                boxShadow: getShadow(config.card?.shadow),
-                aspectRatio: '4/3',
-                minHeight: '250px'
-            }}
-        >
-            <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-            <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
-                <h3 className="font-bold text-xl">{item.name}</h3>
-                <p className="text-sm text-white/90 mt-1">{item.description}</p>
-                <div className="inline-flex items-center justify-center px-4 py-2 rounded-full font-bold self-start mt-3 bg-white text-zinc-900">
-                    ${item.price}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function MinimalPreview({ item, config }) {
-    return (
-        <div
-            className="border-b transition-all duration-200 py-4"
-            style={{ borderColor: '#E5E7EB' }}
-        >
-            <div className="flex items-baseline justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-zinc-900">{item.name}</h3>
-                    <p className="text-sm text-zinc-600 mt-1">{item.description}</p>
-                </div>
-                <div className="flex-shrink-0 font-bold text-zinc-900">${item.price}</div>
-            </div>
-        </div>
-    );
-}
-
-// Helper functions
-function getBorderRadiusPx(value) {
-    const map = { none: 0, sm: 4, md: 8, lg: 16, xl: 24, xxl: 32, full: 9999 };
-    return map[value] || 16;
-}
-
-function getBorderWidth(value) {
-    const map = { none: 0, thin: 1, medium: 2, thick: 4 };
-    return map[value] || 1;
-}
-
-function getShadow(value) {
-    const map = {
-        none: 'none',
-        sm: '0 1px 2px rgba(0,0,0,0.05)',
-        md: '0 4px 6px rgba(0,0,0,0.1)',
-        lg: '0 10px 15px rgba(0,0,0,0.1)',
-        xl: '0 20px 25px rgba(0,0,0,0.15)'
-    };
-    return map[value] || map.sm;
 }

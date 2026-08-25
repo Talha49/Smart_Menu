@@ -8,10 +8,11 @@
 
 import { Slider } from '@/components/ui/Slider';
 import { BackgroundDesigner } from '../theme-studio/BackgroundDesigner';
+import { ResponsiveGrid } from '@/components/ui/ResponsiveGrid';
 import { Square, Layers, Waves, CloudFog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function VisualTab({ config, onChange }) {
+export function VisualTab({ config, contentWidth = 600, onChange }) {
     const visual = config?.visual || { radius: '16px', glass: 0, shadow: 'md', texture: 'none' };
     const background = config?.background || { type: 'solid', color: '#FFFFFF' };
 
@@ -45,7 +46,11 @@ export function VisualTab({ config, onChange }) {
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Geometry & Glass</label>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-zinc-50 p-8 rounded-[2.5rem] border-2 border-zinc-100">
+                <ResponsiveGrid
+                    width={contentWidth}
+                    cols={{ base: 1, 448: 2 }}
+                    className="gap-8 bg-zinc-50 p-8 rounded-[2.5rem] border-2 border-zinc-100"
+                >
                     <Slider
                         label="Corner Radius"
                         value={parseInt(visual.radius) || 16}
@@ -68,7 +73,7 @@ export function VisualTab({ config, onChange }) {
                             visual: { ...visual, glass: val }
                         })}
                     />
-                </div>
+                </ResponsiveGrid>
             </section>
 
             {/* Shadow Depth */}
@@ -78,7 +83,7 @@ export function VisualTab({ config, onChange }) {
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Shadow Architecture</label>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <ResponsiveGrid width={contentWidth} cols={{ base: 2, 384: 3, 672: 5 }} className="gap-3">
                     {SHADOW_OPTIONS.map((opt) => (
                         <button
                             key={opt.id}
@@ -99,7 +104,7 @@ export function VisualTab({ config, onChange }) {
                             </div>
                         </button>
                     ))}
-                </div>
+                </ResponsiveGrid>
             </section>
 
             {/* Texture Overlays */}
@@ -109,7 +114,7 @@ export function VisualTab({ config, onChange }) {
                     <label className="text-xs font-black uppercase tracking-widest text-zinc-400">Surface Texture</label>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <ResponsiveGrid width={contentWidth} cols={{ base: 2, 512: 4 }} className="gap-4">
                     {TEXTURE_OPTIONS.map((opt) => (
                         <button
                             key={opt.id}
@@ -131,7 +136,7 @@ export function VisualTab({ config, onChange }) {
                             </div>
                         </button>
                     ))}
-                </div>
+                </ResponsiveGrid>
             </section>
 
             {/* Canvas Designer */}

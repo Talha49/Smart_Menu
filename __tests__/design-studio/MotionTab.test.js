@@ -48,13 +48,17 @@ describe('MotionTab', () => {
         expect(newConfig.animations.itemEntrance.duration).toBe(600);
     });
 
-    test('clicking hover option updates animations.interactions', () => {
+    test('clicking hover option updates menuItem.card.hoverEffect', () => {
+        // Hover effect has one field now: menuItem.card.hoverEffect. It used to
+        // also be readable/writable via animations.interactions.hover (a second
+        // control, in Item Surface's now-removed Effects tab) - whichever one
+        // you touched last silently won, which read as the setting not working.
         render(<MotionTab config={{}} onChange={mockOnChange} />);
 
         fireEvent.click(screen.getByText('Glow'));
 
         const newConfig = mockOnChange.mock.calls[0][0];
-        expect(newConfig.animations.interactions.hover).toBe('glow');
+        expect(newConfig.menuItem.card.hoverEffect).toBe('glow');
     });
 
     test('preserves existing config fields when updating', () => {

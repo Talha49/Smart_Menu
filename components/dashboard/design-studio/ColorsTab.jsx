@@ -10,8 +10,9 @@ import { useState, useMemo } from 'react';
 import { Palette, Droplet, FileText, Square, RefreshCcw, ShieldCheck, AlertTriangle, Zap, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DEFAULT_CONFIG } from './config-defaults';
+import { ResponsiveGrid } from '@/components/ui/ResponsiveGrid';
 
-export function ColorsTab({ config, onChange }) {
+export function ColorsTab({ config, contentWidth = 600, onChange }) {
     if (!config) return <NoPresetMessage />;
 
     const colors = config.colors || DEFAULT_CONFIG.colors;
@@ -61,7 +62,7 @@ export function ColorsTab({ config, onChange }) {
             </div>
 
             {/* Core 3 Colors */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ResponsiveGrid width={contentWidth} cols={{ base: 1, 448: 2 }} className="gap-6">
                 <ColorCard
                     label="Brand Accent Color"
                     desc="Used for Price Tags, Active Category Tabs, and Buttons."
@@ -83,7 +84,7 @@ export function ColorsTab({ config, onChange }) {
                     onChange={(val) => handleCoreColorChange('text.primary', val)}
                     contrastBg={colors.backgrounds.card}
                 />
-            </div>
+            </ResponsiveGrid>
         </div>
     );
 }

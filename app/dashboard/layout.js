@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
 import { useRestaurantStore } from "@/hooks/use-restaurant-store";
@@ -14,6 +15,14 @@ export default function DashboardLayout({ children }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   // Desktop state - default open
   const [isDesktopOpen, setIsDesktopOpen] = useState(true);
+  const pathname = usePathname();
+
+  // Design Studio is a full-bleed, self-scrolling editor (its own
+  // h-[calc(100vh-4rem)] pane with two/three internal columns) - the shared
+  // page padding + max-w-7xl centering that every other dashboard page wants
+  // actively fights it: it eats width the split-pane layout needs, and adds
+  // extra vertical space on top of a height calc that already assumes none.
+  const isFullBleed = pathname === "/dashboard/settings";
 
   const fetchRestaurant = useRestaurantStore((state) => state.fetchRestaurant);
   const fetchCategories = useCategoryStore((state) => state.fetchCategories);
@@ -63,8 +72,8 @@ export default function DashboardLayout({ children }) {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar onMenuClick={toggleSidebar} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-           <div className="mx-auto max-w-7xl animate-fade-in">
+        <main className={cn("flex-1 overflow-y-auto", !isFullBleed && "p-4 md:p-8")}>
+           <div className={cn("animate-fade-in", isFullBleed ? "h-full" : "mx-auto max-w-7xl")}>
               {children}
            </div>
         </main>

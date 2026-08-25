@@ -22,8 +22,10 @@ export default function QRPage() {
         }
     }, []);
 
+    // ?src=qr lets the public menu page tell a QR scan apart from a direct
+    // visit/share link - see app/api/analytics/track.
     const publicMenuUrl = restaurant?.restaurantId
-        ? `${window.location.protocol}//${window.location.host}/menu/${restaurant.restaurantId}`
+        ? `${window.location.protocol}//${window.location.host}/menu/${restaurant.restaurantId}?src=qr`
         : "";
 
     useEffect(() => {

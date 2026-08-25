@@ -5,9 +5,7 @@ import { Check, ArrowRight, Zap, Target, Palette, Box } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-export function SuccessRoadmap({ progress, restaurant }) {
-    const categories = restaurant?.menu?.categories || [];
-    const totalItems = categories.reduce((sum, cat) => sum + (cat.items?.length || 0), 0);
+export function SuccessRoadmap({ restaurant, totalCategories = 0, totalItems = 0, totalScans = 0, totalVisits = 0 }) {
     const hasVisuals = !!restaurant?.experienceConfig?.designSystem?.config;
 
     const steps = [
@@ -15,31 +13,36 @@ export function SuccessRoadmap({ progress, restaurant }) {
             title: "Build the Core",
             desc: "Create categories and add your signature items.",
             icon: Box,
-            link: "/dashboard/categories",
-            completed: categories.length > 0 && totalItems > 0
+            link: "/dashboard/menu",
+            completed: totalCategories > 0 && totalItems > 0
         },
         {
             title: "Design Studio",
             desc: "Set up your brand colors and visual layout.",
             icon: Palette,
-            link: "/dashboard/settings/branding",
+            link: "/dashboard/settings",
             completed: hasVisuals
         },
         {
-            title: "AI Optimizations",
-            desc: "Activate heatmaps and dynamic pricing rules.",
-            icon: Zap,
-            link: "/dashboard/settings/branding",
-            completed: !!restaurant?.experienceConfig?.designSystem?.config?.intelligence?.heatmap?.enabled
-        },
-        {
             title: "Launch & Scale",
-            desc: "Deploy your QR codes and start tracking sales.",
+            desc: "Print your QR codes and put them on tables.",
             icon: Target,
             link: "/dashboard/qr",
-            completed: false // Manual task
+            completed: totalScans > 0
+        },
+        {
+            title: "Track Performance",
+            desc: "Get your first visitor to see it in Menu Visits.",
+            icon: Zap,
+            link: "/dashboard",
+            completed: totalVisits > 0
         }
     ];
+
+    // Own progress, from these exact 4 steps - not the unrelated Menu Health
+    // score, which used to be passed in here and could read "100%" while
+    // half these steps were still unchecked right below it.
+    const progress = Math.round((steps.filter((s) => s.completed).length / steps.length) * 100);
 
     return (
         <div className="space-y-6">

@@ -16,6 +16,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { renderBackground, getPatternPreview } from '@/lib/theme-engine/background-renderer';
+import { ImageUpload } from '@/components/dashboard/ImageUpload';
 import {
     Palette,
     Sparkles,
@@ -481,20 +482,17 @@ function ImagePanel({ value, onChange }) {
 
     return (
         <div className="space-y-6">
-            {/* Image URL Input (placeholder for now) */}
+            {/* Background Image */}
             <div>
                 <label className="block text-sm font-semibold text-zinc-900 mb-3">
-                    Image URL
+                    Background Image
                 </label>
-                <input
-                    type="url"
+                <ImageUpload
                     value={media.url}
-                    onChange={(e) => onChange({ media: { ...media, url: e.target.value } })}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-zinc-200 text-sm focus:border-zinc-900 focus:outline-none transition-colors"
+                    onChange={(url) => onChange({ media: { ...media, url } })}
                 />
                 <p className="text-xs text-zinc-500 mt-2">
-                    Enter image URL or upload (coming soon)
+                    Uploads are cropped, compressed, and hosted for you - no external URL needed.
                 </p>
             </div>
 

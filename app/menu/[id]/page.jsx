@@ -75,6 +75,21 @@ export default function PublicMenuPage() {
         return () => window.removeEventListener("message", handleMessage);
     }, [isPreview]);
 
+    // Analytics - one real visit = one event. Never fires for the owner's own
+    // live-preview iframe (isPreview), and only once per page load even under
+    // React's dev-mode double-invoke of effects.
+    const trackedRef = useRef(false);
+    useEffect(() => {
+        if (isPreview || trackedRef.current || !id) return;
+        trackedRef.current = true;
+        const type = searchParams.get("src") === "qr" ? "qr_scan" : "view";
+        fetch("/api/analytics/track", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ restaurantId: id, type }),
+        }).catch(() => {});
+    }, [id, isPreview, searchParams]);
+
     const getScheduledVibe = (restaurant) => {
         const config = restaurant?.experienceConfig?.designSystem?.config || restaurant?.experienceConfig?.themeConfig;
         const seasonal = config?.seasonal || restaurant?.experienceConfig?.seasonalAtmosphere;
@@ -215,16 +230,32 @@ export default function PublicMenuPage() {
     }, [isTVMode]);
 
     // 3. Dynamic Font Loading
+    // Used to only ever request the heading font - if you picked a different
+    // body font in Typography Lab, it was silently never fetched and fell
+    // back to the browser default, even though the heading font worked fine.
+    const fontsConfig = activeRestaurant?.experienceConfig?.themeConfig?.typography?.fonts;
+    const headingFont = activeRestaurant?.fontFamily || fontsConfig?.heading?.family;
+    const bodyFont = fontsConfig?.body?.family;
+    const accentFont = fontsConfig?.accent?.family;
+
     useEffect(() => {
-        const fontName = activeRestaurant?.fontFamily || activeRestaurant?.experienceConfig?.themeConfig?.typography?.fonts?.heading?.family;
-        if (fontName && fontName !== 'Inter') {
-            const link = document.createElement('link');
-            link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}:wght@400;700;900&display=swap`;
-            link.rel = 'stylesheet';
-            document.head.appendChild(link);
-            return () => document.head.removeChild(link);
-        }
-    }, [activeRestaurant?.fontFamily, activeRestaurant?.experienceConfig?.themeConfig?.typography?.fonts?.heading?.family]);
+        // Inter and Outfit are already bundled at build time via next/font in
+        // the root layout - fetching them again from Google Fonts would just
+        // be a wasted request.
+        const ALREADY_LOADED = new Set(['Inter', 'Outfit']);
+        const families = [...new Set([headingFont, bodyFont, accentFont].filter((f) => f && !ALREADY_LOADED.has(f)))];
+
+        if (families.length === 0) return;
+
+        const link = document.createElement('link');
+        const familyParams = families
+            .map((f) => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900`)
+            .join('&');
+        link.href = `https://fonts.googleapis.com/css2?${familyParams}&display=swap`;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+        return () => document.head.removeChild(link);
+    }, [headingFont, bodyFont, accentFont]);
 
     // 4. Category Tracking (Intersection Observer)
 
