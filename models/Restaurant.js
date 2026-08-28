@@ -110,7 +110,22 @@ const RestaurantSchema = new mongoose.Schema(
         // This provides granular control over every visual aspect of the menu
         // When present, themeConfig takes priority over vibeTokens for rendering
         themeConfig: { type: mongoose.Schema.Types.Mixed, default: {} },
-        layoutConfig: { type: mongoose.Schema.Types.Mixed, default: {} }
+        layoutConfig: { type: mongoose.Schema.Types.Mixed, default: {} },
+
+        // User-built themes saved from the Design Studio, shown alongside the
+        // curated presets in QuickStartTab's "My Themes" panel
+        customThemes: {
+            type: [
+                {
+                    id: { type: String, required: true },
+                    name: { type: String, required: true, maxlength: 40 },
+                    emoji: { type: String, default: '🎨' },
+                    config: { type: mongoose.Schema.Types.Mixed, required: true },
+                    createdAt: { type: Date, default: Date.now },
+                }
+            ],
+            default: []
+        }
     },
 
     stripeCustomerId: { type: String },

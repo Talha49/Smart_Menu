@@ -116,6 +116,14 @@ export async function PUT(req) {
         if (experienceConfig.designSystem) {
             restaurant.experienceConfig.designSystem = removeUndefined(experienceConfig.designSystem);
         }
+
+        // Update customThemes if provided - FULL REPLACE. The client always
+        // sends its complete local list (after appending or filtering out a
+        // theme), so replacing is correct here for the same reason as
+        // themeConfig/designSystem above.
+        if (experienceConfig.customThemes !== undefined) {
+            restaurant.experienceConfig.customThemes = experienceConfig.customThemes;
+        }
         
         // Mark experienceConfig as modified to ensure Mongoose saves it
         restaurant.markModified('experienceConfig');

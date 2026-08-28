@@ -13,7 +13,8 @@ import {
     Calendar,
     ShieldCheck,
     Eye,
-    Lock
+    Lock,
+    Wand2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
@@ -28,6 +29,7 @@ import { ColorsTab } from './ColorsTab';
 import { LayoutTab } from './LayoutTab';
 import { MotionTab } from './MotionTab';
 import { AutomationsTab } from './AutomationsTab';
+import { SaveThemeModal } from './SaveThemeModal';
 
 const NAV_ITEMS = [
     { id: 'themes', label: 'Themes', icon: Sparkles },
@@ -48,6 +50,9 @@ export function DesignStudio() {
 
     const [config, setConfig] = useState(null);
     const [appliedPresetId, setAppliedPresetId] = useState(null);
+    const [customThemes, setCustomThemes] = useState([]);
+    const [showSaveThemeModal, setShowSaveThemeModal] = useState(false);
+    const [isSavingTheme, setIsSavingTheme] = useState(false);
 
     // Measured, not guessed from the viewport - see hooks/use-element-width.js
     // for why (short version: this needs to know its OWN available width,
@@ -74,6 +79,7 @@ export function DesignStudio() {
             if (designSystem?.appliedPreset) {
                 setAppliedPresetId(designSystem.appliedPreset);
             }
+            setCustomThemes(restaurant?.experienceConfig?.customThemes || []);
         }
     }, [restaurant, config]);
 
@@ -100,9 +106,10 @@ export function DesignStudio() {
 
     // Accepts explicit overrides so callers (like Reset) can persist a value
     // immediately without waiting on React state to catch up to setConfig().
-    const handleSave = async (configOverride, presetOverride, loadingMessage = 'Saving design...', successMessage = 'Design saved!') => {
+    const handleSave = async (configOverride, presetOverride, loadingMessage = 'Saving design...', successMessage = 'Design saved!', customThemesOverride) => {
         const configToSave = configOverride || config;
         const presetToSave = presetOverride !== undefined ? presetOverride : appliedPresetId;
+        const customThemesToSave = customThemesOverride !== undefined ? customThemesOverride : customThemes;
 
         setIsSaving(true);
         const loadingToast = toast.loading(loadingMessage);
@@ -119,7 +126,8 @@ export function DesignStudio() {
                         version: '2.0',
                     },
                     themeConfig: configToSave,
-                    layoutID: configToSave.layoutID || 'grid'
+                    layoutID: configToSave.layoutID || 'grid',
+                    customThemes: customThemesToSave,
                 }
             };
             const result = await updateBranding(payload);
@@ -152,6 +160,49 @@ export function DesignStudio() {
         // to Save separately - that gap was exactly why Reset used to look
         // like it "did nothing" after leaving the page.
         await handleSave(freshConfig, null, 'Resetting design...', 'Design Studio reset to factory defaults');
+    };
+
+    // Clears the working draft only - unlike Reset, this doesn't save, so the
+    // user can freely experiment across tabs and just navigate away to bail out.
+    // Also jumps straight into the Colors tool instead of leaving the user on
+    // the Quick Start screen wondering where the actual editor is.
+    const handleStartCustom = () => {
+        setConfig({ ...DEFAULT_CONFIG });
+        setAppliedPresetId(null);
+        setActiveTab('colors');
+        toast.success('Blank canvas ready - use Colors, Visuals, Typography & Layout to design it, then Save.');
+    };
+
+    const handleApplyCustomTheme = (theme) => {
+        setAppliedPresetId(theme.id);
+        setConfig(validatePresetConfig(theme.config));
+        toast.success(`Applied: ${theme.name}`);
+    };
+
+    const handleSaveCustomTheme = async ({ name, emoji }) => {
+        setIsSavingTheme(true);
+        const newTheme = {
+            id: crypto.randomUUID(),
+            name,
+            emoji,
+            config,
+            createdAt: new Date().toISOString(),
+        };
+        const updatedThemes = [...customThemes, newTheme];
+        const success = await handleSave(config, appliedPresetId, 'Saving theme...', `Saved "${name}"!`, updatedThemes);
+        if (success) {
+            setCustomThemes(updatedThemes);
+            setShowSaveThemeModal(false);
+        }
+        setIsSavingTheme(false);
+    };
+
+    const handleDeleteCustomTheme = async (theme) => {
+        const updatedThemes = customThemes.filter((t) => t.id !== theme.id);
+        const nextPresetId = appliedPresetId === theme.id ? null : appliedPresetId;
+        setCustomThemes(updatedThemes);
+        setAppliedPresetId(nextPresetId);
+        await handleSave(config, nextPresetId, 'Removing theme...', `Removed "${theme.name}"`, updatedThemes);
     };
 
     // Loading
@@ -197,11 +248,20 @@ export function DesignStudio() {
                     })}
                 </div>
 
-                {/* Save - pinned to the trailing edge of the strip (bottom when vertical, right when horizontal) */}
+                {/* Save actions - pinned to the trailing edge of the strip (bottom when vertical, right when horizontal) */}
                 <div className={cn(
-                    "shrink-0 border-zinc-200 flex items-center justify-center",
-                    isRailVertical ? "border-t px-0 py-4" : "px-2"
+                    "shrink-0 border-zinc-200 flex items-center justify-center gap-1",
+                    isRailVertical ? "flex-col border-t px-0 py-4" : "px-2"
                 )}>
+                    <button
+                        onClick={() => setShowSaveThemeModal(true)}
+                        disabled={isSaving}
+                        title="Save as My Theme"
+                        className="w-14 h-14 flex flex-col items-center justify-center gap-1 rounded-xl text-zinc-400 hover:text-indigo-600 hover:bg-white transition-all active:scale-95"
+                    >
+                        <Wand2 className="w-[18px] h-[18px]" />
+                        <span className="text-[9px] font-semibold leading-none">Theme</span>
+                    </button>
                     <button
                         onClick={() => handleSave()}
                         disabled={isSaving}
@@ -232,7 +292,11 @@ export function DesignStudio() {
                                 toast.success(`Applied: ${preset?.name}`);
                             }}
                             onReset={handleReset}
+                            onStartCustom={handleStartCustom}
                             currentPresetId={appliedPresetId}
+                            customThemes={customThemes}
+                            onApplyCustomTheme={handleApplyCustomTheme}
+                            onDeleteCustomTheme={handleDeleteCustomTheme}
                         />
                     )}
 
@@ -257,6 +321,20 @@ export function DesignStudio() {
                         </div>
                     ) : (
                         <>
+                            {activeTab !== 'themes' && !appliedPresetId && (
+                                <div className="mb-6 flex items-center justify-between gap-4 px-5 py-3 rounded-2xl bg-indigo-50 border-2 border-indigo-100">
+                                    <div className="flex items-center gap-2 text-indigo-700 min-w-0">
+                                        <Wand2 className="w-4 h-4 shrink-0" />
+                                        <span className="text-xs font-bold truncate">Designing a custom look - not saved as a theme yet.</span>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowSaveThemeModal(true)}
+                                        className="shrink-0 px-4 py-2 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider hover:bg-indigo-700 transition-colors"
+                                    >
+                                        Save as My Theme
+                                    </button>
+                                </div>
+                            )}
                             {activeTab === 'identity' && (
                                 <IdentityTab config={config} restaurant={restaurant} onChange={handleConfigChange} />
                             )}
@@ -279,6 +357,14 @@ export function DesignStudio() {
                     )}
                 </div>
             </main>
+
+            <SaveThemeModal
+                isOpen={showSaveThemeModal}
+                onClose={() => setShowSaveThemeModal(false)}
+                config={config}
+                onSave={handleSaveCustomTheme}
+                isSaving={isSavingTheme}
+            />
         </div>
     );
 }

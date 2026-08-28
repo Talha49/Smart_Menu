@@ -57,4 +57,64 @@ describe('QuickStartTab', () => {
         const checkmarks = container.querySelectorAll('.bg-zinc-900.rounded-full');
         expect(checkmarks.length).toBeGreaterThan(0);
     });
+
+    test('clicking "Start a Custom Theme" calls onStartCustom', () => {
+        const mockStartCustom = jest.fn();
+        render(<QuickStartTab onApplyPreset={mockOnApply} onStartCustom={mockStartCustom} currentPresetId={null} />);
+
+        fireEvent.click(screen.getByText('Start a Custom Theme'));
+        expect(mockStartCustom).toHaveBeenCalledTimes(1);
+    });
+
+    describe('My Themes', () => {
+        const customThemes = [
+            { id: 'theme-1', name: 'Weekend Brunch', emoji: '🥞', config: { colors: { brand: { primary: '#ff0000' } } }, createdAt: '2026-01-01' },
+        ];
+
+        test('switching to My Themes shows saved custom themes', () => {
+            render(<QuickStartTab onApplyPreset={mockOnApply} currentPresetId={null} customThemes={customThemes} />);
+
+            fireEvent.click(screen.getByText(/My Themes/));
+            expect(screen.getByText('Weekend Brunch')).toBeInTheDocument();
+        });
+
+        test('clicking a saved theme calls onApplyCustomTheme', () => {
+            const mockApplyCustom = jest.fn();
+            render(
+                <QuickStartTab
+                    onApplyPreset={mockOnApply}
+                    currentPresetId={null}
+                    customThemes={customThemes}
+                    onApplyCustomTheme={mockApplyCustom}
+                />
+            );
+
+            fireEvent.click(screen.getByText(/My Themes/));
+            fireEvent.click(screen.getByText('Weekend Brunch'));
+            expect(mockApplyCustom).toHaveBeenCalledWith(customThemes[0]);
+        });
+
+        test('deleting a saved theme calls onDeleteCustomTheme', () => {
+            const mockDelete = jest.fn();
+            render(
+                <QuickStartTab
+                    onApplyPreset={mockOnApply}
+                    currentPresetId={null}
+                    customThemes={customThemes}
+                    onDeleteCustomTheme={mockDelete}
+                />
+            );
+
+            fireEvent.click(screen.getByText(/My Themes/));
+            fireEvent.click(screen.getByTitle('Delete theme'));
+            expect(mockDelete).toHaveBeenCalledWith(customThemes[0]);
+        });
+
+        test('shows an empty state when there are no saved themes', () => {
+            render(<QuickStartTab onApplyPreset={mockOnApply} currentPresetId={null} customThemes={[]} />);
+
+            fireEvent.click(screen.getByText(/My Themes/));
+            expect(screen.getByText(/No saved themes yet/)).toBeInTheDocument();
+        });
+    });
 });

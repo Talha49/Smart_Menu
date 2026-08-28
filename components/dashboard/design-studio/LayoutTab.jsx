@@ -21,7 +21,11 @@ import {
     Settings2,
     Palette,
     PenTool,
-    Sparkles
+    Sparkles,
+    Waves,
+    TrainFront,
+    SquareStack,
+    Hexagon
 } from 'lucide-react';
 
 const LAYOUT_MODES = [
@@ -58,11 +62,39 @@ const LAYOUT_MODES = [
         desc: 'Elegant brick-style for premium brands',
         icon: Layers 
     },
-    { 
-        id: 'list', 
-        name: 'Minimal List', 
+    {
+        id: 'list',
+        name: 'Minimal List',
         desc: 'Clean, text-focused readability',
-        icon: List 
+        icon: List
+    },
+    {
+        id: 'liquid-carousel',
+        name: 'Liquid Carousel',
+        desc: 'Horizontal scrolling rows per category',
+        icon: Waves,
+        premium: true
+    },
+    {
+        id: 'subway-map',
+        name: 'Subway Line Map',
+        desc: 'Categories as stations on a single route',
+        icon: TrainFront,
+        premium: true
+    },
+    {
+        id: 'menu-deck',
+        name: 'Menu Deck',
+        desc: 'A swipeable card stack, one dish at a time',
+        icon: SquareStack,
+        premium: true
+    },
+    {
+        id: 'voronoi-mosaic',
+        name: 'Voronoi Mosaic',
+        desc: 'Organic tessellated photo mosaic, never a straight edge',
+        icon: Hexagon,
+        premium: true
     },
 ];
 
